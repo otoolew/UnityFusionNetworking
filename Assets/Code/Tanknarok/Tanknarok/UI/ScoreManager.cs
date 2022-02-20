@@ -23,7 +23,7 @@ namespace FusionExamples.Tanknarok
 
 		public void UpdateScore(int playerId, byte score)
 		{
-			foreach (Player player in PlayerManager.allPlayers)
+			foreach (TankPlayer player in PlayerManager.allPlayers)
 			{
 				ScoreGameUI ui;
 				if (!_gameScoreUI.TryGetValue(player.playerID, out ui))
@@ -41,7 +41,7 @@ namespace FusionExamples.Tanknarok
 
 		public void ShowLobbyScore(int winningPlayer)
 		{
-			foreach (Player player in PlayerManager.allPlayers)
+			foreach (TankPlayer player in PlayerManager.allPlayers)
 			{
 				ScoreLobbyUI scoreLobbyUI = ObjectPool.Instantiate(_scoreLobbyPrefab, Vector3.zero, _scoreLobbyPrefab.transform.rotation, _lobbyScoreParent);
 				scoreLobbyUI.SetPlayerName(player);

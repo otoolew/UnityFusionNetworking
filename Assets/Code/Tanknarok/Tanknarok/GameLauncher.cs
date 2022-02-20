@@ -13,7 +13,7 @@ namespace FusionExamples.Tanknarok
 	public class GameLauncher : MonoBehaviour
 	{
 		[SerializeField] private GameManagerDeprecated _gameManagerPrefab;
-		[SerializeField] private Player _playerPrefab;
+		[SerializeField] private TankPlayer _playerPrefab;
 		[SerializeField] private TMP_InputField _room;
 		[SerializeField] private TextMeshProUGUI _progress;
 		[SerializeField] private Panel _uiCurtain;
@@ -149,7 +149,7 @@ namespace FusionExamples.Tanknarok
 			runner.Spawn(_playerPrefab, Vector3.zero, Quaternion.identity, playerref, InitNetworkState);
 			void InitNetworkState(NetworkRunner runner, NetworkObject networkObject)
 			{
-				Player player = networkObject.gameObject.GetComponent<Player>();
+				TankPlayer player = networkObject.gameObject.GetComponent<TankPlayer>();
 				Debug.Log($"Initializing player {player.playerID}");
 				player.InitNetworkState(GameManagerDeprecated.MAX_LIVES);
 			}
@@ -158,7 +158,7 @@ namespace FusionExamples.Tanknarok
 		private void OnDespawnPlayer(NetworkRunner runner, PlayerRef playerref)
 		{
 			Debug.Log($"Despawning Player {playerref}");
-			Player player = PlayerManager.Get(playerref);
+			TankPlayer player = PlayerManager.Get(playerref);
 			player.TriggerDespawn();
 		}
 

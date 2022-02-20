@@ -19,7 +19,7 @@ namespace FusionExamples.Tanknarok
 			_direction = -1;
 		}
 
-		public bool Refresh(Player followPlayer)
+		public bool Refresh(TankPlayer followPlayer)
 		{
 			_camera = Camera.main;
 			_direction = followPlayer.ready ? 1 : -1;

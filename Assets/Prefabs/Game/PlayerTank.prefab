@@ -651,6 +651,7 @@ GameObject:
   - component: {fileID: 5077257200377314410}
   - component: {fileID: 2039004788954265569}
   - component: {fileID: 8616232291554802440}
+  - component: {fileID: 7552702215435111341}
   m_Layer: 8
   m_Name: PlayerTank
   m_TagString: Untagged
@@ -704,6 +705,7 @@ MonoBehaviour:
   - {fileID: 6203864925880487117}
   - {fileID: 868463730390139289}
   - {fileID: 4937990569053503600}
+  - {fileID: 7552702215435111341}
   - {fileID: 2623805786298927061}
   - {fileID: 3456142216153293605}
   - {fileID: 346593213666910495}
@@ -833,9 +835,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
-  _mouseRayMask:
-    serializedVersion: 2
-    m_Bits: 64
 --- !u!114 &4937990569053503600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1008,6 +1007,26 @@ MonoBehaviour:
   startAction: 2
   stopAction: 2
   audioClip: {fileID: 0}
+--- !u!114 &7552702215435111341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7917003752575662290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 285ae7393ed0490eb806ceb4b8159c1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interpolationDataSource: 0
+  Character: {fileID: 0}
+  _Name: 
+  _Color: {r: 0, g: 0, b: 0, a: 0}
+  _Ready:
+    _value: 0
+  _InputEnabled:
+    _value: 0
 --- !u!1 &8041608635261517176
 GameObject:
   m_ObjectHideFlags: 0

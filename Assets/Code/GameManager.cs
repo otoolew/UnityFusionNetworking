@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	private NetworkSceneManagerBase _loader;
 	private Action<List<SessionInfo>> _onSessionListUpdated;
 	private readonly Dictionary<PlayerRef, Player> _players = new Dictionary<PlayerRef, Player>();
-	private InputData _data;
+	private CharacterInputData _data;
 	private Session _session;
 	private string _lobbyId;
 
@@ -258,24 +258,17 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		request.Accept();
 	}
 
-	private void Update() 
-	{
-		// Check events like KeyDown or KeyUp in Unity's update. They might be missed otherwise because they're only true for 1 frame
-		_data.ButtonFlags |= Input.GetKeyDown( KeyCode.R ) ? ButtonFlag.RESPAWN : 0;
-	}
-	
 	public void OnInput(NetworkRunner runner, NetworkInput input)
 	{
-		// Persistent button flags like GetKey should be read when needed so they always have the actual state for this tick
-		_data.ButtonFlags |= Input.GetKey( KeyCode.W ) ? ButtonFlag.FORWARD : 0;
-		_data.ButtonFlags |= Input.GetKey( KeyCode.A ) ? ButtonFlag.LEFT : 0;
-		_data.ButtonFlags |= Input.GetKey( KeyCode.S ) ? ButtonFlag.BACKWARD : 0;
-		_data.ButtonFlags |= Input.GetKey( KeyCode.D ) ? ButtonFlag.RIGHT : 0;
+		/*// Persistent button flags like GetKey should be read when needed so they always have the actual state for this tick
+		_data.Buttons |= Input.GetKey( KeyCode.W ) ? CharacterButton.FORWARD: 0;
+		_data.Buttons |= Input.GetKey( KeyCode.A ) ? CharacterButton.LEFT : 0;
+		_data.Buttons |= Input.GetKey( KeyCode.S ) ? CharacterButton.BACKWARD : 0;
+		_data.Buttons |= Input.GetKey( KeyCode.D ) ? CharacterButton.RIGHT : 0;
 
 		input.Set( _data );
-
 		// Clear the flags so they don't spill over into the next tick unless they're still valid input.
-		_data.ButtonFlags = 0;
+		_data.Buttons = 0;*/
 	}
 
 	public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)

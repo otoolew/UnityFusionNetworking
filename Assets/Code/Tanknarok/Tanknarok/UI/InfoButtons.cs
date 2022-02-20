@@ -20,7 +20,7 @@ namespace FusionExamples.Tanknarok
 				_delay = 1.0f;
 
 				int readyCount = 0;
-				foreach (Player player in PlayerManager.allPlayers)
+				foreach (TankPlayer player in PlayerManager.allPlayers)
 				{
 					if (player.ready)
 						readyCount++;

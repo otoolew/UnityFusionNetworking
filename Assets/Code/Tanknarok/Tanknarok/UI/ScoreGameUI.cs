@@ -13,7 +13,7 @@ namespace FusionExamples.Tanknarok
 		private byte _currentScore;
 		private bool _active;
 
-		public void Initialize(Player player)
+		public void Initialize(TankPlayer player)
 		{
 			ResetScore();
 			HideScore();

@@ -21,7 +21,7 @@ namespace FusionExamples.Tanknarok
 		{
 			for (int i = 0; i < toggleProperties.Length; i++)
 			{
-				Player ply = PlayerManager.GetPlayerFromID(i);
+				TankPlayer ply = PlayerManager.GetPlayerFromID(i);
 				if (ply != null)
 					forceFieldMaterial.SetVector(positionProperties[i], ply.transform.position);
 				forceFieldMaterial.SetInt(toggleProperties[i], ply==null ? 0 : 1);

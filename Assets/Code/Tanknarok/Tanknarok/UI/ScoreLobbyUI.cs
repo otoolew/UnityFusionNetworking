@@ -10,7 +10,7 @@ namespace FusionExamples.Tanknarok
 		[SerializeField] private TextMeshPro _score;
 		[SerializeField] private TextMeshPro _playerName;
 
-		public void SetPlayerName(Player player)
+		public void SetPlayerName(TankPlayer player)
 		{
 			_playerName.text = player.playerName;
 

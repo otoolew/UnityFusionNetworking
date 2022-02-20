@@ -5,7 +5,7 @@ namespace FusionExamples.Tanknarok
 {
 	public class TankTeleportInEffect : MonoBehaviour
 	{
-		private Player _player;
+		private TankPlayer _player;
 
 		[Header("Time Settings")] [SerializeField]
 		private float _timeBeforeParticles = 0.1f;
@@ -28,7 +28,7 @@ namespace FusionExamples.Tanknarok
 		private bool _endTeleportation;
 
 		// Initialize dummy tank and set colors based on the assigned player
-		public void Initialize(Player player)
+		public void Initialize(TankPlayer player)
 		{
 			_player = player;
 

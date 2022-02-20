@@ -6,7 +6,6 @@ using UnityEngine;
 /// for each player when the game session starts and it lives until the session ends.
 /// This is not the visual representation of the player.
 /// </summary>
-
 public class Player : NetworkBehaviour
 {
 	[SerializeField] public Character Character;

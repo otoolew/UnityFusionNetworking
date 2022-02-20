@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace FusionExamples.Tanknarok
 {
 	public class TankBelts : MonoBehaviour
 	{
-		[SerializeField] private Player _tankBehaviour;
+		[SerializeField]private TankPlayer _tankBehaviour;
 
 		[SerializeField] private Transform _leftBelt;
 		[SerializeField] private Transform _rightBelt;

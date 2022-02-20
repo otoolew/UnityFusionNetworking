@@ -43,6 +43,7 @@ public class Map : SimulationBehaviour, ISpawned
 			Character character = Runner.Spawn(player.Character, t.position, t.rotation, player.Object.InputAuthority);
 			_playerCharacters[player] = character;
 			player.InputEnabled = lateJoiner;
+			character.CurrentState = Character.State.ACTIVE;
 		}
 	}
 

@@ -13,7 +13,7 @@ namespace FusionExamples.Tanknarok
 		};
 		
 		[SerializeField] private Weapon[] _weapons;
-		[SerializeField] private Player _player;
+		[SerializeField] private TankPlayer _player;
 
 		[Networked]
 		public byte selectedPrimaryWeapon { get; set; }

@@ -6,10 +6,10 @@ namespace FusionExamples.Tanknarok
 {
 	public class PlayerManager : MonoBehaviour
 	{		
-		private static List<Player> _allPlayers = new List<Player>();
-		public static List<Player> allPlayers => _allPlayers;
+		private static List<TankPlayer> _allPlayers = new List<TankPlayer>();
+		public static List<TankPlayer> allPlayers => _allPlayers;
 
-		private static Queue<Player> _playerQueue = new Queue<Player>();
+		private static Queue<TankPlayer> _playerQueue = new Queue<TankPlayer>();
 
 		static private CameraStrategy _cameraStrategy;
 		static private CameraStrategy CameraStrategy
@@ -26,7 +26,7 @@ namespace FusionExamples.Tanknarok
 		{
 			if (_playerQueue.Count > 0)
 			{
-				Player player = _playerQueue.Dequeue();
+				TankPlayer player = _playerQueue.Dequeue();
 
 				CameraStrategy.AddTarget(player.gameObject);
 				
@@ -46,7 +46,7 @@ namespace FusionExamples.Tanknarok
 			return playersAlive;
 		}
 
-		public static Player GetFirstAlivePlayer()
+		public static TankPlayer GetFirstAlivePlayer()
 		{
 			for (int i = 0; i < _allPlayers.Count; i++)
 			{
@@ -57,7 +57,7 @@ namespace FusionExamples.Tanknarok
 			return null;
 		}
 
-		public static void AddPlayer(Player player)
+		public static void AddPlayer(TankPlayer player)
 		{
 			Debug.Log("Player Added");
 
@@ -76,7 +76,7 @@ namespace FusionExamples.Tanknarok
 			_playerQueue.Enqueue(player);
 		}
 
-		public static void RemovePlayer(Player player)
+		public static void RemovePlayer(TankPlayer player)
 		{
 			if (player==null || !_allPlayers.Contains(player))
 				return;
@@ -94,12 +94,12 @@ namespace FusionExamples.Tanknarok
 			allPlayers.Clear();
 			if(CameraStrategy) // FindObject May return null on shutdown, so let's avoid that NPE
 				CameraStrategy.RemoveAll();
-			Player.local = null;
+			TankPlayer.local = null;
 		}
 
-		public static Player GetPlayerFromID(int id)
+		public static TankPlayer GetPlayerFromID(int id)
 		{
-			foreach (Player player in _allPlayers)
+			foreach (TankPlayer player in _allPlayers)
 			{
 				if (player.playerID == id)
 					return player;
@@ -108,7 +108,7 @@ namespace FusionExamples.Tanknarok
 			return null;
 		}
 
-		public static Player Get(PlayerRef playerRef)
+		public static TankPlayer Get(PlayerRef playerRef)
 		{
 			for (int i = _allPlayers.Count - 1; i >= 0; i--)
 			{

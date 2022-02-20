@@ -24,7 +24,7 @@ namespace FusionExamples.Tanknarok
 			}
 
 			_allPlayersReady = PlayerManager.allPlayers.Count>1 || (PlayerManager.allPlayers.Count==1 && _allowSoloPlay);
-			foreach (Player player in PlayerManager.allPlayers)
+			foreach (TankPlayer player in PlayerManager.allPlayers)
 			{
 				ReadyupIndicator indicator;
 				if (!_readyUIs.TryGetValue(player.playerID, out indicator))

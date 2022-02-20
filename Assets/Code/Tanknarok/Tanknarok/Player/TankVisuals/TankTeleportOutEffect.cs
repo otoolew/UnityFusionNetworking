@@ -4,7 +4,7 @@ namespace FusionExamples.Tanknarok
 {
 	public class TankTeleportOutEffect : MonoBehaviour
 	{
-		private Player _player;
+		private TankPlayer _player;
 
 		[SerializeField] private GameObject _dummyTank;
 		private Transform _dummyTankTurret;
@@ -15,7 +15,7 @@ namespace FusionExamples.Tanknarok
 		[Header("Audio")] [SerializeField] private AudioEmitter _audioEmitter;
 
 		// Initialize dummy tank and set colors based on the assigned player
-		public void Initialize(Player player)
+		public void Initialize(TankPlayer player)
 		{
 			_player = player;
 

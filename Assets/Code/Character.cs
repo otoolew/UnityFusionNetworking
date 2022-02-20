@@ -8,19 +8,50 @@ using UnityEngine.UI;
 /// (I.e. the player gets a new avatar in each map)
 /// </summary>
 
+[RequireComponent(typeof(NetworkCharacterController))]
 public class Character : NetworkBehaviour
 {
+	[SerializeField] private NetworkCharacterController networkCharacterController;
+	
 	[SerializeField] private Text _name;
 	[SerializeField] private MeshRenderer _mesh;
 
 	private Transform _camera;
 	private Player _player;
 
+	[SerializeField] private Vector3 moveDirection;
+	[SerializeField] private Vector3 aimDirection;
+	
+	public enum State
+	{
+		NEW,
+		DESPAWNING,
+		SPAWNING,
+		ACTIVE,
+		DEAD
+	}
+	
+	[Networked(OnChanged = nameof(OnStateChanged))]
+	public State CurrentState { get; set; }
+	
 	public override void Spawned()
 	{
 		_player = GameManager.Instance.GetPlayer(Object.InputAuthority);
 		_name.text = _player.Name;
 		_mesh.material.color = _player.Color;
+		
+		if (Object.HasInputAuthority)
+		{
+			if (_camera == null)
+			{
+				_camera = Camera.main.transform;
+			}
+
+			Transform t = gameObject.transform;
+			Vector3 p = t.position;
+			_camera.position = p - 10 * t.forward + 10 * Vector3.up;
+			_camera.LookAt(p + 2 * Vector3.up);
+		}
 	}
 
 	public override void Render()
@@ -29,25 +60,65 @@ public class Character : NetworkBehaviour
 		{
 			if (_camera == null)
 				_camera = Camera.main.transform;
-			Transform t = _mesh.transform;
+			
+			Transform t = gameObject.transform;
 			Vector3 p = t.position;
-			_camera.position = p - 10 * t.forward + 5*Vector3.up;
-			_camera.LookAt(p+2*Vector3.up);
+			_camera.position = p - 10 * t.forward + 10 * Vector3.up;
+			_camera.LookAt(p + 2 * Vector3.up);
 		}
 	}
 
-	public override void FixedUpdateNetwork()
+	#region State Change
+	public static void OnStateChanged(Changed<Character> changed)
 	{
-		if (_player && _player.InputEnabled && GetInput(out InputData data))
+		if(changed.Behaviour)
+			changed.Behaviour.OnStateChanged();
+	}
+	
+	public void OnStateChanged()
+	{
+		switch (CurrentState)
 		{
-			if (data.GetButton(ButtonFlag.LEFT))
-				transform.Rotate(Vector3.up,-Runner.DeltaTime*180);
-			if (data.GetButton(ButtonFlag.RIGHT))
-				transform.Rotate(Vector3.up,Runner.DeltaTime*180);
-			if (data.GetButton(ButtonFlag.FORWARD))
-				transform.position += Runner.DeltaTime * 10 * transform.forward;
-			if (data.GetButton(ButtonFlag.BACKWARD))
-				transform.position -= Runner.DeltaTime * 10 * transform.forward;
+			case State.SPAWNING:
+				Debug.Log($"[{_player.Id}] Player {CurrentState}");
+				// TODO Play Spawning Effect
+				break;
+			case State.ACTIVE:
+				Debug.Log($"[{_player.Id}] Player {CurrentState}");
+				// Do any clean up here
+				// TODO Stop Spawning Effect
+				break;
+			case State.DEAD:
+				Debug.Log($"[{_player.Id}] Player {CurrentState}");
+				// TODO Spawn Dead Body Here
+				break;
+			case State.DESPAWNING:
+				Debug.Log($"[{_player.Id}] Player {CurrentState}");
+				// TODO Play Despawning Effect
+				break;
 		}
 	}
+	#endregion
+
+	#region Character Movement
+	/// <summary>
+	/// Set the direction of movement and aim
+	/// </summary>
+	public void SetDirections(Vector3 moveDirection, Vector3 aimDirection)
+	{
+		this.moveDirection = moveDirection;
+		this.aimDirection = aimDirection;
+	}
+
+	public void Move()
+	{
+		if (CurrentState == State.ACTIVE)
+		{
+			networkCharacterController.Move(moveDirection);
+		}
+	}
+	
+
+	#endregion
+
 }

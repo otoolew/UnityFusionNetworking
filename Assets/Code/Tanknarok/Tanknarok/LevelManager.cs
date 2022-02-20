@@ -87,7 +87,7 @@ namespace FusionExamples.Tanknarok
 			{
 				yield return new WaitForSeconds(1.0f);
 
-				InputController.fetchInput = false;
+				//TankInputController.fetchInput = false;
 
 				// Despawn players with a small delay between each one
 				Debug.Log("De-spawning all tanks");
@@ -182,7 +182,7 @@ namespace FusionExamples.Tanknarok
 	    Debug.Log($"Respawning All Players");
 	    for (int i = 0; i < PlayerManager.allPlayers.Count; i++)
 	    {
-		    Player player = PlayerManager.allPlayers[i];
+		    TankPlayer player = PlayerManager.allPlayers[i];
 		    Debug.Log($"Respawning Player {i}:{player}");
 		    player.Respawn(0);
 		    yield return new WaitForSeconds(0.3f);
@@ -193,7 +193,7 @@ namespace FusionExamples.Tanknarok
 	    {
 		    if(Runner.IsServer || Runner.IsSharedModeMasterClient)
 			    GameManagerDeprecated.playState = GameManagerDeprecated.PlayState.LOBBY;
-		    InputController.fetchInput = true;
+		    //TankInputController.fetchInput = true;
 		    Debug.Log($"Switched Scene from {prevScene} to {newScene}");
 	    }
 	    else
@@ -207,7 +207,7 @@ namespace FusionExamples.Tanknarok
 				    GameManagerDeprecated.playState = GameManagerDeprecated.PlayState.LEVEL;
 			    }
 			    // Enable inputs after countdow finishes
-			    InputController.fetchInput = true;
+			    //TankInputController.fetchInput = true;
 			    Debug.Log($"Switched Scene from {prevScene} to {newScene}");
 		    }));
 	    }

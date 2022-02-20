@@ -41,7 +41,7 @@ namespace FusionExamples.Tanknarok
 				if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
 				{
 					// Deal Damage
-					Player player = hit.collider.GetComponentInParent<Player>();
+					TankPlayer player = hit.collider.GetComponentInParent<TankPlayer>();
 					if (player != null)
 					{
 						player.ApplyDamage(Vector3.zero, _damage, PlayerRef.None);
