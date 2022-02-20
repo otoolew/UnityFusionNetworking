@@ -11,7 +11,7 @@ namespace Fusion {
       }
     }
 
-    static bool TryGetSceneBuildIndex(string nameOrPath, out int buildIndex) {
+    private static bool TryGetSceneBuildIndex(string nameOrPath, out int buildIndex) {
       nameOrPath = System.IO.Path.GetFileNameWithoutExtension(nameOrPath);
       if (nameOrPath.IndexOf('/') >= 0) {
         buildIndex = SceneUtility.GetBuildIndexByScenePath(nameOrPath);
@@ -36,7 +36,7 @@ namespace Fusion {
       }
     }
 
-    static void GetFileNameWithoutExtensionPosition(string nameOrPath, out int index, out int length) {
+    private static void GetFileNameWithoutExtensionPosition(string nameOrPath, out int index, out int length) {
       var lastSlash = nameOrPath.LastIndexOf('/');
       if (lastSlash >= 0) {
         index = lastSlash + 1;
