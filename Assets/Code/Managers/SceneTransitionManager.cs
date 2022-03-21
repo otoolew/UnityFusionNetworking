@@ -1,14 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
+using Fusion;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SceneTransitionManager : MonoBehaviour
 {
     public static SceneTransitionManager Instance;
+    #region Scene Values
+    [SerializeField] private CanvasGroup fadeScreen;
+    public CanvasGroup FadeScreen { get => fadeScreen; set => fadeScreen = value; }
 
-    [SerializeField] private Animator transitionScreenAnimator;
+    [SerializeField] private float fadeDuration;
+    public float FadeDuration { get => fadeDuration; set => fadeDuration = value; }
+
+    [SerializeField] private bool isFading;
+    public bool IsFading { get => isFading; set => isFading = value; }
+    #endregion
     
-    private void Awake()
+    /*private void Awake()
     {
         if (Instance == null)
         {
@@ -19,39 +29,34 @@ public class SceneTransitionManager : MonoBehaviour
             Destroy(this);
         }
         DontDestroyOnLoad(transform.parent);
-    }
-
-    /*public void ResetLastLevelsIndex()
-    {
-        _lastLevelIndex = 0;
-    }
-
-    public void LoadNextLevel(NetworkRunner runner)
-    {
-        _lastLevelIndex = _lastLevelIndex + 1 >= SceneManager.sceneCountInBuildSettings ? 1 : _lastLevelIndex + 1;
-        string scenePath = System.IO.Path.GetFileNameWithoutExtension(SceneUtility.GetScenePathByBuildIndex(_lastLevelIndex));
-        runner.SetActiveScene(scenePath);
-    }
-
-    public void LoadRandomLevel(NetworkRunner runner)
-    {
-        int sceneIndex = Random.Range(1, SceneManager.sceneCountInBuildSettings);
-        if (_lastLevelIndex == sceneIndex)
-        {
-            sceneIndex = sceneIndex + 1 >= SceneManager.sceneCountInBuildSettings ? sceneIndex - 1 : sceneIndex + 1;
-        }
-        _lastLevelIndex = sceneIndex;
-        string scenePath = System.IO.Path.GetFileNameWithoutExtension(SceneUtility.GetScenePathByBuildIndex(sceneIndex));
-        runner.SetActiveScene(scenePath);
     }*/
 
     public void StartLoadingScreen()
     {
-        transitionScreenAnimator.Play("In");
+        FadeScreen.gameObject.SetActive(true);
+        StartCoroutine(Fade(1));
     }
-
     public void FinishLoadingScreen()
     {
-        transitionScreenAnimator.Play("Out");
+        StartCoroutine(Fade(0));
+    }
+    private IEnumerator Fade(float finalAlpha)
+    {
+        FadeScreen.gameObject.SetActive(true);
+        isFading = true;
+        FadeScreen.blocksRaycasts = true; // Blocks player Clicking on other Scene or UI GameObjects
+        float fadeSpeed = Mathf.Abs(FadeScreen.alpha - finalAlpha) / fadeDuration;
+        while (!Mathf.Approximately(FadeScreen.alpha, finalAlpha))
+        {
+            FadeScreen.alpha = Mathf.MoveTowards(FadeScreen.alpha, finalAlpha,
+                fadeSpeed * Time.deltaTime);
+            yield return null; //Lets the Coroutine finish
+        }
+        isFading = false;
+        FadeScreen.blocksRaycasts = false;
+        if (finalAlpha == 0)
+        {
+            FadeScreen.gameObject.SetActive(false);
+        }
     }
 }

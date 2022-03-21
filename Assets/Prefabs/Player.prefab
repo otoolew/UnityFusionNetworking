@@ -71,9 +71,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
   Character: {fileID: 6599765012038102482, guid: 68aeddbde3751874c841d501aee8bf86, type: 3}
-  _Name: The Nameless
+  _DisplayName: Joe
   _Color: {r: 0, g: 0, b: 0, a: 0}
   _Ready:
     _value: 0
   _InputEnabled:
     _value: 0
+  _Nick: Schmoe
+  _Instance: {fileID: 7979975255234169264}
+  OnPlayerDataSpawnedEvent: {fileID: 11400000, guid: 61be95a41fedd81499f804210043db11, type: 2}

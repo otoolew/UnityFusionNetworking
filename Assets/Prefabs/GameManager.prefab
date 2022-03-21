@@ -223,6 +223,7 @@ GameObject:
   - component: {fileID: 6274724182146606742}
   - component: {fileID: 6274724182146606743}
   - component: {fileID: 6274724182146606744}
+  - component: {fileID: 4894581528293760906}
   m_Layer: 5
   m_Name: LoadScreen
   m_TagString: Untagged
@@ -312,6 +313,18 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!225 &4894581528293760906
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6274724182146606746}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6274724182298944061
 GameObject:
   m_ObjectHideFlags: 0
@@ -918,7 +931,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6274724183888813006}
   - component: {fileID: 5300799631922814029}
-  - component: {fileID: 6274724183888813007}
+  - component: {fileID: 6600041622086690048}
+  - component: {fileID: 3448584412547625536}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -955,9 +969,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 518fad929135bf34e834d8a3f50e92e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _introScene:
-    sceneAsset: {fileID: 102900000, guid: f58209cb822954f178cd0ce52d4b7120, type: 3}
-    scenePath: Assets/Scenes/1.Intro.unity
+  session: {fileID: 0}
+  status: 0
+  LoadLevelManager: {fileID: 6600041622086690048}
+  Player:
+    RawGuidValue: e72d6d346cd174a55b95f70e519243d3
   _playerPrefab: {fileID: 7979975255234169267, guid: e72d6d346cd174a55b95f70e519243d3, type: 3}
   _sessionPrefab: {fileID: 1504012697553745423, guid: 17be35a8d6b4e4219a6291fa00407b61, type: 3}
   _errorBox: {fileID: 6274724182691780849}
@@ -969,7 +985,12 @@ MonoBehaviour:
     PlayMode: 0
     StartMap: 0
     SkipStaging: 0
---- !u!114 &6274724183888813007
+  onPlayerJoined: {fileID: 11400000, guid: e461320136176e54481ad41f1b8d8838, type: 2}
+  onPlayerLeft: {fileID: 11400000, guid: 5fe42084d6e77e149bab756e7b603f93, type: 2}
+  onShutdown: {fileID: 11400000, guid: 8fa9b658a12c96c4199de8d6abfb191f, type: 2}
+  onDisconnect: {fileID: 11400000, guid: bc96744b5d5e87f4faa5f593f011bcac, type: 2}
+  _exitCanvas: {fileID: 6274724182691780851}
+--- !u!114 &6600041622086690048
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -978,19 +999,35 @@ MonoBehaviour:
   m_GameObject: {fileID: 6274724183888813009}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bfd2dd9dbabd4ca69ab04183da7a949b, type: 3}
+  m_Script: {fileID: 11500000, guid: 39c0e6229222cf043bbbeb9800fd04bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowHierarchyWindowOverlay: 1
-  _loadScreen: {fileID: 6274724182146606746}
-  _staging:
+  sceneTransitionManager: {fileID: 3448584412547625536}
+  mainMenuScene:
+    sceneAsset: {fileID: 102900000, guid: f58209cb822954f178cd0ce52d4b7120, type: 3}
+    scenePath: Assets/Scenes/MainMenu.unity
+  lobbyScene:
     sceneAsset: {fileID: 102900000, guid: a792d8e8d40514fd6bd604718649edde, type: 3}
-    scenePath: Assets/Scenes/2.Staging.unity
-  _gameOver:
-    sceneAsset: {fileID: 102900000, guid: 29e9e09f1d7fb4f7294d02b3d5330b03, type: 3}
-    scenePath: Assets/Scenes/5.GameOver.unity
-  _maps:
-  - sceneAsset: {fileID: 102900000, guid: 55768864b781d448c96a331c2a93a54f, type: 3}
+    scenePath: Assets/Scenes/Lobby.unity
+  map0:
+    sceneAsset: {fileID: 102900000, guid: 55768864b781d448c96a331c2a93a54f, type: 3}
     scenePath: Assets/Scenes/3.Map0.unity
-  - sceneAsset: {fileID: 102900000, guid: a59870309d5b74e5ba9a394f7d8ce0c3, type: 3}
+  map1:
+    sceneAsset: {fileID: 102900000, guid: a59870309d5b74e5ba9a394f7d8ce0c3, type: 3}
     scenePath: Assets/Scenes/4.Map1.unity
+--- !u!114 &3448584412547625536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6274724183888813009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bbff8ceb43f40f4d93dfa4b3d18c335, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadeScreen: {fileID: 4894581528293760906}
+  fadeDuration: 1
+  isFading: 0

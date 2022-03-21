@@ -15,7 +15,39 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(NetworkSceneManagerBase))]
 public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 {
-	[SerializeField] private SceneReference _introScene;
+	public static GameManager Instance;
+	private NetworkRunner localRunner;
+	
+	[SerializeField] private Session session;
+	public Session Session 
+	{ 
+		get => session; 
+		set { session = value; session.transform.SetParent(localRunner.transform); } 
+	}
+	
+	#region GameStatus
+	public enum GameStatus
+	{
+		Lobby,
+		Playing,
+		Loading
+	}
+	[SerializeField] private GameStatus status;
+	public GameStatus Status { get => status; set => status = value; }
+	
+	#endregion
+
+	#region LevelManager
+	[Space]
+	public LevelManager LoadLevelManager;
+	#endregion
+
+	#region NetworkAssets
+	public NetworkPrefabRef Player;
+
+	#endregion
+	
+	//[SerializeField] private SceneReference _introScene;
 	[SerializeField] private Player _playerPrefab;
 	[SerializeField] private Session _sessionPrefab;
 	[SerializeField] private ErrorBox _errorBox;
@@ -25,76 +57,64 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	[SerializeField] private bool _autoConnect;
 	[SerializeField] private SessionProps _autoSession = new SessionProps();
 	
-	private NetworkRunner _runner;
-	private NetworkSceneManagerBase _loader;
 	private Action<List<SessionInfo>> _onSessionListUpdated;
 	private readonly Dictionary<PlayerRef, Player> _players = new Dictionary<PlayerRef, Player>();
 	private CharacterInputData _data;
-	private Session _session;
+	
 	private string _lobbyId;
-
-	private static GameManager _instance;
-
-	public static GameManager Instance
-	{
-		get
-		{
-			if (_instance == null)
-				_instance = FindObjectOfType<GameManager>();
-			return _instance;
-		}
-	}
 	
 	public ConnectionStatus ConnectionStatus { get; private set; }
 	public ICollection<Player> Players => _players.Values;
-	public bool IsMaster => _runner != null && (_runner.IsServer || _runner.IsSharedModeMasterClient);
-
+	public bool IsMaster => localRunner != null && (localRunner.IsServer || localRunner.IsSharedModeMasterClient);
+	
+	public FusionEvent onPlayerJoined;
+	public FusionEvent onPlayerLeft;
+	public FusionEvent onShutdown;
+	public FusionEvent onDisconnect;
+	[SerializeField] private GameObject _exitCanvas;
 	private void Awake()
 	{
-		if (_instance == null)
-			_instance = this;
-		
-		if(_instance!=this)
+		if (Instance == null)
+		{
+			Instance = this;
+		}
+		else if (Instance != this)
 		{
 			Destroy(gameObject);
 		}
-		else if(_loader==null)
-		{
-			_loader = GetComponent<NetworkSceneManagerBase>();
+		DontDestroyOnLoad(this);
+	}
+	private void OnEnable()
+	{
+		onPlayerLeft.RegisterResponse(PlayerDisconnected);
 		
-			DontDestroyOnLoad(gameObject);
-
-			if (_autoConnect)
-			{
-				StartSession( _sharedMode ? GameMode.Shared : GameMode.AutoHostOrClient, _autoSession, false);
-			}
-			else
-			{
-				SceneManager.LoadSceneAsync( _introScene );
-			}
-		}
 	}
 
+	private void OnDisable()
+	{
+		onPlayerLeft.RemoveResponse(PlayerDisconnected);
+		
+	}
 	private void Connect()
 	{
-		if (_runner == null)
+		if (localRunner == null)
 		{
 			SetConnectionStatus(ConnectionStatus.Connecting);
 			GameObject go = new GameObject("Session");
 			go.transform.SetParent(transform);
 
 			_players.Clear();
-			_runner = go.AddComponent<NetworkRunner>();
-			_runner.AddCallbacks(this);
+			localRunner = go.AddComponent<NetworkRunner>();
+			localRunner.AddCallbacks(this);
 		}
 	}
 
 	public void Disconnect()
 	{
-		if (_runner != null)
+		if (localRunner != null)
 		{
 			SetConnectionStatus(ConnectionStatus.Disconnected);
-			_runner.Shutdown();
+			localRunner.Shutdown();
 		}
 	}
 
@@ -120,12 +140,12 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		SetConnectionStatus(ConnectionStatus.Starting);
 
 		Debug.Log($"Starting Game Session {props.RoomName}, Player Limit {props.PlayerLimit}, Server Game Mode: {mode}");
-		_runner.ProvideInput = mode != GameMode.Server;
-		_runner.StartGame(new StartGameArgs
+		localRunner.ProvideInput = mode != GameMode.Server;
+		localRunner.StartGame(new StartGameArgs
 		{
 			GameMode = mode,
 			CustomLobbyName = _lobbyId,
-			SceneObjectProvider = _loader,
+			SceneObjectProvider = LoadLevelManager,
 			SessionName = props.RoomName,
 			PlayerCount = props.PlayerLimit,
 			SessionProperties = props.Properties,
@@ -141,7 +161,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		_onSessionListUpdated = onSessionListUpdated;
 
 		SetConnectionStatus(ConnectionStatus.EnteringLobby);
-		var result = await _runner.JoinSessionLobby(SessionLobby.Custom, lobbyId);
+		var result = await localRunner.JoinSessionLobby(SessionLobby.Custom, lobbyId);
 
 		if (!result.Ok) {
 			_onSessionListUpdated = null;
@@ -150,16 +170,12 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		}
 	}
 
-	public Session Session
-	{
-		get => _session;
-		set { _session = value; _session.transform.SetParent(_runner.transform); }
-	}
+
 
 	public void SetPlayer(PlayerRef playerRef, Player player)
 	{
 		_players[playerRef] = player;
-		player.transform.SetParent(_runner.transform);
+		player.transform.SetParent(localRunner.transform);
 		if (Session.Map != null)
 		{ // Late join
 			Session.Map.SpawnAvatar(player, true);
@@ -168,10 +184,10 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 
 	public Player GetPlayer(PlayerRef ply=default)
 	{
-		if (!_runner)
+		if (!localRunner)
 			return null;
 		if (ply == default)
-			ply = _runner.LocalPlayer;
+			ply = localRunner.LocalPlayer;
 		_players.TryGetValue(ply, out Player player);
 		return player;
 	}
@@ -190,36 +206,73 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		Debug.Log($"ConnectionStatus = {status} {reason}");
 	}
 	
-	/// <summary>
-	/// Fusion Event Handlers
-	/// </summary>
-	#region Fusion Event Handlers
+	public void PlayerDisconnected(PlayerRef player, NetworkRunner runner)
+	{
+		runner.Despawn(runner.GetPlayerObject(player).GetComponent<Player>().Instance);
+		runner.Despawn(runner.GetPlayerObject(player));
+	}
+	
+	
+	//Called by button
+	public void LeaveRoom()
+	{
+		_ = LeaveRoomAsync();
+	}
+
+	private async Task LeaveRoomAsync()
+	{
+		await ShutdownRunner();
+	}
+	
+	private async Task ShutdownRunner()
+	{
+		await localRunner?.Shutdown(destroyGameObject: false);
+		Status = GameStatus.Lobby;
+	}
+
+	public void DisconnectedFromSession(PlayerRef player, NetworkRunner runner)
+	{
+		Debug.Log("Disconnected from the session");
+		ExitSession();
+	}
+	public void ExitSession()
+	{
+		_ = ShutdownRunner();
+		LoadLevelManager.ResetLoadedScene();
+		SceneManager.LoadScene(0);
+		_exitCanvas.SetActive(false);
+	}
+
+	public void ExitGame()
+	{
+		_ = ShutdownRunner();
+		Application.Quit();
+	}
+
+	#region INetworkRunnerCallbacks
 	public void OnConnectedToServer(NetworkRunner runner)
 	{
 		Debug.Log("Connected to server");
 		SetConnectionStatus(ConnectionStatus.Connected);
 	}
-
 	public void OnDisconnectedFromServer(NetworkRunner runner)
 	{
 		Debug.Log("Disconnected from server");
 		Disconnect();
 	}
-
 	public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
 	{
 		Debug.Log($"Connect failed {reason}");
 		Disconnect();
 		SetConnectionStatus(ConnectionStatus.Failed, reason.ToString());
 	}
-
 	public void OnPlayerJoined(NetworkRunner runner, PlayerRef playerRef)
 	{
 		Debug.Log($"Player {playerRef} Joined!");
-		if ( _session==null && IsMaster)
+		if ( session==null && IsMaster)
 		{
 			Debug.Log("Spawning world");
-			_session = runner.Spawn(_sessionPrefab, Vector3.zero, Quaternion.identity);
+			session = runner.Spawn(_sessionPrefab, Vector3.zero, Quaternion.identity);
 		}
 
 		if (runner.IsServer || runner.Topology == SimulationConfig.Topologies.Shared && playerRef == runner.LocalPlayer)
@@ -230,7 +283,6 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 
 		SetConnectionStatus(ConnectionStatus.Started);
 	}
-
 	public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
 	{
 		Debug.Log($"{player.PlayerId} disconnected.");
@@ -242,22 +294,19 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		Debug.Log($"OnShutdown {reason}");
 		SetConnectionStatus(ConnectionStatus.Disconnected, reason.ToString());
 
-		if(_runner!=null && _runner.gameObject)
-			Destroy(_runner.gameObject);
+		if(localRunner!=null && localRunner.gameObject)
+			Destroy(localRunner.gameObject);
 
 		_players.Clear();
-		_runner = null;
-		_session = null;
+		localRunner = null;
+		session = null;
 
-		if(Application.isPlaying)
-			SceneManager.LoadSceneAsync(_introScene);
+		LoadLevelManager.LoadMainMenu();
 	}
-
 	public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token)
 	{
 		request.Accept();
 	}
-
 	public void OnInput(NetworkRunner runner, NetworkInput input)
 	{
 		/*// Persistent button flags like GetKey should be read when needed so they always have the actual state for this tick
@@ -270,13 +319,11 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		// Clear the flags so they don't spill over into the next tick unless they're still valid input.
 		_data.Buttons = 0;*/
 	}
-
 	public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
 	{
 		SetConnectionStatus(ConnectionStatus.InLobby);
 		_onSessionListUpdated?.Invoke(sessionList);
 	}
-
 	public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
 	public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
 	public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
@@ -284,12 +331,8 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	public void OnSceneLoadDone(NetworkRunner runner) { }
 	public void OnSceneLoadStart(NetworkRunner runner) { }
 	public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
-
 	#endregion
-
-	public class GameState
-	{
-	}
+	
 }
 
 public enum ConnectionStatus

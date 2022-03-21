@@ -171,7 +171,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1095931940030044792}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.66139144
+  m_Size: 0.38291666
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -349,7 +349,7 @@ GameObject:
   - component: {fileID: 1095931938058752742}
   - component: {fileID: 1095931938058752737}
   m_Layer: 5
-  m_Name: ShowNewSessionUI
+  m_Name: NewSessionButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4124,7 +4124,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1095931939993950003
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4238,8 +4238,8 @@ RectTransform:
   m_Father: {fileID: 1095931938356828565}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.33860856}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}

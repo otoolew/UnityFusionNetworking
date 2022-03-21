@@ -35,6 +35,8 @@
     "InvokeRenderInBatchMode": true,
     "MaxNetworkedObjectCount": 8192,
     "NetworkIdIsObjectName": false,
+    "EnableHostMigration": false,
+    "HostMigrationSnapshotInterval": 60,
     "Simulation": {
         "InputDataWordCount": 0,
         "TickRate": 60,
@@ -153,5 +155,6 @@
         "Assembly-CSharp",
         "Assembly-CSharp-firstpass"
     ],
-    "UseSerializableDictionary": true
+    "UseSerializableDictionary": true,
+    "NullChecksForNetworkedProperties": true
 }

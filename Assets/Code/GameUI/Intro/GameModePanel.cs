@@ -8,7 +8,11 @@ namespace GameUI.Intro
 
 		private void Awake()
 		{
-			_sessionsPanel.Hide();
+			if (_sessionsPanel != null)
+			{
+				_sessionsPanel.Hide();
+			}
+			
 		}
 		public void OnGameModeSelected(int mode)
 		{

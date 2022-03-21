@@ -3,11 +3,6 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-
-namespace SimpleCharacter
-{
-	
-}
 /// <summary>
 /// Visual representation of a Player - the Character is instantiated by the map once it's loaded.
 /// Collider-based character controller movement (not related to Unity's CharacterController type).
@@ -25,6 +20,9 @@ public class Character : NetworkBehaviour
 	#endregion
 	
 	#region Components
+	[SerializeField] private PlayerCamera playerCamera;
+	public PlayerCamera PlayerCamera { get => playerCamera; set => this.playerCamera = value; }
+	
 	[SerializeField] private NetworkCharacterControllerPrototype networkCharacterController;
 	public NetworkCharacterControllerPrototype NetworkCharacterController { get => networkCharacterController; set => networkCharacterController = value; }
 	
@@ -54,6 +52,7 @@ public class Character : NetworkBehaviour
 	
 	private void CacheComponents() 
 	{
+		if (playerCamera == null) PlayerCamera = FindObjectOfType<PlayerCamera>();
 		if (networkCharacterController == null) NetworkCharacterController = GetComponent<NetworkCharacterControllerPrototype>();
 		if (meshRenderer == null) MeshRenderer = GetComponent<MeshRenderer>();
 		if (nameTagText == null) NameTagText = GetComponent<Text>();
@@ -77,22 +76,17 @@ public class Character : NetworkBehaviour
 		CacheComponents();
 		
 		player = GameManager.Instance.GetPlayer(Object.InputAuthority);
-		nameTagText.text = player.Name;
+		nameTagText.text = player.DisplayName;
 		meshRenderer.material.color = player.Color;
-		
-		/*
+
 		if (Object.HasInputAuthority)
 		{
-			if (_camera == null)
+			PlayerCamera = Camera.main?.transform.GetComponent<PlayerCamera>();
+			if (PlayerCamera != null)
 			{
-				_camera = Camera.main.transform;
+				PlayerCamera.AssignFollowTarget(transform);
 			}
-
-			Transform t = gameObject.transform;
-			Vector3 p = t.position;
-			_camera.position = p - 10 * t.forward + 10 * Vector3.up;
-			_camera.LookAt(p + 2 * Vector3.up);
-		}*/
+		}
 	}
 	
 	public override void FixedUpdateNetwork() 
