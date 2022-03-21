@@ -141,6 +141,9 @@ GameObject:
   - component: {fileID: 4610285444781331943}
   - component: {fileID: 4610285444781331942}
   - component: {fileID: 100808178373120476}
+  - component: {fileID: 8463747267907675443}
+  - component: {fileID: 7407762261044817445}
+  - component: {fileID: 8784751441255670408}
   m_Layer: 0
   m_Name: Character_Base
   m_TagString: Untagged
@@ -188,6 +191,8 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 4610285444781331942}
   - {fileID: 100808178373120476}
+  - {fileID: 8463747267907675443}
+  - {fileID: 8784751441255670408}
   SimulationBehaviours: []
 --- !u!114 &4610285444781331942
 MonoBehaviour:
@@ -203,10 +208,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
   networkCharacterController: {fileID: 0}
+  networkTransform: {fileID: 0}
+  networkRigidbody: {fileID: 0}
+  _MoveDirection: {x: 0, y: 0, z: 0}
+  _LookDirection: {x: 0, y: 0, z: 0}
+  TransformLocal: 0
+  Speed: 6
   _name: {fileID: 4610285446266597328}
   _mesh: {fileID: 4610285446578239583}
-  moveDirection: {x: 0, y: 0, z: 0}
-  aimDirection: {x: 0, y: 0, z: 0}
   _CurrentState: 0
 --- !u!114 &100808178373120476
 MonoBehaviour:
@@ -254,6 +263,78 @@ MonoBehaviour:
     MaxSlope: 60
     MaxSlopeSpeed: 5
     _gravity: {x: 0, y: -9.81, z: 0}
+--- !u!114 &8463747267907675443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4610285444781331945}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95045f9d29987a64f82f7777d1f39436, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interpolationDataSource: 0
+  character: {fileID: 0}
+  mouseLookMask:
+    serializedVersion: 2
+    m_Bits: 0
+  transformLocal: 0
+  moveDirection: {x: 0, y: 0, z: 0}
+  lookDirection: {x: 0, y: 0, z: 0}
+--- !u!143 &7407762261044817445
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4610285444781331945}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8784751441255670408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4610285444781331945}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 378411a89480da345945c2f888327a2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interpolationDataSource: 0
+  InterpolationSpace: 0
+  InterpolationTarget: {fileID: 0}
+  InterpolateErrorCorrection: 1
+  InterpolatedErrorCorrectionSettings:
+    MinRate: 3.3
+    MaxRate: 10
+    PosBlendStart: 0.25
+    PosBlendEnd: 1
+    PosMinCorrection: 0.025
+    PosTeleportDistance: 2
+    RotBlendStart: 0.1
+    RotBlendEnd: 0.5
+    RotTeleportRadians: 1.5
+  gravity: -20
+  jumpImpulse: 8
+  acceleration: 10
+  braking: 10
+  maxSpeed: 2
+  rotationSpeed: 15
+  _IsGrounded: 0
+  _Velocity: {x: 0, y: 0, z: 0}
 --- !u!1 &4610285446266597330
 GameObject:
   m_ObjectHideFlags: 0

@@ -97,7 +97,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AoiMode: 0
+  DefaultPropertyGroups: []
   DestroyWhenStateAuthorityLeaves: 0
+  AllowStateAuthorityOverride: 0
   AoiPosition: {fileID: 0}
   Flags: 3073
   NetworkGuid:
@@ -137,9 +139,18 @@ MonoBehaviour:
   WordOffset: 0
   WordCount: 0
   _interpolationDataSource: 0
-  _interpolationTarget: {fileID: 0}
-  _space: 0
-  _syncDragAndMass: 0
+  InterpolationTarget: {fileID: 0}
+  InterpolateErrorCorrection: 1
+  InterpolatedErrorCorrectionSettings:
+    MinRate: 3.3
+    MaxRate: 10
+    PosBlendStart: 0.25
+    PosBlendEnd: 1
+    PosMinCorrection: 0.025
+    PosTeleportDistance: 2
+    RotBlendStart: 0.1
+    RotBlendEnd: 0.5
+    RotTeleportRadians: 1.5
 --- !u!1 &815038363609415738
 GameObject:
   m_ObjectHideFlags: 0
@@ -201,7 +212,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AoiMode: 0
+  DefaultPropertyGroups: []
   DestroyWhenStateAuthorityLeaves: 0
+  AllowStateAuthorityOverride: 0
   AoiPosition: {fileID: 0}
   Flags: 2305
   NetworkGuid:
@@ -242,9 +255,18 @@ MonoBehaviour:
   WordOffset: 0
   WordCount: 0
   _interpolationDataSource: 0
-  _interpolationTarget: {fileID: 815038364241965670}
-  _space: 0
-  _syncDragAndMass: 0
+  InterpolationTarget: {fileID: 815038364241965670}
+  InterpolateErrorCorrection: 1
+  InterpolatedErrorCorrectionSettings:
+    MinRate: 3.3
+    MaxRate: 10
+    PosBlendStart: 0.25
+    PosBlendEnd: 1
+    PosMinCorrection: 0.025
+    PosTeleportDistance: 2
+    RotBlendStart: 0.1
+    RotBlendEnd: 0.5
+    RotTeleportRadians: 1.5
 --- !u!1 &815038363759353808
 GameObject:
   m_ObjectHideFlags: 0

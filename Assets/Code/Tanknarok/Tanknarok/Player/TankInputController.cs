@@ -205,6 +205,7 @@ namespace FusionExamples.Tanknarok
 		public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) { }
 		public void OnSceneLoadDone(NetworkRunner runner) { }
 		public void OnSceneLoadStart(NetworkRunner runner) { }
+		public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
 	}
 
 	

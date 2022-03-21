@@ -128,6 +128,7 @@ MonoBehaviour:
   WordOffset: 0
   WordCount: 0
   _interpolationDataSource: 0
+  _MovementDirection: {x: 0, y: 0, z: 0}
   TransformLocal: 0
   Speed: 6
 --- !u!114 &9002791779461781453
@@ -145,9 +146,7 @@ MonoBehaviour:
   WordOffset: 0
   WordCount: 0
   _interpolationDataSource: 0
-  _interpolationTarget: {fileID: 2402698497372269455}
-  DetachInterpTarget: 0
-  SyncParent: 1
+  InterpolationTarget: {fileID: 2402698497372269455}
   InterpolateErrorCorrection: 1
   InterpolatedErrorCorrectionSettings:
     MinRate: 3.3
@@ -159,9 +158,6 @@ MonoBehaviour:
     RotBlendStart: 0.1
     RotBlendEnd: 0.5
     RotTeleportRadians: 1.5
-  SyncScale: 0
-  Space: 0
-  SyncDragAndMass: 0
 --- !u!58 &7984011328971896858
 CircleCollider2D:
   m_ObjectHideFlags: 0

@@ -1,26 +1,64 @@
 using Fusion;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
+
+namespace SimpleCharacter
+{
+	
+}
 /// <summary>
 /// Visual representation of a Player - the Character is instantiated by the map once it's loaded.
-/// This class handles camera tracking and player movement and is destroyed when the map is unloaded.
-/// (I.e. the player gets a new avatar in each map)
+/// Collider-based character controller movement (not related to Unity's CharacterController type).
+/// Replicates both the internal state (Velocity, MaxSpeed, etc) and the Unity Transform data from the
+/// NetworkObject.StateAuthority to all other peers. Add this component to a GameObject to control
+/// movement and sync the position and/or rotation accurately, including client-side prediction.
 /// </summary>
 
-[RequireComponent(typeof(NetworkCharacterController))]
+[RequireComponent(typeof(NetworkCharacterControllerPrototype))]
 public class Character : NetworkBehaviour
 {
-	[SerializeField] private NetworkCharacterController networkCharacterController;
+	#region Player
+	[SerializeField] private Player player;
+	public Player Player { get => player; set => player = value; }
+	#endregion
 	
-	[SerializeField] private Text _name;
-	[SerializeField] private MeshRenderer _mesh;
+	#region Components
+	[SerializeField] private NetworkCharacterControllerPrototype networkCharacterController;
+	public NetworkCharacterControllerPrototype NetworkCharacterController { get => networkCharacterController; set => networkCharacterController = value; }
+	
+	[SerializeField] private MeshRenderer meshRenderer;
+	public MeshRenderer MeshRenderer { get => meshRenderer; set => meshRenderer = value; }
+	
+	[SerializeField] private Text nameTagText;
+	public Text NameTagText { get => nameTagText; set => nameTagText = value; }
+	#endregion
 
-	private Transform _camera;
-	private Player _player;
+	#region Networked Properties
+	[Networked]public Vector3 MoveDirection { get; set; }
+	[Networked]public Vector3 LookDirection { get; set; }
+	#endregion
+	
+	public bool TransformLocal = false;
 
-	[SerializeField] private Vector3 moveDirection;
-	[SerializeField] private Vector3 aimDirection;
+	[DrawIf(nameof(ShowSpeed), DrawIfHideType.Hide, DoIfCompareOperator.NotEqual)]
+	public float Speed = 6f;
+	bool HasNCC => GetComponent<NetworkCharacterControllerPrototype>();
+	bool ShowSpeed => this && !TryGetComponent<NetworkCharacterControllerPrototype>(out _);
+	
+	public void Awake() 
+	{
+		CacheComponents();
+	}
+	
+	private void CacheComponents() 
+	{
+		if (networkCharacterController == null) NetworkCharacterController = GetComponent<NetworkCharacterControllerPrototype>();
+		if (meshRenderer == null) MeshRenderer = GetComponent<MeshRenderer>();
+		if (nameTagText == null) NameTagText = GetComponent<Text>();
+	}
+	
 	
 	public enum State
 	{
@@ -36,10 +74,13 @@ public class Character : NetworkBehaviour
 	
 	public override void Spawned()
 	{
-		_player = GameManager.Instance.GetPlayer(Object.InputAuthority);
-		_name.text = _player.Name;
-		_mesh.material.color = _player.Color;
+		CacheComponents();
 		
+		player = GameManager.Instance.GetPlayer(Object.InputAuthority);
+		nameTagText.text = player.Name;
+		meshRenderer.material.color = player.Color;
+		
+		/*
 		if (Object.HasInputAuthority)
 		{
 			if (_camera == null)
@@ -51,21 +92,46 @@ public class Character : NetworkBehaviour
 			Vector3 p = t.position;
 			_camera.position = p - 10 * t.forward + 10 * Vector3.up;
 			_camera.LookAt(p + 2 * Vector3.up);
-		}
+		}*/
 	}
-
-	public override void Render()
+	
+	public override void FixedUpdateNetwork() 
 	{
-		if (Object.HasInputAuthority)
-		{
-			if (_camera == null)
-				_camera = Camera.main.transform;
-			
-			Transform t = gameObject.transform;
-			Vector3 p = t.position;
-			_camera.position = p - 10 * t.forward + 10 * Vector3.up;
-			_camera.LookAt(p + 2 * Vector3.up);
+		if (Runner.Config.PhysicsEngine == NetworkProjectConfig.PhysicsEngines.None) {
+			return;
 		}
+		
+		if (GetInput(out CharacterInputData input))
+		{
+			Vector3 direction = default;
+
+			if (input.IsDown(CharacterInputData.FORWARD))
+			{
+				direction += TransformLocal ? transform.forward : Vector3.forward;
+			}
+
+			if (input.IsDown(CharacterInputData.BACKWARD))
+			{
+				direction -= TransformLocal ? transform.forward : Vector3.forward;
+			}
+
+			if (input.IsDown(CharacterInputData.LEFT))
+			{
+				direction -= TransformLocal ? transform.right : Vector3.right;
+			}
+
+			if (input.IsDown(CharacterInputData.RIGHT))
+			{
+				direction += TransformLocal ? transform.right : Vector3.right;
+			}
+
+			direction = direction.normalized;
+			MoveDirection = direction;
+			
+			Move(direction);
+			LookAt(input.AimDirection);
+		}
+		
 	}
 
 	#region State Change
@@ -80,20 +146,20 @@ public class Character : NetworkBehaviour
 		switch (CurrentState)
 		{
 			case State.SPAWNING:
-				Debug.Log($"[{_player.Id}] Player {CurrentState}");
+				Debug.Log($"[{player.Id}] Player {CurrentState}");
 				// TODO Play Spawning Effect
 				break;
 			case State.ACTIVE:
-				Debug.Log($"[{_player.Id}] Player {CurrentState}");
+				Debug.Log($"[{player.Id}] Player {CurrentState}");
 				// Do any clean up here
 				// TODO Stop Spawning Effect
 				break;
 			case State.DEAD:
-				Debug.Log($"[{_player.Id}] Player {CurrentState}");
+				Debug.Log($"[{player.Id}] Player {CurrentState}");
 				// TODO Spawn Dead Body Here
 				break;
 			case State.DESPAWNING:
-				Debug.Log($"[{_player.Id}] Player {CurrentState}");
+				Debug.Log($"[{player.Id}] Player {CurrentState}");
 				// TODO Play Despawning Effect
 				break;
 		}
@@ -101,24 +167,77 @@ public class Character : NetworkBehaviour
 	#endregion
 
 	#region Character Movement
-	/// <summary>
-	/// Set the direction of movement and aim
-	/// </summary>
-	public void SetDirections(Vector3 moveDirection, Vector3 aimDirection)
-	{
-		this.moveDirection = moveDirection;
-		this.aimDirection = aimDirection;
-	}
-
+	
 	public void Move()
 	{
 		if (CurrentState == State.ACTIVE)
 		{
-			networkCharacterController.Move(moveDirection);
+			networkCharacterController.Move(MoveDirection);
 		}
 	}
-	
-
+	public void Move(Vector3 direction)
+	{
+		if (CurrentState == State.ACTIVE)
+		{
+			networkCharacterController.Move(direction);
+		}
+	}
+	public void LookAt()
+	{
+		if (CurrentState == State.ACTIVE)
+		{
+			networkCharacterController.Move(LookDirection);
+		}
+	}
+	public void LookAt(Vector3 direction)
+	{
+		if (CurrentState == State.ACTIVE)
+		{
+			networkCharacterController.Move(LookDirection);
+		}
+	}
+	public void Jump()
+	{
+		if (networkCharacterController)
+		{
+			networkCharacterController.Jump();
+		}
+		else
+		{
+			MoveDirection += (TransformLocal ? transform.up : Vector3.up);
+		}
+	}
 	#endregion
+
+	/// <summary>
+	/// Control the rotation of hull and turret
+	/// </summary>
+	private void SetMeshOrientation()
+	{
+		// To prevent the tank from making a 180 degree turn every time we reverse the movement direction
+		// we define a driving direction that creates a multiplier for the hull.forward. This allows us to
+		// drive "backwards" as well as "forwards"
+		/*switch (_driveDirection)
+		{
+			case DriveDirection.FORWARD:
+				if (moveDirection.magnitude > 0.1f && Vector3.Dot(_lastMoveDirection, moveDirection.normalized) < 0f)
+					_driveDirection = DriveDirection.BACKWARD;
+				break;
+			case DriveDirection.BACKWARD:
+				if (moveDirection.magnitude > 0.1f && Vector3.Dot(_lastMoveDirection, moveDirection.normalized) < 0f)
+					_driveDirection = DriveDirection.FORWARD;
+				break;
+		}*/
+
+		//float multiplier = _driveDirection == DriveDirection.FORWARD ? 1 : -1;
+
+		/*if (moveDirection.magnitude > 0.1f)
+			_hull.forward = Vector3.Lerp(_hull.forward, moveDirection * multiplier, Time.deltaTime * 10f);*/
+
+		if (LookDirection.sqrMagnitude > 0)
+		{
+			
+		}
+	}
 
 }

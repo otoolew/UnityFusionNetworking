@@ -1,6 +1,268 @@
+# 1.1.0
+
+## RC Nightly
+
+### Build 440 (Mar 17, 2022)
+
+**Improvements**
+
+- `Hitbox` and `HitboxRoot` `DrawGizmos` methods are now virtual and use a color configurable in the Inspector
+
+# 1.0.0
+
+## F
+
+### Build 439 (Mar 17, 2022)
+
+- Official release
+
 # 0.13.0
 
 ## RC Nightly
+
+### Build 438 (Mar 16, 2022)
+
+**Improvements**
+
+- `NetworkTransform` Teleport API now has the option to interpolate forward (based on From state) or backwards (default, based on To state)
+
+**Changes**
+
+- Transform behaviours (NT/NRB/NCCP) now have a virtual implementation of the Unity `OnEnable` callback
+- `NetworkObject.Runner` gets set for predicted spawns
+
+### Build 437 (Mar 15, 2022)
+
+**What's New**
+
+- `[Fusion.NetworkAssemblyIgnore]` assembly level attribute; if added to an assembly, Fusion will not scan it for networked types
+
+**Changes**
+
+- A warning is emit if a `INetworkStruct` uses `string` property with backing field
+
+**Bug Fixes**
+
+- Fixed: `NetworkRunner.IsShutdown` being false when exiting play mode / handling `OnApplicationQuit`.  
+Test: More tests. Added `CreateSimplePrefab` and `CreateRunner`
+- Fixed: NRB now normalizes the networked quaternion before setting it to the `Rigidbody.rotation` field, avoiding issues with values considered as not having unit length
+- Fixed: Codegen: `NetworkString<>` raising an assertion if used in ref and pointer properties
+- Fixed: Issue with FixedUpdateNetwork being called while InSimulation was false
+
+### Build 436 (Mar 14, 2022)
+
+**Breaking Changes**
+
+- `NetworkString` lengths are now narrowed down to: 2, 4, 8, 16, 32, 64, 128, 256, 512
+
+**Changes**
+
+- SimulationCount in FusionStats has been broken into two stats now, ForwardSimCount and ResimCount. This altered the enum, so some existing FusionStats implementations may need to be updated
+
+**Bug Fixes**
+
+- Fixed: `NetworkObject` and `NetworkRunner` throwing `NullReferenceExceptions` when some of their properties are accessed with no simulation is running
+
+### Build 435 (Mar 11, 2022)
+
+**What's New**
+
+- Get(), Set(), and IndexOf() methods added to NetworkLinkedList<T>
+
+**Bug Fixes**
+
+- Fixed: Shared non-master clients not attaching to a deactivated scene objects
+- Fixed: `NetworkRunner.EnsureRunnerSceneIsActive` not changing active scene in multiple peer mode
+- Fixed: Some issues relating to handing over state authority in shared mode
+
+### Build 434 (Mar 10, 2022)
+
+**What's New**
+
+- Host Migration Support
+
+**Changes**
+
+- Enable connect attempt to Symmetric NATs
+
+### Build 433 (Mar 09, 2022)
+
+**Bug Fixes**
+
+- Fixed: Realtime Region Ping method
+- Fixed: Issue in the first interpolated rendering of a predict-spawned object with `NetworkTransform`
+
+### Build 432 (Mar 08, 2022)
+
+**What's New**
+
+- Added NetworkBehaviour.CopyStateFrom
+- Added NetworkObject.CopyStateFrom
+
+**Bug Fixes**
+
+- Fixed: Issue with out of bounds write on very large objects in EC mode
+
+### Build 431 (Mar 07, 2022)
+
+**What's New**
+
+- NanoSockets for AppleSilicon M1
+- Base Switch NanoSockets project
+- PS4 NanoSockets
+- Link to PS4 static libs
+- Basic PS4 NanoSockets project
+- `Fusion.TextWriterLogger`
+
+**Changes**
+
+- Move Xbox NanoSockets
+- Switch NanoSockets Project
+- NanoSockets source for Switch Build
+- Setup NanoSockets for Switch
+- Ignore NanoSockets Switch Builds
+- Rename PS4 NanoSockets output file
+- PS4 NanoSockets Cleanup
+- PS4 NanoSockets build StaticLibrary
+- PS4 Macros cleanup
+- `Fusion.ConsoleLogger` made public
+
+**Removed**
+
+- PS4 NanoSocket Unused static lib refs
+
+**Bug Fixes**
+
+- Fixed: Path of SwitchMacros.h
+- Fixed: Insertion and ordering of non-networkobject attached simulation behaviours
+
+### Build 430 (Mar 04, 2022)
+
+**Breaking Changes**
+
+- RPC local invokes for host (in Host mode) have `RpcInfo.Source` set to `PlayerRef.None` (used to be: Host's local `PlayerRef`). If you want the old behavior back RPC, use `[Rpc(HostMode = RpcHostMode.SourceIsHostPlayer)]`. Note that in such case clients will also see host's player in `RpcInfo.Source`
+
+**What's New**
+
+- Unity-side logger implementation - FusionUnityLogger
+
+**Changes**
+
+- Deprecated Log.Init(Action<string>, Action<string>, Action<string>, Action<string>)
+
+**Bug Fixes**
+
+- Fixed: AssertExceptions being thrown when quitting application with scene `NetworkObjects` that never have been activated
+- Fixed: AssertExceptions being thrown when exiting play mode with scene `NetworkObjects` that never have been activated
+
+### Build 429 (Mar 03, 2022)
+
+**What's New**
+
+- `NetworkCharacterControllerPrototype`, a prototype behaviour extending the base `NetworkTransform` that uses Unity's Character Controller
+- `Log.Init` parameters: `useColorTags` and `usePrefix`
+- [ScriptHelp(BackColor = EditorHeaderBackColor.None)] attribute can be added to custom Fusion scripts do disable the inspector Fusion header graphics, and revert to the normal Script field
+
+**Changes**
+
+- `RpcInfo.Source` value for host is now controlled with `Rpc.HostMode`. When the host calls RPC, `[Rpc(HostMode = RpcHostMode.SourceIsServer)]` results with `RpcInfo.Source` being none and `[Rpc(HostMode = RpcHostMode.SourceIsHostPlayer)]` results with `RpcInfo.Source` being equal to the host's local player
+
+**Bug Fixes**
+
+- Fixed: `RpcInfo.Source` inconsistency for when RPC is invoked by the host. Was: local player for local invoke, none for remote clients. Is: none for local invoke and remote clients by default, can be changed with `Rpc.HostMode`
+- Fixed: Issue with AllowStateAuthorityOverride not working always
+- Fixed: Objects not receiving callbacks when reused from a pool
+
+### Build 428 (Mar 02, 2022)
+
+**Bug Fixes**
+
+- Fixed: `NetworkArray<float>` property with `[Accuracy(0)]` causing Il2cpp error
+
+### Build 427 (Mar 01, 2022)
+
+**What's New**
+
+- `NetworkTransform` now implements `IPredictedSpawnBehaviour` and provides built-in support to interpolated rendering and prediction error correction.  
+ Behaviours that change the Transform state of the predict-spawned object should either be ordered before NT or call `PredictedSpawnCacheTransformState` after doing so
+
+### Build 426 (Feb 28, 2022)
+
+**Changes**
+
+- Objects are despawned when a runner is shutdown
+
+### Build 424 (Feb 25, 2022)
+
+**What's New**
+
+- `SimulationBehaviour.CanReceiveCallback`
+
+**Improvements**
+
+- `NetworkObject`: checks if the object has been properly despawned (in Debug builds)
+
+**Changes**
+
+- `NetworkObject` despawn is now instantaneous (was: deferred until the end of a tick)
+- `NetworkObject` can be destroyed safely with `UnityEngine.Destroy` and don't need a despawn when scene changes
+- `NetworkObject`s are despawned when exiting play mode
+- `NetworkRunner.GetInterfaceListHead(Type, int)` made obsolete, use `NetworkRunner.GetInterfaceListHead(Type, int, out SimulationBehaviour)` instead
+
+**Removed**
+
+- `Behaviour.IsEnabled`
+
+**Bug Fixes**
+
+- Fixed: NanoSockets for Intel Macs
+- Fixed: Issues with packet corruption when client sending too large inputs or server sending to much state in eventual consistency mode
+
+### Build 423 (Feb 24, 2022)
+
+**What's New**
+
+- Support DisableSessionCreation in SharedMode
+- Reworked transform behaviours: `NetworkTransform`, `NetworkRigidbody` and `NetworkCharacterController`.
+    This build brings an important rework to all core transform behaviours. Here is a summary of why we needed those modifications, what to expect and the most important changes.
+	
+	**Why:**
+    - The previously available behaviours (NT/NRB/NCC) aimed to solve a very broad range of problems and scenarios, which led to a complex and hard to maintain codebase that sometimes misbehaved on core use-cases.  
+    - While possible, user extension of these default functionalities and options provided by those behaviours was not easy. This prevented users from customizing them to their needs, often relying on modifications of the core implementation.  
+    - NCC was unstable even when steering over simple scene colliders. The release of the new advanced KCC package further reduced its value even as a prototyping tool.  
+    
+	**What to expect:**  
+    - New behaviours are easier to configure and are expected to be more stable in most common use-cases.  
+    - They are also easier to extend and adjust for game specific needs. A new prototype component exemplifies exactly that (more below).  
+    
+	**Important changes:**  
+    - All previously existing core transform behaviours are marked as obsolete and renamed, but were kept in the core libraries. Although their usage is no longer encouraged and provided support for them will be limited, they are still available if you want to upgrade but need more time to switch to the new behaviours.  
+    - All new behaviours have the same name as the previous ones (e.g. `NetworkTransform`), except for `NetworkCharacterController` and `NetworkTransformAnchor`, which don't have a counterpart on new behaviours. To make this possible, old behaviours were renamed and have Obsolete added at the end of the class name: e.g. old `NetworkRigidbody` will be available as `NetworkRigidbodyObsolete` (the class is also marked as obsolete). Keeping the same name on the new behaviours also means that your existing prefabs and scene objects will automatically upgrade to use the new ones.  
+    - There is no longer a core NCC behaviour (existing one is kept, but marked as obsolete). Instead, a new `NetworkCharacterControllerPrototype` is provided in source code on the SDK: it uses Unity's Character Controller and exemplifies how the base `NetworkTransform` behaviour can be extended. With this new prototype behaviour we aim to provide a simple, yet stable prototyping tool, while the KCC package remains the recommended one for production and more complex use-cases.  
+    - Transform data is now always synchronized in world space. This is important to ensure Area of Interest (AOI) management works as expected. However, a configurable Interpolation Space will be available for all transform behaviours, so that the view (interpolation target) can be interpolated as if the networked data is in local space, allowing nested transforms to visually behave as expected. Interpolated prediction error correction is still always performed in world space and more complex hierarchies might require thoughtful control of the interpolation source, space and targets' hierarchies.  
+    - There is no synchronization of neither scale nor parenting/hierarchy on the transform behaviours. If you need to synchronize these types of data/relations, the suggested approach is to extend the core behaviours, synchronizing scale in local space and controlling a decoupled hierarchy of the interpolation targets.  
+    - Performing non-interpolated teleports no longer requires pre-steps. Optional interpolation velocities can be provided in order to smooth the transition. Check the new teleport API documentation for more details
+
+**Improvements**
+
+- Networked transform behaviours now have prediction error computed based on both From and To states used for rendering, instead of only on the latter
+
+**Bug Fixes**
+
+- Fixed: Issue with area of interest calculations when no compression was used for position
+- Fixed: Detection of rotation prediction error on NetworkTransform and derived behaviours
+
+### Build 419 (Feb 22, 2022)
+
+**What's New**
+
+- `NetworkProjectConfig.NullChecksForNetworkedProperties`
+
+**Changes**
+
+- RpcInvokeInfo reworked
+- Weaver: Rpcs always check if `NetworkObject` has been attached to (used to be: only with debug DLLs)
+- Weaver: `[Networked]` properties check if `NetworkObject` has been attached to if `NetworkProjectConfig.NullChecksForNetworkedProperties` is set (used to be: only with debug DLLs)
 
 ### Build 416 (Feb 18, 2022)
 

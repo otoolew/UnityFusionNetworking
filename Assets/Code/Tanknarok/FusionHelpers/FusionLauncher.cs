@@ -188,5 +188,6 @@ namespace FusionExamples.FusionHelpers
       if(_runner!=null && _runner.gameObject)
 	    	Destroy(_runner.gameObject);
 		}
+		public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
 	}
 }

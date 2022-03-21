@@ -2869,8 +2869,8 @@ namespace Fusion.Editor {
 
     protected override void OnGUIInternal(Rect position, SerializedProperty property, GUIContent label) {
 
-      var length = property.FindPropertyRelativeOrThrow(nameof(NetworkString<_1>._length));
-      var data = property.FindPropertyRelativeOrThrow($"{nameof(NetworkString<_1>._data)}.Data");
+      var length = property.FindPropertyRelativeOrThrow(nameof(NetworkString<_2>._length));
+      var data = property.FindPropertyRelativeOrThrow($"{nameof(NetworkString<_2>._data)}.Data");
 
       data.UpdateFixedBuffer(_read, _write, false);
 
@@ -3599,9 +3599,7 @@ namespace Fusion.Editor {
 namespace Fusion.Editor {
 
   using UnityEngine;
-  using System;
   using UnityEditor;
-  using System.Collections.Generic;
 
   internal class ScriptHeaderAttributeDrawer : PropertyDrawer {
 
@@ -3612,34 +3610,45 @@ namespace Fusion.Editor {
     internal new Attribute attribute => (Attribute)base.attribute;
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+      var settings = attribute.Settings;
 
-      if ( attribute.Settings == null ) {
+      if (settings == null ) {
         EditorGUI.PropertyField(position, property, label, property.isExpanded);
         return;
       }
 
-      // ensures exact height correctness (might slightly different due to scaling)
-      position.height = 24f;
+      bool useEnhancedHeader = settings.BackColor != EditorHeaderBackColor.None;
+
+      // ensures exact height correctness (might slightly differ due to scaling)
+      position.height = useEnhancedHeader ? 24f : 18;
 
       var scriptType = property.serializedObject.targetObject.GetType();
 
       EditorGUIUtility.AddCursorRect(position, MouseCursor.Link);
 
-      using (new FusionEditorGUI.EnabledScope(true)) {
-        Event e = Event.current;
-        if (e.type == EventType.MouseDown && position.Contains(e.mousePosition)) {
-          if (e.clickCount == 1) {
-            if (!string.IsNullOrEmpty(attribute.Settings.Url)) {
-              Application.OpenURL(attribute.Settings.Url);
+      if (useEnhancedHeader) {
+        using (new FusionEditorGUI.EnabledScope(true)) {
+          Event e = Event.current;
+          if (e.type == EventType.MouseDown && position.Contains(e.mousePosition)) {
+            if (e.clickCount == 1) {
+              if (!string.IsNullOrEmpty(settings.Url)) {
+                Application.OpenURL(settings.Url);
+              }
+              EditorGUIUtility.PingObject(MonoScript.FromMonoBehaviour(property.serializedObject.targetObject as MonoBehaviour));
+            } else {
+              AssetDatabase.OpenAsset(MonoScript.FromMonoBehaviour(property.serializedObject.targetObject as MonoBehaviour));
             }
-            EditorGUIUtility.PingObject(MonoScript.FromMonoBehaviour(property.serializedObject.targetObject as MonoBehaviour));
-          } else {
-            AssetDatabase.OpenAsset(MonoScript.FromMonoBehaviour(property.serializedObject.targetObject as MonoBehaviour));
           }
+          var scriptName = string.IsNullOrEmpty(settings.Title) ? scriptType.Name : settings.Title;
+          EditorGUI.LabelField(position, ObjectNames.NicifyVariableName(scriptName).ToUpper(), FusionGUIStyles.GetFusionHeaderBackStyle((int)settings.BackColor));
         }
-        var scriptName = string.IsNullOrEmpty(attribute.Settings.Title) ? scriptType.Name : attribute.Settings.Title;
-        EditorGUI.LabelField(position, ObjectNames.NicifyVariableName(scriptName).ToUpper(), FusionGUIStyles.GetFusionHeaderBackStyle((int)attribute.Settings.BackColor));
+      } else {
+        using (new FusionEditorGUI.EnabledScope(false)) {
+          SerializedProperty prop = property.serializedObject.FindProperty("m_Script");
+          EditorGUI.PropertyField(position, prop);
+        }
       }
+
 
       //// Draw Icon overlay
       //var icon = FusionGUIStyles.GetFusionIconTexture(attribute.Settings.Icon);
@@ -3649,7 +3658,8 @@ namespace Fusion.Editor {
     }
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
-      return attribute.Settings == null ? base.GetPropertyHeight(property, label) : 24.0f;
+      var settings = attribute.Settings;
+      return settings == null ? base.GetPropertyHeight(property, label) : settings.BackColor != EditorHeaderBackColor.None ? 24.0f : 18.0f;
     }
   }
 }
@@ -3721,6 +3731,38 @@ namespace Fusion.Editor {
       } finally {
         _dictionaryKeyHash.Clear();
       }
+    }
+  }
+}
+
+
+#endregion
+
+
+#region Assets/Photon/Fusion/Scripts/Editor/CustomTypes/ToggleLeftAttributeDrawer.cs
+
+﻿namespace Fusion.Editor {
+
+  using UnityEditor;
+  using UnityEngine;
+
+  [CustomPropertyDrawer(typeof(ToggleLeftAttribute))]
+  public class ToggleLeftAttributeDrawer : PropertyDrawer {
+
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+
+      EditorGUI.BeginProperty(position, label, property);
+
+      EditorGUI.BeginChangeCheck();
+      var val = EditorGUI.ToggleLeft(position, label, property.boolValue);
+
+
+
+      if (EditorGUI.EndChangeCheck()) {
+        property.boolValue = val;
+      }
+
+      EditorGUI.EndProperty();
     }
   }
 }
@@ -5849,6 +5891,7 @@ namespace Fusion.Editor {
         }
 
         hash.Append(cfg.UseSerializableDictionary ? 1 : 0);
+        hash.Append(cfg.NullChecksForNetworkedProperties ? 1 : 0);
 
         AssetDatabase.RegisterCustomDependency(DependencyName, hash);
         AssetDatabase.Refresh();
@@ -8319,24 +8362,14 @@ namespace Fusion.Editor {
 
     internal static class NetworkedPropertyStyle {
       public static LazyAuto<Texture2D> NetworkPropertyIcon = LazyAuto.Create(() => {
-        return Resources.Load<Texture2D>((EditorGUIUtility.isProSkin ? "Dark/" : "Light/") + "networked-property-icon");
+        return Resources.Load<Texture2D>("icons/networked-property-icon");
       });
-
     }
 
     internal static class InlineHelpStyle {
       public const float ButtonSize = 16.0f;
       public const float MarginOuter = ButtonSize;
-      public static LazyAuto<Texture2D> HelpIconCollapsed = LazyAuto.Create(() => {
-        return Resources.Load<Texture2D>((EditorGUIUtility.isProSkin ? "Dark/" : "Light/") + "inline-help-ico-inactive");
-      });
-
-      public static LazyAuto<Texture2D> HelpIconExpanded = LazyAuto.Create(() => {
-        return Resources.Load<Texture2D>((EditorGUIUtility.isProSkin ? "Dark/" : "Light/") + "inline-help-ico-active");
-      });
-
       public static GUIContent HideInlineContent = new GUIContent("", "Hide");
-
       public static GUIContent ShowInlineContent = new GUIContent("", "");
     }
 
@@ -9355,11 +9388,24 @@ namespace Fusion.Editor {
 
   using System.Collections.Generic;
   using UnityEngine;
+  using UnityEditor;
   using Fusion;
 
   public static class NetworkRunnerUtilities {
 
+    [InitializeOnLoadMethod]
+    static void ListenToPlaymodeChanges() {
+      EditorApplication.playModeStateChanged += mode => {
+        if (mode == PlayModeStateChange.ExitingPlayMode) {
+          foreach (var instance in NetworkRunner.Instances) {
+            instance.NotifyEditorPlayModeExit();
+          }
+        }
+      };
+    }
+
     static List<NetworkRunner> reusableRunnerList = new List<NetworkRunner>();
+
     public static NetworkRunner[] FindActiveRunners() {
       var runners = Object.FindObjectsOfType<NetworkRunner>();
       reusableRunnerList.Clear();

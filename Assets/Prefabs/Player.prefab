@@ -71,7 +71,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
   Character: {fileID: 6599765012038102482, guid: 68aeddbde3751874c841d501aee8bf86, type: 3}
-  _Name: No Name
+  _Name: The Nameless
   _Color: {r: 0, g: 0, b: 0, a: 0}
   _Ready:
     _value: 0

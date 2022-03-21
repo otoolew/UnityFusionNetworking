@@ -144,7 +144,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AoiMode: 0
+  DefaultPropertyGroups: []
   DestroyWhenStateAuthorityLeaves: 0
+  AllowStateAuthorityOverride: 0
   AoiPosition: {fileID: 0}
   Flags: 2305
   NetworkGuid:
@@ -186,9 +188,18 @@ MonoBehaviour:
   WordOffset: 0
   WordCount: 0
   _interpolationDataSource: 0
-  _interpolationTarget: {fileID: 5091169074162951104}
-  _space: 0
-  _syncDragAndMass: 0
+  InterpolationTarget: {fileID: 5091169074162951104}
+  InterpolateErrorCorrection: 1
+  InterpolatedErrorCorrectionSettings:
+    MinRate: 3.3
+    MaxRate: 10
+    PosBlendStart: 0.25
+    PosBlendEnd: 1
+    PosMinCorrection: 0.025
+    PosTeleportDistance: 2
+    RotBlendStart: 0.1
+    RotBlendEnd: 0.5
+    RotTeleportRadians: 1.5
 --- !u!114 &-4575890587444351145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -204,6 +215,7 @@ MonoBehaviour:
   WordOffset: 0
   WordCount: 0
   _interpolationDataSource: 0
+  _MovementDirection: {x: 0, y: 0, z: 0}
   TransformLocal: 0
   Speed: 6
 --- !u!114 &-8889901884792729101
