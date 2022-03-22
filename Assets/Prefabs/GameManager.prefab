@@ -971,7 +971,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   session: {fileID: 0}
   status: 0
-  LoadLevelManager: {fileID: 6600041622086690048}
+  LevelManager: {fileID: 6600041622086690048}
   Player:
     RawGuidValue: e72d6d346cd174a55b95f70e519243d3
   _playerPrefab: {fileID: 7979975255234169267, guid: e72d6d346cd174a55b95f70e519243d3, type: 3}
@@ -989,6 +989,7 @@ MonoBehaviour:
   onPlayerLeft: {fileID: 11400000, guid: 5fe42084d6e77e149bab756e7b603f93, type: 2}
   onShutdown: {fileID: 11400000, guid: 8fa9b658a12c96c4199de8d6abfb191f, type: 2}
   onDisconnect: {fileID: 11400000, guid: bc96744b5d5e87f4faa5f593f011bcac, type: 2}
+  onSceneLoaded: {fileID: 11400000, guid: da48cf1c28d5aeb4f855863d74b82734, type: 2}
   _exitCanvas: {fileID: 6274724182691780851}
 --- !u!114 &6600041622086690048
 MonoBehaviour:

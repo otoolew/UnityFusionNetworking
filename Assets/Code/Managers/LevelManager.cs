@@ -3,68 +3,80 @@ using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
+
+public enum MapIndex 
+{
+    MainMenu,
+    Lobby,
+    Map0,
+    Map1,
+};
 
 public class LevelManager : NetworkSceneManagerBase
 {
+    [SerializeField] private Scene currentScene;
+    public Scene CurrentScene { get => currentScene; set => this.currentScene = value; }
+    
     [SerializeField] private SceneTransitionManager sceneTransitionManager;
     [SerializeField] private SceneReference mainMenuScene;
     [SerializeField] private SceneReference lobbyScene;
-    [SerializeField] private SceneReference map0;
-    [SerializeField] private SceneReference map1;
+    public SceneReference LobbyScene { get => lobbyScene; set => this.lobbyScene = value; }
     
-    private Scene currentLoadedScene;
-    
+    [SerializeField] private SceneReference[] levels;
     protected override IEnumerator SwitchScene(SceneRef prevScene, SceneRef newScene, FinishedLoadingDelegate finished)
     {
         GameManager.Instance.Status = GameManager.GameStatus.Loading;
-        sceneTransitionManager.StartLoadingScreen();
         Debug.Log($"Switching Scene from {prevScene} to {newScene}");
+
+        sceneTransitionManager.StartLoadingScreen();
         if (newScene <= 0)
         {
             finished(new List<NetworkObject>());
             yield break;
         }
 
-        yield return new WaitForSeconds(1.0f);
-
-        //Launcher.SetConnectionStatus(FusionLauncher.ConnectionStatus.Loading, "");
-
-        yield return null;
-        Debug.Log($"Start loading scene {newScene} in single peer mode");
-
-        if (currentLoadedScene != default)
+        yield return new WaitForSeconds(1.0f);	
+        if (currentScene != default)
         {
-            Debug.Log($"Unloading Scene {currentLoadedScene.buildIndex}");
-            yield return SceneManager.UnloadSceneAsync(currentLoadedScene);
+            Debug.Log($"Unloading Scene {currentScene.buildIndex}");
+            yield return SceneManager.UnloadSceneAsync(currentScene);
         }
-
-        currentLoadedScene = default;
         Debug.Log($"Loading scene {newScene}");
-
+        currentScene = default;
         List<NetworkObject> sceneObjects = new List<NetworkObject>();
         if (newScene >= 0)
         {
             yield return SceneManager.LoadSceneAsync(newScene);
-            currentLoadedScene = SceneManager.GetSceneByBuildIndex(newScene);
-            Debug.Log($"Loaded scene {newScene}: {currentLoadedScene}");
-            sceneObjects = FindNetworkObjects(currentLoadedScene, disable: false);
+            currentScene = SceneManager.GetSceneByBuildIndex(newScene);
+            Debug.Log($"Loaded scene {newScene}: {currentScene}");
+            sceneObjects = FindNetworkObjects(currentScene, disable: false);
         }
+        
+        /*string path;
+        switch ((MapIndex)(int)newScene)
+        {
+            case MapIndex.MainMenu: path = mainMenuScene; break;
+            case MapIndex.Lobby: path = lobbyScene; break;
+            default: path = levels[newScene - (int)MapIndex.Map0]; break;
+        }	
+        yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+        var loadedScene = SceneManager.GetSceneByPath( path );
+        Debug.Log($"Loaded scene {path}: {loadedScene}");
+        sceneObjects = FindNetworkObjects(loadedScene, disable: false);*/
 
         // Delay one frame
         yield return null;
-
-        //Launcher.SetConnectionStatus(FusionLauncher.ConnectionStatus.Loaded, "");
-
         yield return new WaitForSeconds(1);
+        finished(sceneObjects);
 
         Debug.Log($"Switched Scene from {prevScene} to {newScene} - loaded {sceneObjects.Count} scene objects");
-        finished(sceneObjects);
-        yield return new WaitForSeconds(1f);
+
         sceneTransitionManager.FinishLoadingScreen();
     }
     public void ResetLoadedScene()
     {
-        currentLoadedScene = default;
+        currentScene = default;
     }
 
     public void LoadMainMenu()
@@ -72,6 +84,13 @@ public class LevelManager : NetworkSceneManagerBase
         if (Application.isPlaying)
         {
             SceneManager.LoadSceneAsync(mainMenuScene);
+        }
+    }
+    public void LoadLobbyMenu()
+    {
+        if (Application.isPlaying)
+        {
+            SceneManager.LoadSceneAsync(lobbyScene);
         }
     }
 }

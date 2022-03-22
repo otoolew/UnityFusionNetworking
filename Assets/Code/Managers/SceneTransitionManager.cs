@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 
 public class SceneTransitionManager : MonoBehaviour
 {
-    public static SceneTransitionManager Instance;
     #region Scene Values
     [SerializeField] private CanvasGroup fadeScreen;
     public CanvasGroup FadeScreen { get => fadeScreen; set => fadeScreen = value; }
@@ -17,20 +16,6 @@ public class SceneTransitionManager : MonoBehaviour
     [SerializeField] private bool isFading;
     public bool IsFading { get => isFading; set => isFading = value; }
     #endregion
-    
-    /*private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else if (Instance != this)
-        {
-            Destroy(this);
-        }
-        DontDestroyOnLoad(transform.parent);
-    }*/
-
     public void StartLoadingScreen()
     {
         FadeScreen.gameObject.SetActive(true);
@@ -58,5 +43,6 @@ public class SceneTransitionManager : MonoBehaviour
         {
             FadeScreen.gameObject.SetActive(false);
         }
+        Debug.Log("Fade Coroutine Ended");
     }
 }

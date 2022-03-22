@@ -45,11 +45,25 @@ public class Character : NetworkBehaviour
 	bool HasNCC => GetComponent<NetworkCharacterControllerPrototype>();
 	bool ShowSpeed => this && !TryGetComponent<NetworkCharacterControllerPrototype>(out _);
 	
+	[SerializeField] private FusionEvent onCharacterSpawn;
 	public void Awake() 
 	{
 		CacheComponents();
 	}
-	
+	private void OnEnable()
+	{
+		onCharacterSpawn.RegisterResponse(CharacterSpawned);
+	}
+	private void OnDisable()
+	{
+
+		onCharacterSpawn.RemoveResponse(CharacterSpawned);
+	}
+
+	private void CharacterSpawned(PlayerRef player, NetworkRunner runner)
+	{
+		Debug.Log($"CharacterSpawned Fusion Event -> Player [{player.PlayerId}]");
+	}
 	private void CacheComponents() 
 	{
 		if (playerCamera == null) PlayerCamera = FindObjectOfType<PlayerCamera>();

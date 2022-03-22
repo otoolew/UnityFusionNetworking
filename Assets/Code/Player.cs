@@ -35,6 +35,7 @@ public class Player : NetworkBehaviour
 		DontDestroyOnLoad(this);
 		Runner.SetPlayerObject(Object.InputAuthority, Object);
 		OnPlayerDataSpawnedEvent?.Raise(Object.InputAuthority, Runner);
+		
 		GameManager.Instance.SetPlayer(Object.InputAuthority, this);
 	}
 

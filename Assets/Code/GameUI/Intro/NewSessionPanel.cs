@@ -49,17 +49,19 @@ namespace GameUI.Intro
 			if(!_toggleMap1.isOn && !_toggleMap2.isOn)
 				_toggleMap1.isOn = true;
 			if(string.IsNullOrWhiteSpace(_inputName.text))
-				_inputName.text = "Room1";
+				_inputName.text = "Test Room";
 		}
 		
 		public void OnCreateSession()
 		{
 			Debug.Log("New Session Panel Create Session");
-			SessionProps props = new SessionProps();
-			props.StartMap = _toggleMap1.isOn ? MapIndex.Map0 : MapIndex.Map1;
-			props.PlayMode = _playMode;
-			props.PlayerLimit = _maxPly;
-			props.RoomName = _inputName.text;
+			SessionProps props = new SessionProps
+			{
+				StartMap = _toggleMap1.isOn ? MapIndex.Map0 : MapIndex.Map1,
+				PlayMode = _playMode,
+				PlayerLimit = _maxPly,
+				RoomName = _inputName.text
+			};
 			GameManager.Instance.CreateSession(props);
 		}
 	}

@@ -443,10 +443,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 577297287}
-  - component: {fileID: 577297286}
   - component: {fileID: 577297285}
+  - component: {fileID: 577297288}
   m_Layer: 0
-  m_Name: Map
+  m_Name: Level
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -475,25 +475,7 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours: []
   SimulationBehaviours:
-  - {fileID: 577297286}
---- !u!114 &577297286
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 577297284}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 09dd44ce8b4649cbb7567ce19ba23b53, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _countdownMessage: {fileID: 771654663}
-  _spawnPoints:
-  - {fileID: 353071471}
-  - {fileID: 87851297}
-  - {fileID: 555980797}
-  - {fileID: 1246412433}
+  - {fileID: 577297288}
 --- !u!4 &577297287
 Transform:
   m_ObjectHideFlags: 0
@@ -510,6 +492,24 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &577297288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 577297284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e563eb7120cfbd429c282bc9335c552, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _countdownMessage: {fileID: 771654663}
+  _spawnPoints:
+  - {fileID: 353071471}
+  - {fileID: 87851297}
+  - {fileID: 555980797}
+  - {fileID: 1246412433}
 --- !u!1 &629479216
 GameObject:
   m_ObjectHideFlags: 0
@@ -594,7 +594,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 577297286}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: World, Assembly-CSharp
         m_MethodName: OnDisconnect
         m_Mode: 1
@@ -828,10 +828,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 6274724182146606746, guid: 8ff5f212714e94999abb71d8e7248bd9, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 6274724183888813006, guid: 8ff5f212714e94999abb71d8e7248bd9, type: 3}
       propertyPath: m_RootOrder
       value: 9
@@ -876,25 +872,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6274724183888813008, guid: 8ff5f212714e94999abb71d8e7248bd9, type: 3}
-      propertyPath: _autoConnect
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6274724183888813008, guid: 8ff5f212714e94999abb71d8e7248bd9, type: 3}
-      propertyPath: _autoSession.RoomName
-      value: Room1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6274724183888813008, guid: 8ff5f212714e94999abb71d8e7248bd9, type: 3}
-      propertyPath: _autoSession.StartMap
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6274724183888813008, guid: 8ff5f212714e94999abb71d8e7248bd9, type: 3}
-      propertyPath: _autoSession.SkipStaging
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6274724183888813009, guid: 8ff5f212714e94999abb71d8e7248bd9, type: 3}
       propertyPath: m_Name
-      value: App
+      value: GameManager
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ff5f212714e94999abb71d8e7248bd9, type: 3}
@@ -1277,7 +1257,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 577297286}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: World, Assembly-CSharp
         m_MethodName: OnGameOver
         m_Mode: 1
@@ -1491,7 +1471,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 577297286}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Map, Assembly-CSharp
         m_MethodName: OnLoadMap1
         m_Mode: 1

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1095931937917673644}
   - component: {fileID: 1095931937917673647}
   m_Layer: 5
-  m_Name: SessionName (1)
+  m_Name: SessionName_Header
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -188,7 +188,7 @@ GameObject:
   - component: {fileID: 1095931937969926332}
   - component: {fileID: 1095931937969926335}
   m_Layer: 5
-  m_Name: Ping (1)
+  m_Name: Ping_Header
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1015,7 +1015,7 @@ GameObject:
   - component: {fileID: 1095931938303248764}
   - component: {fileID: 1095931938303248767}
   m_Layer: 5
-  m_Name: Players (1)
+  m_Name: Players_Header
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3533,7 +3533,7 @@ GameObject:
   - component: {fileID: 1095931939804496588}
   - component: {fileID: 1095931939804496591}
   m_Layer: 5
-  m_Name: MapName (1)
+  m_Name: MapName_Header
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3958,7 +3958,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_Color: {r: 0.3679245, g: 0.3679245, b: 0.3679245, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4203,7 +4203,7 @@ MonoBehaviour:
   _header: {fileID: 1095931938575834176}
   _newSessionPanel: {fileID: 1095931939001890017}
   _sessionGrid: {fileID: 1095931939634774597}
-  _sessionListItemPrefab: {fileID: 7528060403997974757, guid: 9781032ccfa344b7687fb32dc225e8a1, type: 3}
+  _sessionListItemPrefab: {fileID: 2124294398529130019}
   _error: {fileID: 1095931938460459204}
 --- !u!1 &1095931940030044795
 GameObject:
@@ -4383,3 +4383,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7127477379991828310, guid: 9781032ccfa344b7687fb32dc225e8a1, type: 3}
   m_PrefabInstance: {fileID: 8431311954883505862}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2124294398529130019 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7528060403997974757, guid: 9781032ccfa344b7687fb32dc225e8a1, type: 3}
+  m_PrefabInstance: {fileID: 8431311954883505862}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a79222e98544ff9a178226090ef16eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

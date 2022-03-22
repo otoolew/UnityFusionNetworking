@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Fusion;
+using UnityEngine;
 
 /// <summary>
 /// Session gets created when a game session starts and exists in only one instance.
@@ -11,7 +12,7 @@ public class Session : NetworkBehaviour
 	[Networked] public TickTimer PostLoadCountDown { get; set; }
 	public SessionProps Props => new SessionProps(Runner.SessionInfo.Properties);
 	public SessionInfo Info => Runner.SessionInfo;
-	public Map Map { get; set; }
+	public Level Level { get; set; }
 
 	private HashSet<PlayerRef> _finishedLoading = new HashSet<PlayerRef>();
 
@@ -24,7 +25,9 @@ public class Session : NetworkBehaviour
 			if (props.SkipStaging)
 				LoadMap(props.StartMap);
 			else
-				Runner.SetActiveScene((int)MapIndex.Staging);
+				Runner.SetActiveScene((int)MapIndex.Lobby);
+			
+			Debug.Log($"Session Created");
 		}
 	}
 
