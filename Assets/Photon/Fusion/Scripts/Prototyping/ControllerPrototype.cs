@@ -42,8 +42,7 @@ public class ControllerPrototype : Fusion.NetworkBehaviour {
     }
 
     Vector3 direction;
-    if (GetInput(out NetworkInputPrototype input)) 
-    {
+    if (GetInput(out NetworkInputPrototype input)) {
       direction = default;
 
       if (input.IsDown(NetworkInputPrototype.BUTTON_FORWARD)) {

@@ -8,8 +8,7 @@ using UnityEngine;
 /// A simple example of Fusion input collection. This component should be on the same GameObject as the <see cref="NetworkRunner"/>.
 /// </summary>
 [ScriptHelp(BackColor = EditorHeaderBackColor.Steel)]
-public class InputBehaviourPrototype : Fusion.Behaviour, INetworkRunnerCallbacks 
-{
+public class InputBehaviourPrototype : Fusion.Behaviour, INetworkRunnerCallbacks {
 
   public void OnInput(NetworkRunner runner, NetworkInput input) {
     var frameworkInput = new NetworkInputPrototype();
@@ -70,35 +69,43 @@ public class InputBehaviourPrototype : Fusion.Behaviour, INetworkRunnerCallbacks
 
   public void OnConnectedToServer(NetworkRunner runner) { }
   
-  public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) 
-  {
+  public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) {
     // shutdown any client that has failed to connect
     //runner.Shutdown();
   }
   public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
   
-  public void OnDisconnectedFromServer(NetworkRunner runner) { }
-  public void OnPlayerJoined(NetworkRunner runner, PlayerRef            player)                                                           { }
+  public void OnDisconnectedFromServer(NetworkRunner runner) {
+    // shutdown any client that has disconnected from server
+    //runner.Shutdown();
+  }
+  public void OnPlayerJoined(NetworkRunner          runner, PlayerRef            player)                                                           { }
   public void OnPlayerLeft(NetworkRunner            runner, PlayerRef            player)                                                           { }
-  public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
+  public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)                                                          { }
   public void OnShutdown(NetworkRunner              runner, ShutdownReason       shutdownReason) { }
   public void OnSessionListUpdated(NetworkRunner    runner, List<SessionInfo>    sessionList)    {  }
-  public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) { }
+  public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) {
+  }
 
-  public void OnSceneLoadDone(NetworkRunner runner) { }
+  public void OnSceneLoadDone(NetworkRunner runner) {
+    
+  }
 
-  public void OnSceneLoadStart(NetworkRunner runner) { }
+  public void OnSceneLoadStart(NetworkRunner runner) {
+  }
 
-  public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
+  public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) {
+  }
 
-  public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
+  public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) {
+
+  }
 }
 
 /// <summary>
 /// Example definition of an INetworkStruct.
 /// </summary>
-public struct NetworkInputPrototype : INetworkInput 
-{
+public struct NetworkInputPrototype : INetworkInput {
   public const uint BUTTON_USE = 1 << 0;
   public const uint BUTTON_FIRE = 1 << 1;
   public const uint BUTTON_FIRE_ALT = 1 << 2;
