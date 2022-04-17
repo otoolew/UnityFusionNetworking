@@ -969,12 +969,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 518fad929135bf34e834d8a3f50e92e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  connectionStatus: 0
   session: {fileID: 0}
+  playerInfoPrefab:
+    RawGuidValue: e72d6d346cd174a55b95f70e519243d3
   status: 0
   LevelManager: {fileID: 6600041622086690048}
-  Player:
-    RawGuidValue: e72d6d346cd174a55b95f70e519243d3
-  _playerPrefab: {fileID: 7979975255234169267, guid: e72d6d346cd174a55b95f70e519243d3, type: 3}
   _sessionPrefab: {fileID: 1504012697553745423, guid: 17be35a8d6b4e4219a6291fa00407b61, type: 3}
   _errorBox: {fileID: 6274724182691780849}
   _sharedMode: 0
@@ -1004,6 +1004,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowHierarchyWindowOverlay: 1
+  currentScene:
+    m_Handle: 0
   sceneTransitionManager: {fileID: 3448584412547625536}
   mainMenuScene:
     sceneAsset: {fileID: 102900000, guid: f58209cb822954f178cd0ce52d4b7120, type: 3}
@@ -1011,12 +1013,7 @@ MonoBehaviour:
   lobbyScene:
     sceneAsset: {fileID: 102900000, guid: a792d8e8d40514fd6bd604718649edde, type: 3}
     scenePath: Assets/Scenes/Lobby.unity
-  map0:
-    sceneAsset: {fileID: 102900000, guid: 55768864b781d448c96a331c2a93a54f, type: 3}
-    scenePath: Assets/Scenes/3.Map0.unity
-  map1:
-    sceneAsset: {fileID: 102900000, guid: a59870309d5b74e5ba9a394f7d8ce0c3, type: 3}
-    scenePath: Assets/Scenes/4.Map1.unity
+  levels: []
 --- !u!114 &3448584412547625536
 MonoBehaviour:
   m_ObjectHideFlags: 0

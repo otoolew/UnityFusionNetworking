@@ -12,6 +12,7 @@ namespace Fusion {
     }
 
     static bool TryGetSceneBuildIndex(string nameOrPath, out int buildIndex) {
+      nameOrPath = System.IO.Path.GetFileNameWithoutExtension(nameOrPath);
       if (nameOrPath.IndexOf('/') >= 0) {
         buildIndex = SceneUtility.GetBuildIndexByScenePath(nameOrPath);
         if (buildIndex < 0) {

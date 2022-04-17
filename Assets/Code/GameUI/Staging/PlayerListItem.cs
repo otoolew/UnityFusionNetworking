@@ -10,11 +10,11 @@ namespace GameUI.Staging
 		[SerializeField] private Image _color;
 		[SerializeField] private GameObject _ready;
 
-		public void Setup(Player ply)
+		public void Setup(PlayerInfo playerInfo)
 		{
-			_name.text = ply.DisplayName;
-			_color.color = ply.Color;
-			_ready.SetActive(ply.Ready);
+			_name.text = playerInfo.DisplayName;
+			_color.color = playerInfo.Color;
+			_ready.SetActive(playerInfo.Ready);
 		}
 	}
 }

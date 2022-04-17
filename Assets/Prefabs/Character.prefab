@@ -113,8 +113,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   transformLocal: 0
-  moveDirection: {x: 0, y: 0, z: 0}
-  lookDirection: {x: 0, y: 0, z: 0}
+  aimOffset: {x: 0, y: -1.5, z: 0}
 --- !u!114 &6599765012038102482
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -128,15 +127,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
-  player: {fileID: 0}
+  playerInfo: {fileID: 0}
   playerCamera: {fileID: 0}
   networkCharacterController: {fileID: 7834668140746253566}
   meshRenderer: {fileID: 6648770355697696286}
   nameTagText: {fileID: 6648770355910371729}
+  pooledObjComp: {fileID: 0}
   _MoveDirection: {x: 0, y: 0, z: 0}
   _LookDirection: {x: 0, y: 0, z: 0}
   TransformLocal: 0
   Speed: 6
+  onCharacterSpawn: {fileID: 11400000, guid: 3c463e6f72fa0264f8d772bb6ac3d4b5, type: 2}
   _CurrentState: 0
 --- !u!114 &7834668140746253566
 MonoBehaviour:
@@ -166,10 +167,10 @@ MonoBehaviour:
     RotTeleportRadians: 1.5
   gravity: 0
   jumpImpulse: 8
-  acceleration: 30
+  acceleration: 20
   braking: 10
-  maxSpeed: 20
-  rotationSpeed: 15
+  maxSpeed: 5
+  rotationSpeed: 10
   _IsGrounded: 0
   _Velocity: {x: 0, y: 0, z: 0}
 --- !u!143 &6210241532439839984

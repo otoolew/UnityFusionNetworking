@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dae7c6671d9e4df47aca40428767d5eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerDataNO:
+  PlayerInfoPrefabRef:
     RawGuidValue: e72d6d346cd174a55b95f70e519243d3
   OnPlayerJoinedEvent: {fileID: 11400000, guid: e461320136176e54481ad41f1b8d8838, type: 2}
   OnPlayerLeftEvent: {fileID: 11400000, guid: 5fe42084d6e77e149bab756e7b603f93, type: 2}

@@ -2,36 +2,6 @@
 
 ## RC Nightly
 
-### Build 445 (Mar 25, 2022)
-
-**Changes**
-
-- FusionStats SimulationCount renamed to ForwardSimCount (to make it distinct from ResimCount)
-
-**Bug Fixes**
-
-- Fixed: Fusion Editor debug logs using correct colors
-- Fixed: Native memory leaks on the Simulation
-- Fixed: `NetworkRunnerExtensions.SetActiveScene` setting invalid scene as active when given a scene path and scene names are not unique
-
-### Build 443 (Mar 23, 2022)
-
-**Breaking Changes**
-
-- `bool` can't be used in pointer/ref properties
-
-**What's New**
-
-- `NetworkRunner.Instances` - a read only list of all the active runners
-- Arrays of `NetworkString` support for RPC  
-Test: Basic RPC codegen tests. Turns out bools are a bit problematic
-
-### Build 442 (Mar 22, 2022)
-
-**Bug Fixes**
-
-- Fixed: Inspector: errors logged in the console when inspecting some `INetworkStructs` types and exiting play mode
-
 ### Build 440 (Mar 17, 2022)
 
 **Improvements**

@@ -3,8 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using Fusion;
-
-public enum PlayMode { CaptureTheFlag, DeathMatch, KingOfTheHill}
+/// <summary>
+/// Make a Scriptable Object
+/// </summary>
+public enum PlayMode //TODO Make a Scriptable Object
+{
+	CaptureTheFlag, DeathMatch, KingOfTheHill
+}
 
 [Serializable]
 public class SessionProps
@@ -18,7 +23,6 @@ public class SessionProps
 	/// <summary>
 	/// Support code that allow conversion of the above fields to and from the SessionProperty dictionary needed by Fusion
 	/// </summary>
-
 	public SessionProps()
 	{
 	}

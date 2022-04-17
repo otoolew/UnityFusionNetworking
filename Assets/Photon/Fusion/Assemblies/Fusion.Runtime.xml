@@ -4680,7 +4680,7 @@
             <summary>
             Sets the <see cref="P:Fusion.Changed`1.Behaviour"/> to represent the changed state after the triggering change occurred.
             This is the already default state of the behaviour when an OnChanged callback occurs, 
-            and only needs to be called to revert from a previous <see cref="M:Fusion.Changed`1.LoadOld"/> call in your changed callback handler.
+            and only needs to be called to undo a previous <see cref="M:Fusion.Changed`1.LoadNew"/> call in your callback handler.
             </summary>
         </member>
         <member name="T:Fusion.EditorHeaderIcon">
@@ -4887,8 +4887,7 @@
         </member>
         <member name="T:Fusion.NetworkArray`1">
             <summary>
-            Fusion type for networking arrays. 
-            Maximum capacity is fixed, and is set with the <see cref="T:Fusion.CapacityAttribute"/>.<br></br><br></br>
+            Fusion type for networking arrays. Capacity is fixed, and needs to be set the maximum possible number of entries.<br></br><br></br>
             <para>Typical Usage:
             <code>
             [Networked, Capacity(4)]<br></br>
@@ -4901,6 +4900,7 @@
             </code></para>
             <para>Usage for modifying data:
             <code>
+            var array = syncedArray;
             array.Set(123);
             array[0] = 456;
             </code></para>
@@ -4971,8 +4971,7 @@
         </member>
         <member name="T:Fusion.NetworkDictionary`2">
             <summary>
-            Fusion type for networking Dictionaries. 
-            Maximum capacity is fixed, and is set with the <see cref="T:Fusion.CapacityAttribute"/>.<br></br><br></br>
+            Fusion type for networking Dictionaries. Capacity is fixed, and needs to be set the maximum possible number of entries.<br></br><br></br>
             <para>Typical Usage:
             <code>
             [Networked, Capacity(10)]<br></br>
@@ -5061,8 +5060,7 @@
         </member>
         <member name="T:Fusion.NetworkLinkedList`1">
             <summary>
-            Fusion type for networking LinkedLists. 
-            Maximum capacity is fixed, and is set with the <see cref="T:Fusion.CapacityAttribute"/>.<br></br><br></br>
+            Fusion type for networking LinkedLists. Capacity is fixed, and needs to be set the maximum possible number of entries.<br></br><br></br>
             Typical Usage:
             <para><code>
             [Networked, Capacity(10)]<br></br>
@@ -6276,20 +6274,9 @@
         </member>
         <member name="M:Fusion.NetworkRunner.GetInstancesEnumerator">
             <summary>
-            Get enumerator for the collection of all <see cref="T:Fusion.NetworkRunner"/>s. Allows
-            to enumerate alloc-free.
+            Get enumerator for the collection of all <see cref="T:Fusion.NetworkRunner"/>s.
             </summary>
             <returns></returns>
-        </member>
-        <member name="P:Fusion.NetworkRunner.Instances">
-            <summary>
-            A list of all <see cref="T:Fusion.NetworkRunner"/>s.
-            </summary>
-        </member>
-        <member name="P:Fusion.NetworkRunner.IsSimulationUpdating">
-            <summary>
-            Is the runner updating the simulation.
-            </summary>
         </member>
         <member name="F:Fusion.NetworkRunner._initializeOperation">
             <summary>

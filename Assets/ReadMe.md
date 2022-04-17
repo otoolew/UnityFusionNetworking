@@ -1,3 +1,16 @@
+Project Aberdeen
+Version 0.1.01
+A proving ground for tried and true game systems and Network Game Loop
+
+Hack N Plan Link
+https://app.hacknplan.com/p/134172/kanban?categoryId=0&boardId=361439
+
+Authors 
+Bill O'Toole
+otoolew@gmail.com
+
+From the Team at Photon 
+NOTE: I do not use the set up below. I am in the process of documenting that now.
 This example show how an outer loop for a game could be structured to work properly with Fusion when loading scenes and setting up and tearing down connections as well as providing basic matchmaking functionality.
 
 More specifically, the example allow players to either create or join sessions with some mock attributes like game mode and map name. It presents a list of sessions to joining users and allow them to configure their avatar before loading the game scene. The example also handles both clients and hosts leaving the session and returning to the intro.

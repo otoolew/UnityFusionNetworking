@@ -1,7 +1,9 @@
 using Fusion;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using Utility;
 
 /// <summary>
 /// Visual representation of a Player - the Character is instantiated by the map once it's loaded.
@@ -15,8 +17,8 @@ using UnityEngine.UI;
 public class Character : NetworkBehaviour
 {
 	#region Player
-	[SerializeField] private Player player;
-	public Player Player { get => player; set => player = value; }
+	[SerializeField] private PlayerInfo playerInfo;
+	public PlayerInfo PlayerInfo { get => playerInfo; set => playerInfo = value; }
 	#endregion
 	
 	#region Components
@@ -36,6 +38,7 @@ public class Character : NetworkBehaviour
 	#region Networked Properties
 	[Networked]public Vector3 MoveDirection { get; set; }
 	[Networked]public Vector3 LookDirection { get; set; }
+	 
 	#endregion
 	
 	public bool TransformLocal = false;
@@ -56,7 +59,6 @@ public class Character : NetworkBehaviour
 	}
 	private void OnDisable()
 	{
-
 		onCharacterSpawn.RemoveResponse(CharacterSpawned);
 	}
 
@@ -89,9 +91,9 @@ public class Character : NetworkBehaviour
 	{
 		CacheComponents();
 		
-		player = GameManager.Instance.GetPlayer(Object.InputAuthority);
-		nameTagText.text = player.DisplayName;
-		meshRenderer.material.color = player.Color;
+		playerInfo = GameManager.Instance.GetPlayer(Object.InputAuthority);
+		nameTagText.text = playerInfo.DisplayName;
+		meshRenderer.material.color = playerInfo.Color;
 
 		if (Object.HasInputAuthority)
 		{
@@ -135,13 +137,26 @@ public class Character : NetworkBehaviour
 
 			direction = direction.normalized;
 			MoveDirection = direction;
-			
+			LookDirection = input.AimDirection; 
 			Move(direction);
 			LookAt(input.AimDirection);
 		}
-		
 	}
-
+	/// <summary>
+	/// Render is the Fusion equivalent of Unity's Update() and unlike FixedUpdateNetwork which is very different from FixedUpdate,
+	/// Render is in fact exactly the same. It even uses the same Time.deltaTime time steps. The purpose of Render is that
+	/// it is always called *after* FixedUpdateNetwork - so to be safe you should use Render over Update if you're on a
+	/// SimulationBehaviour.
+	///
+	/// Here, we use Render to update visual aspects of the Tank that does not involve changing of networked properties.
+	/// </summary>
+	public override void Render()
+	{
+		meshRenderer.gameObject.SetActive(CurrentState == State.ACTIVE);
+		/*collider.enabled = state != State.Dead;
+		_hitBoxRoot.enabled = state == State.Active;
+		_damageVisuals.CheckHealth(life);*/
+	}
 	#region State Change
 	public static void OnStateChanged(Changed<Character> changed)
 	{
@@ -154,21 +169,16 @@ public class Character : NetworkBehaviour
 		switch (CurrentState)
 		{
 			case State.SPAWNING:
-				Debug.Log($"[{player.Id}] Player {CurrentState}");
-				// TODO Play Spawning Effect
+				Debug.Log($"[{playerInfo.Id}] Player {CurrentState}");
 				break;
 			case State.ACTIVE:
-				Debug.Log($"[{player.Id}] Player {CurrentState}");
-				// Do any clean up here
-				// TODO Stop Spawning Effect
+				Debug.Log($"[{playerInfo.Id}] Player {CurrentState}");
 				break;
 			case State.DEAD:
-				Debug.Log($"[{player.Id}] Player {CurrentState}");
-				// TODO Spawn Dead Body Here
+				Debug.Log($"[{playerInfo.Id}] Player {CurrentState}");
 				break;
 			case State.DESPAWNING:
-				Debug.Log($"[{player.Id}] Player {CurrentState}");
-				// TODO Play Despawning Effect
+				Debug.Log($"[{playerInfo.Id}] Player {CurrentState}");
 				break;
 		}
 	}
@@ -190,18 +200,19 @@ public class Character : NetworkBehaviour
 			networkCharacterController.Move(direction);
 		}
 	}
-	public void LookAt()
-	{
-		if (CurrentState == State.ACTIVE)
-		{
-			networkCharacterController.Move(LookDirection);
-		}
-	}
+	
+	
 	public void LookAt(Vector3 direction)
 	{
+		LookDirection = direction;
 		if (CurrentState == State.ACTIVE)
 		{
-			networkCharacterController.Move(LookDirection);
+			if (direction.sqrMagnitude > 0)
+			{
+				networkCharacterController.transform.rotation = Quaternion.Euler(direction);
+				
+				//networkCharacterController.transform.forward = Vector3.Lerp(networkCharacterController.transform.forward, direction, Time.deltaTime * 100f);
+			}
 		}
 	}
 	public void Jump()
@@ -217,35 +228,19 @@ public class Character : NetworkBehaviour
 	}
 	#endregion
 
-	/// <summary>
-	/// Control the rotation of hull and turret
-	/// </summary>
-	private void SetMeshOrientation()
+	#region Behaviour
+
+	public void Kill()
 	{
-		// To prevent the tank from making a 180 degree turn every time we reverse the movement direction
-		// we define a driving direction that creates a multiplier for the hull.forward. This allows us to
-		// drive "backwards" as well as "forwards"
-		/*switch (_driveDirection)
-		{
-			case DriveDirection.FORWARD:
-				if (moveDirection.magnitude > 0.1f && Vector3.Dot(_lastMoveDirection, moveDirection.normalized) < 0f)
-					_driveDirection = DriveDirection.BACKWARD;
-				break;
-			case DriveDirection.BACKWARD:
-				if (moveDirection.magnitude > 0.1f && Vector3.Dot(_lastMoveDirection, moveDirection.normalized) < 0f)
-					_driveDirection = DriveDirection.FORWARD;
-				break;
-		}*/
-
-		//float multiplier = _driveDirection == DriveDirection.FORWARD ? 1 : -1;
-
-		/*if (moveDirection.magnitude > 0.1f)
-			_hull.forward = Vector3.Lerp(_hull.forward, moveDirection * multiplier, Time.deltaTime * 10f);*/
-
-		if (LookDirection.sqrMagnitude > 0)
-		{
-			
-		}
+		Rpc_Kill();
 	}
+	
+	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	public void Rpc_Kill()
+	{
+		
+		CurrentState = State.DEAD;
+	}
+	#endregion
 
 }

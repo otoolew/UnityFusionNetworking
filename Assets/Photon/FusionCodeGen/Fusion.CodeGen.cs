@@ -584,16 +584,11 @@ namespace Fusion.CodeGen {
 
     internal readonly ILWeaverLog Log;
 
-    internal ILWeaver(ILWeaverLog log) {
+    public ILWeaver(ILWeaverLog log) {
       Log = log;
       SetDefaultTypeData();
-
     }
 
-    public ILWeaver(ILWeaverLogger logger) {
-      Log = new ILWeaverLog(logger);
-      SetDefaultTypeData();
-    }
 
 
     FieldReference GetFieldFromNetworkedBehaviour(ILWeaverAssembly assembly, TypeDefinition type, string fieldName) {
@@ -663,8 +658,8 @@ namespace Fusion.CodeGen {
     }
 
     int GetTypeWordCount(ILWeaverAssembly asm, TypeReference type) {
-      if (type.IsPointer || type.IsByReference || type.IsArray ) {
-        type = type.GetElementTimeWithGenerics();
+      if (type.IsPointer || type.IsByReference) {
+        type = type.GetElementTypeEx();
       }
 
       // TODO: what is this?
@@ -1417,7 +1412,7 @@ namespace Fusion.CodeGen {
         if (rpc.TryGetAttribute<RpcAttribute>(out var attr)) {
 
           if (HasRpcPrefixOrSuffix(rpc) == false) {
-            throw new ILWeaverException($"{rpc}: name needs to start or end with the \"Rpc\" prefix or suffix");
+            Log.Warn($"{rpc.DeclaringType}.{rpc.Name} name does not start or end with the \"Rpc\" prefix or suffix. Starting from Beta this will result in an error.");
           }
 
           if (rpc.IsStatic && rpc.Parameters.FirstOrDefault()?.ParameterType.FullName != asm.NetworkRunner.Reference.FullName) {
@@ -1439,7 +1434,7 @@ namespace Fusion.CodeGen {
               continue;
             }
 
-            var parameterType = parameter.ParameterType.IsArray ? parameter.ParameterType.GetElementTimeWithGenerics() : parameter.ParameterType;
+            var parameterType = parameter.ParameterType.IsArray ? parameter.ParameterType.GetElementType() : parameter.ParameterType;
 
             if (IsRpcCompatibleType(parameterType) == false) {
               throw new ILWeaverException($"{rpc}: parameter {parameter.Name} is not Rpc-compatible.");
@@ -2081,7 +2076,7 @@ namespace Fusion.CodeGen {
 
       int size;
 
-      var elementType = para.ParameterType.GetElementTimeWithGenerics();
+      var elementType = para.ParameterType.GetElementType();
       if (elementType.IsPrimitive) {
         size = elementType.GetPrimitiveSize();
       } else if (TryGetNetworkWrapperType(elementType, out var wrapInfo)) {
@@ -2109,7 +2104,7 @@ namespace Fusion.CodeGen {
     }
 
     void WeaveRpcArrayInvoke(ILWeaverAssembly asm, RpcMethodContext ctx, ILProcessor il, VariableDefinition para) {
-      var elementType = para.VariableType.GetElementTimeWithGenerics();
+      var elementType = para.VariableType.GetElementType();
 
       var intType = asm.Import(typeof(Int32));
 
@@ -2190,7 +2185,7 @@ namespace Fusion.CodeGen {
     }
 
     void WeaveRpcArrayInput(ILWeaverAssembly asm, RpcMethodContext ctx, ILProcessor il, ParameterDefinition para) {
-      var elementType = para.ParameterType.GetElementTimeWithGenerics();
+      var elementType = para.ParameterType.GetElementType();
 
       // store the array size
       il.AppendMacro(ctx.LoadAddress());
@@ -2297,7 +2292,7 @@ namespace Fusion.CodeGen {
         }
 
       } else {
-        var type = ctx.ImportReference(wrapInfo.WrapperType.GetElementTimeWithGenerics());
+        var type = ctx.ImportReference(wrapInfo.WrapperType.GetElementType());
         il.Append(Stind_or_Stobj(type));
         
         if (ctx.HasOffset) {
@@ -2617,7 +2612,7 @@ namespace Fusion.CodeGen {
 
     private bool IsTypeBlittable(ILWeaverAssembly asm, TypeReference type) {
       if (type.IsPrimitive) {
-        return type.IsIntegral() || (type.MetadataType == MetadataType.Double);
+        return type.IsIntegral();
       } else if (!type.IsValueType) {
         return false;
       } else if (type.IsVector2() || type.IsVector3() || type.IsQuaternion()) {
@@ -2627,13 +2622,6 @@ namespace Fusion.CodeGen {
       } else {
         return true;
       }
-    }
-
-    private bool IsTypeAffectedByAccuracy(ILWeaverAssembly asm, TypeReference type) {
-      if (type.IsFloat() || type.IsVector2() || type.IsVector3() || type.IsQuaternion()) {
-        return true;
-      }
-      return false;
     }
 
     public void WeaveStruct(ILWeaverAssembly asm, TypeDefinition type, TypeReference typeRef) {
@@ -2834,7 +2822,7 @@ namespace Fusion.CodeGen {
 
       TypeReference fieldType = property.PropertyType;
       if (fieldType.IsPointer || fieldType.IsByReference) {
-        fieldType = fieldType.GetElementTimeWithGenerics();
+        fieldType = fieldType.GetElementType();
       } else if (fieldType.IsNetworkArray(out var elementType) || fieldType.IsNetworkList(out elementType)) {
         fieldType = TypeReferenceRocks.MakeArrayType(elementType);
       } else if (fieldType.IsNetworkDictionary(out var keyType, out var valueType)) {
@@ -3044,12 +3032,10 @@ namespace Fusion.CodeGen {
 
 
           if (property.PropertyType.IsPointer || property.PropertyType.IsByReference) {
-            var elementType = property.PropertyType.GetElementTimeWithGenerics();
-            if (IsTypeAffectedByAccuracy(asm, elementType)) {
-              Log.Warn($"{property}: if {elementType} type is used in a pointer/reference property, it is no longer affected by accuracy. " +
+            var elementType = property.PropertyType.GetElementType();
+            if (!IsTypeBlittable(asm, elementType)) {
+              Log.Warn($"Property {property} type ({elementType}) is not safe to in pointer/reference properties. " +
                 $"Consider wrapping it with a struct implementing INetworkStruct and a [Networked] property.");
-            } else if (!IsTypeBlittable(asm, elementType)) {
-              throw new ILWeaverException($"{property}: type {elementType} can't be used in pointer/reference properties.");
             }
           }
 
@@ -3144,7 +3130,7 @@ namespace Fusion.CodeGen {
                   } else if (instruction.OpCode == OpCodes.Stfld && instruction.Operand == propertyInfo.BackingField) {
                     // arrays and dictionaries don't have setters
                     if (property.PropertyType.IsPointer || property.PropertyType.IsByReference) {
-                      il.Append(Stind_or_Stobj(property.PropertyType.GetElementTimeWithGenerics()));
+                      il.Append(Stind_or_Stobj(property.PropertyType.GetElementType()));
                     } else if (property.PropertyType.IsNetworkArray(out var elementType)) {
                       var m = new GenericInstanceMethod(asm.NetworkBehaviourUtils.GetMethod(nameof(NetworkBehaviourUtils.InitializeNetworkArray)));
                       m.GenericArguments.Add(elementType);
@@ -3173,7 +3159,7 @@ namespace Fusion.CodeGen {
                 }
 
                 if (property.PropertyType.IsPointer || property.PropertyType.IsByReference) {
-                  il.Append(Stind_or_Stobj(property.PropertyType.GetElementTimeWithGenerics()));
+                  il.Append(Stind_or_Stobj(property.PropertyType.GetElementType()));
                 }
 
                 il.Append(postInit);
@@ -3275,7 +3261,7 @@ namespace Fusion.CodeGen {
                   il.Append(Ldarg_0());
                   il.Append(Ldfld(defaultField));
 
-                  il.Append(Stind_or_Stobj(property.PropertyType.GetElementTimeWithGenerics()));
+                  il.Append(Stind_or_Stobj(property.PropertyType.GetElementType()));
 
                 } else if (property.PropertyType.IsNetworkDictionary(out var keyType, out var valueType)) {
 
@@ -3421,7 +3407,7 @@ namespace Fusion.CodeGen {
               if (!parameterType.IsGenericInstance) {
                 return false;
               }
-              var openGenericType = parameterType.GetElementTimeWithGenerics();
+              var openGenericType = parameterType.GetElementType();
               if (!openGenericType.IsSame(typeof(Changed<>))) {
                 return false;
               }
@@ -4023,9 +4009,7 @@ namespace Fusion.CodeGen {
     public override ILPostProcessResult Process(ICompiledAssembly compiledAssembly) {
 
       ILPostProcessResult result;
-
-      var logger = new ILWeaverLoggerDiagnosticMessages();
-      var log = new ILWeaverLog(logger);
+      var log = new ILWeaverLog();
 
 
       if (!ILWeaverSettings.ValidateConfig(out var status, out var readException)) {
@@ -4101,8 +4085,8 @@ namespace Fusion.CodeGen {
           log.Error($"Exception thrown when weaving {compiledAssembly.Name}");
           log.Exception(ex);
         } finally {
-          logger.FixNewLinesInMessages();
-          result = new ILPostProcessResult(resultAssembly, logger.Messages);
+          log.FixNewLinesInMessages();
+          result = new ILPostProcessResult(resultAssembly, log.Messages);
         }
       }
 
@@ -4290,7 +4274,7 @@ namespace Fusion.CodeGen {
 
       // perform weaving
       try {
-        _weaver = _weaver ?? new ILWeaver(new ILWeaverLoggerUnityDebug());
+        _weaver = _weaver ?? new ILWeaver(new ILWeaverLog());
         Weave(_weaver, asm);
       } catch (Exception ex) {
         UnityEngine.Debug.LogError(ex);
@@ -4465,13 +4449,11 @@ namespace Fusion.CodeGen {
       return type.MetadataType == MetadataType.Void;
     }
 
-    public static TypeReference GetElementTimeWithGenerics(this TypeReference type) {
+    public static TypeReference GetElementTypeEx(this TypeReference type) {
       if (type.IsPointer) {
         return ((Mono.Cecil.PointerType)type).ElementType;
       } else if (type.IsByReference) {
         return ((Mono.Cecil.ByReferenceType)type).ElementType;
-      } else if (type.IsArray) {
-        return ((Mono.Cecil.ArrayType)type).ElementType;
       } else {
         return type.GetElementType();
       }
@@ -4489,7 +4471,7 @@ namespace Fusion.CodeGen {
         return false;
       }
 
-      return type.GetElementTimeWithGenerics().FullName == typeDefinition.FullName;
+      return type.GetElementType().FullName == typeDefinition.FullName;
     }
 
     public static bool IsNetworkList(this TypeReference type) {
@@ -4497,7 +4479,7 @@ namespace Fusion.CodeGen {
     }
     
     public static bool IsNetworkList(this TypeReference type, out TypeReference elementType) {
-      if (!type.IsGenericInstance || type.GetElementTimeWithGenerics().FullName != typeof(NetworkLinkedList<>).FullName) {
+      if (!type.IsGenericInstance || type.GetElementType().FullName != typeof(NetworkLinkedList<>).FullName) {
         elementType = default;
         return false;
       }
@@ -4513,7 +4495,7 @@ namespace Fusion.CodeGen {
     }
 
     public static bool IsNetworkArray(this TypeReference type, out TypeReference elementType) {
-      if (!type.IsGenericInstance || type.GetElementTimeWithGenerics().FullName != typeof(NetworkArray<>).FullName) {
+      if (!type.IsGenericInstance || type.GetElementType().FullName != typeof(NetworkArray<>).FullName) {
         elementType = default;
         return false;
       }
@@ -4529,7 +4511,7 @@ namespace Fusion.CodeGen {
     }
 
     public static bool IsNetworkDictionary(this TypeReference type, out TypeReference keyType, out TypeReference valueType) {
-      if (!type.IsGenericInstance || type.GetElementTimeWithGenerics().FullName != typeof(NetworkDictionary<,>).FullName) {
+      if (!type.IsGenericInstance || type.GetElementType().FullName != typeof(NetworkDictionary<,>).FullName) {
         keyType = default;
         valueType = default;
         return false;
@@ -4606,7 +4588,7 @@ namespace Fusion.CodeGen {
         throw new ArgumentNullException(nameof(type));
       }
       if (type.IsByReference) {
-        type = type.GetElementTimeWithGenerics();
+        type = type.GetElementType();
       }
       if (type.IsVoid() && t == typeof(void)) {
         return true;
@@ -4635,7 +4617,7 @@ namespace Fusion.CodeGen {
         throw new ArgumentNullException(nameof(type));
       }
       if (type.IsByReference) {
-        type = type.GetElementTimeWithGenerics();
+        type = type.GetElementType();
       }
       if (type.IsValueType != t.IsValueType) {
         return false;
@@ -5174,53 +5156,46 @@ namespace Fusion.CodeGen {
   using Mono.Cecil;
   using UnityEngine;
 
-  public interface ILWeaverLogger {
-    void Log(LogType logType, string message, string filePath, int lineNumber);
-    void Log(Exception ex);
-  }
-
-
-  sealed class ILWeaverLog {
-
-    private ILWeaverLogger _logger;
-
-    public ILWeaverLog(ILWeaverLogger logger) {
-      if (logger == null) {
-        throw new ArgumentNullException(nameof(logger));
-      }
-      _logger = logger;
-    }
+  public partial class ILWeaverLog {
 
     public void AssertMessage(bool condition, string message, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = default) {
       if (!condition) {
-        _logger.Log(LogType.Assert, $"Assert failed: {message}", filePath, lineNumber);
-        throw new AssertException($"{message}{(string.IsNullOrEmpty(filePath) ? "" : $" at {filePath}:{lineNumber}")}");
+        AssertFailed("Assert failed: " + message, filePath, lineNumber);
       }
     }
 
+
     public void Assert(bool condition, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = default) {
       if (!condition) {
-        _logger.Log(LogType.Assert, $"Assert failed", filePath, lineNumber);
-        throw new AssertException($"Assert failed{(string.IsNullOrEmpty(filePath) ? "" : $" at {filePath}:{lineNumber}")}");
+        AssertFailed("Assertion failed", filePath, lineNumber);
       }
     }
 
     [Conditional("FUSION_WEAVER_DEBUG")]
     public void Debug(string message, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = default) {
-      _logger.Log(LogType.Log, message, filePath, lineNumber);
+      Log(LogType.Log, message, filePath, lineNumber);
     }
 
     public void Warn(string message, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = default) {
-      _logger.Log(LogType.Warning, message, filePath, lineNumber);
+      Log(LogType.Warning, message, filePath, lineNumber);
     }
 
     public void Error(string message, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = default) {
-      _logger.Log(LogType.Error, message, filePath, lineNumber);
+      Log(LogType.Error, message, filePath, lineNumber);
     }
 
     public void Exception(Exception ex) {
-      _logger.Log(ex);
+      LogExceptionImpl(ex);
     }
+
+    partial void AssertFailed(string message, string filePath, int lineNumber);
+
+    private void Log(LogType logType, string message, string filePath, int lineNumber) {
+      LogImpl(logType, message, filePath, lineNumber);
+    }
+
+    partial void LogImpl(LogType logType, string message, string filePath, int lineNumber);
+    partial void LogExceptionImpl(Exception ex);
 
 #if !FUSION_WEAVER_DEBUG
     public struct LogScope : IDisposable {
@@ -5269,6 +5244,11 @@ namespace Fusion.CodeGen {
       return new LogScope(this, $"Struct: {type.FullName}", filePath, lineNumber);
     }
 
+
+    partial void ScopeBeginImpl(ref LogScope scope, string filePath, int lineNumber);
+    partial void ScopeEndImpl(ref LogScope scope);
+
+
 #pragma warning disable CS0282 // There is no defined ordering between fields in multiple declarations of partial struct
     public partial struct LogScope : IDisposable {
 #pragma warning restore CS0282 // There is no defined ordering between fields in multiple declarations of partial struct
@@ -5279,22 +5259,19 @@ namespace Fusion.CodeGen {
       private ILWeaverLog _log;
       private Stopwatch _stopwatch;
 
-      public int LineNumber;
-      public string FilePath;
-
       public LogScope(ILWeaverLog log, string message, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = default) : this() {
         _log = log;
-        _stopwatch = Stopwatch.StartNew();
         Message = message;
-        LineNumber = lineNumber;
-        FilePath = filePath;
-        _log.Debug($"{Message} start", FilePath, LineNumber);
+        _stopwatch = Stopwatch.StartNew();
+        _log.ScopeBeginImpl(ref this, filePath, lineNumber);
       }
 
       public void Dispose() {
         _stopwatch.Stop();
-        _log.Debug($"{Message} end {Elapsed}", FilePath, LineNumber);
+        _log.ScopeEndImpl(ref this);
       }
+
+      partial void Init(string filePath, int lineNumber);
     }
 #endif
   }
@@ -5305,7 +5282,7 @@ namespace Fusion.CodeGen {
 #endregion
 
 
-#region Assets/Photon/FusionCodeGen/ILWeaverLoggerDiagnosticMessages.cs
+#region Assets/Photon/FusionCodeGen/ILWeaverLog.ILPostProcessor.cs
 
 #if FUSION_WEAVER && FUSION_WEAVER_ILPOSTPROCESSOR && FUSION_HAS_MONO_CECIL
 
@@ -5315,11 +5292,11 @@ namespace Fusion.CodeGen {
   using Unity.CompilationPipeline.Common.Diagnostics;
   using UnityEngine;
 
-  class ILWeaverLoggerDiagnosticMessages : ILWeaverLogger {
+  partial class ILWeaverLog {
 
     public List<DiagnosticMessage> Messages { get; } = new List<DiagnosticMessage>();
 
-    public void Log(LogType logType, string message, string filePath, int lineNumber) {
+    partial void LogImpl(LogType logType, string message, string filePath, int lineNumber) {
 
       DiagnosticType diagnosticType;
 
@@ -5342,10 +5319,15 @@ namespace Fusion.CodeGen {
       });
     }
 
-    public void Log(Exception ex) {
+    partial void AssertFailed(string message, string filePath, int lineNumber) {
+      Error(message, filePath, lineNumber);
+      throw new AssertException();
+    }
+
+    partial void LogExceptionImpl(Exception ex) {
       var lines = ex.ToString().Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
       foreach (var line in lines) {
-        Log(LogType.Error, line, null, 0);
+        Error(line, null, 0);
       }
     }
 
@@ -5355,7 +5337,29 @@ namespace Fusion.CodeGen {
         msg.MessageData = msg.MessageData.Replace('\r', ';').Replace('\n', ';');
       }
     }
+
+
+
+#if FUSION_WEAVER_DEBUG
+#pragma warning disable CS0282 // There is no defined ordering between fields in multiple declarations of partial struct
+    partial struct LogScope {
+#pragma warning restore CS0282 // There is no defined ordering between fields in multiple declarations of partial struct
+      public int LineNumber;
+      public string FilePath;
+    }
+
+    partial void ScopeBeginImpl(ref LogScope scope, string filePath, int lineNumber) {
+      scope.FilePath = filePath;
+      scope.LineNumber = lineNumber;
+      Log(LogType.Log, $"{scope.Message} start", scope.FilePath, scope.LineNumber);
+    }
+
+    partial void ScopeEndImpl(ref LogScope scope) {
+      Log(LogType.Log, $"{scope.Message} end {scope.Elapsed}", scope.FilePath, scope.LineNumber);
+    }
+#endif
   }
+
 }
 
 #endif
@@ -5363,24 +5367,39 @@ namespace Fusion.CodeGen {
 #endregion
 
 
-#region Assets/Photon/FusionCodeGen/ILWeaverLoggerUnityDebug.cs
+#region Assets/Photon/FusionCodeGen/ILWeaverLog.UnityEditor.cs
 
-#if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
+#if FUSION_WEAVER && !FUSION_WEAVER_ILPOSTPROCESSOR && FUSION_HAS_MONO_CECIL
 
 namespace Fusion.CodeGen {
 
   using UnityEngine;
   using System;
 
-  public class ILWeaverLoggerUnityDebug : ILWeaverLogger {
+  partial class ILWeaverLog {
 
-    public void Log(LogType logType, string message, string filePath, int lineNumber) {
-      Debug.unityLogger.Log(logType, message);
+#if FUSION_WEAVER_DEBUG
+    partial void LogExceptionImpl(Exception ex) {
+      UnityEngine.Debug.unityLogger.LogException(ex);
     }
 
-    public void Log(Exception ex) {
-      Debug.unityLogger.LogException(ex);
+    partial void LogImpl(LogType logType, string message, string filePath, int lineNumber) {
+      UnityEngine.Debug.unityLogger.Log(logType, message);
     }
+
+    partial void ScopeBeginImpl(ref LogScope scope, string filePath, int lineNumber) {
+      Log(LogType.Log, $"{scope.Message} start", default, default);
+    }
+
+    partial void ScopeEndImpl(ref LogScope scope) {
+      Log(LogType.Log, $"{scope.Message} end {scope.Elapsed}", default, default);
+    }
+
+    partial void AssertFailed(string message, string filePath, int lineNumber) {
+      Error(message, filePath, lineNumber);
+      throw new AssertException();
+    }
+#endif
   }
 }
 

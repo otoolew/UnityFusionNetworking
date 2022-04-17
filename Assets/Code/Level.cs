@@ -2,44 +2,45 @@ using System.Collections;
 using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class Level : SimulationBehaviour, ISpawned
 {
-	[SerializeField] private Text _countdownMessage;
-	[SerializeField] private Transform[] _spawnPoints;
+	[SerializeField] private Text countdownMessageText;
+	[SerializeField] private Transform[] spawnPoints;
 
-	private Dictionary<Player, Character> _playerCharacters = new Dictionary<Player, Character>();
+	private Dictionary<PlayerInfo, Character> playerCharacters = new Dictionary<PlayerInfo, Character>();
 	
 	public void Spawned()
 	{
 		Debug.Log("Level spawned");
 		// Spawn player avatars
-		foreach(Player player in GameManager.Instance.Players)
+		foreach(PlayerInfo player in GameManager.Instance.AllPlayerInfo)
 		{
-			SpawnAvatar(player, false);
+			SpawnCharacter(player, false);
 		}
 		// Tell the master that we're done loading
-		GameManager.Instance.Session.RPC_FinishedLoading(Runner.LocalPlayer);
+		GameManager.Instance.Session.RPC_FinishedLoadingLevel(Runner.LocalPlayer);
 		// Show the countdown message
-		_countdownMessage.gameObject.SetActive(true);
+		countdownMessageText.gameObject.SetActive(true);
 
 		GameManager.Instance.Session.Level = this;
 	}
 	
-	public void SpawnAvatar(Player player, bool lateJoiner)
+	public void SpawnCharacter(PlayerInfo playerInfo, bool lateJoiner)
 	{
-		if (_playerCharacters.ContainsKey(player))
+		if (playerCharacters.ContainsKey(playerInfo))
 			return;
-		if (player.Object.HasStateAuthority) // We have StateAuth over the player if we are the host or if we're the player self in shared mode
+		if (playerInfo.Object.HasStateAuthority) // We have StateAuth over the player if we are the host or if we're the player self in shared mode
 		{
-			Debug.Log($"Spawning avatar for player {player.DisplayName} with input auth {player.Object.InputAuthority}");
+			Debug.Log($"Spawning avatar for player {playerInfo.DisplayName} with input auth {playerInfo.Object.InputAuthority}");
 			// Note: This only works if the number of spawnpoints in the map matches the maximum number of players - otherwise there's a risk of spawning multiple players in the same location.
 			// For example, with 4 spawnpoints and a 5 player limit, the first player will get index 4 (max-1) and the second will get index 0, and both will then use the first spawn point.
-			Transform t = _spawnPoints[((int)player.Object.InputAuthority) % _spawnPoints.Length];
-			Character character = Runner.Spawn(player.Character, t.position, t.rotation, player.Object.InputAuthority);
-			_playerCharacters[player] = character;
-			player.InputEnabled = lateJoiner;
+			Transform t = spawnPoints[((int)playerInfo.Object.InputAuthority) % spawnPoints.Length];
+			Character character = Runner.Spawn(playerInfo.Character, t.position, t.rotation, playerInfo.Object.InputAuthority);
+			playerCharacters[playerInfo] = character;
+			playerInfo.InputEnabled = lateJoiner;
 			character.CurrentState = Character.State.ACTIVE;
 		}
 	}
@@ -49,9 +50,9 @@ public class Level : SimulationBehaviour, ISpawned
 		// Update the countdown message
 		Session session = GameManager.Instance.Session;
 		if (session.PostLoadCountDown.Expired(Runner))
-			_countdownMessage.gameObject.SetActive(false);
+			countdownMessageText.gameObject.SetActive(false);
 		else if (session.PostLoadCountDown.IsRunning)
-			_countdownMessage.text = Mathf.CeilToInt(session.PostLoadCountDown.RemainingTime(Runner)??0 ).ToString();
+			countdownMessageText.text = Mathf.CeilToInt(session.PostLoadCountDown.RemainingTime(Runner)??0 ).ToString();
 	}
 
 	/// <summary>

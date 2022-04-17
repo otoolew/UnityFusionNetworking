@@ -204,7 +204,7 @@ namespace UIComponents {
 
 		private T Add<T>(T prefab, float x, float y) where T : GridCell {
 			GridCell panel;
-			if (_childCounter < _currentChildren.Count && _currentChildren[_childCounter].pool.prefab == prefab) {
+			if (_childCounter < _currentChildren.Count && _currentChildren[_childCounter].pool.Prefab == prefab) {
 				panel = _currentChildren[_childCounter];
 			}
 			else {

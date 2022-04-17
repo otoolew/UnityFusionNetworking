@@ -992,7 +992,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Your Name...
+  m_Text: 
 --- !u!222 &314302816
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2277,7 +2277,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1988790742}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.74333334
+  m_Size: 0.81083333
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2488,7 +2488,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76ef05d8539b14aa096c65d8d7a0c9c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerGrid: {fileID: 1913509481}
+  playerGrid: {fileID: 1913509481}
   _playerListItemPrefab: {fileID: 534339918244005496, guid: 60e5b41c88dfb406eae36c5cae9295d6, type: 3}
   _sliderR: {fileID: 272785682}
   _sliderG: {fileID: 1402033807}
@@ -2671,7 +2671,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1062203946}
         m_TargetAssemblyTypeName: Lobby, Assembly-CSharp
-        m_MethodName: OnNameChanged
+        m_MethodName: OnDisplayNameChanged
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2683,14 +2683,26 @@ MonoBehaviour:
         m_CallState: 2
   m_OnDidEndEdit:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1062203946}
+        m_TargetAssemblyTypeName: GameUI.Staging.Staging, Assembly-CSharp
+        m_MethodName: OnDisplayNameChanged
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: The Nameless
+  m_Text: Default
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -4002,7 +4014,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: The Nameless
+  m_Text: Default
 --- !u!222 &2089975085
 CanvasRenderer:
   m_ObjectHideFlags: 0

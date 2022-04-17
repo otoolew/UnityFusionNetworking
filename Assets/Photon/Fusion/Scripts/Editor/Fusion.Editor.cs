@@ -1690,7 +1690,7 @@ namespace Fusion.Editor {
             EditorGUI.LabelField(position, label);
           } else {
             var wrapper = _pool.Acquire(fieldInfo, attribute, property, SurrogateType);
-            
+
             {
               bool surrogateOutdated = false;
               var targetObjects = property.serializedObject.targetObjects;
@@ -1962,20 +1962,10 @@ namespace Fusion.Editor {
       public PropertyEntry Acquire(FieldInfo field, PropertyAttribute attribute, SerializedProperty property, Type type) {
         WasUsed = true;
 
-        bool hadNulls = false;
-
         var key = (type, property.propertyPath, property.serializedObject.targetObjects.Length);
         if (_used.TryGetValue(key, out var entry)) {
-          var countValid = entry.Wrappers.Count(x => x);
-          if (countValid != entry.Wrappers.Length) {
-            // something destroyed wrappers
-            Debug.Assert(countValid == 0);
-            _used.Remove(key);
-            hadNulls = true;
-          } else {
-            entry.TTL = MaxTTL;
-            return entry;
-          }
+          entry.TTL = MaxTTL;
+          return entry;
         }
 
         // acquire new entry
@@ -1986,13 +1976,6 @@ namespace Fusion.Editor {
         }
 
         for (int i = 0; i < wrappers.Length; ++i) {
-
-          // pop destroyed ones
-          while (pool.Count > 0 && !pool.Peek()) {
-            pool.Pop();
-            hadNulls = true;
-          }
-
           if (pool.Count > 0) {
             wrappers[i] = pool.Pop();
           } else {
@@ -2018,10 +2001,6 @@ namespace Fusion.Editor {
         };
 
         _used.Add(key, entry);
-
-        if (hadNulls) {
-          GUIUtility.ExitGUI();
-        }
 
         return entry;
       }
@@ -5111,7 +5090,7 @@ namespace Fusion.Editor {
 
     private static GUIStyle[] _fusionHeaderStyles;
 
-    public static GUIStyle GetFusionHeaderBackStyle(int colorIndex) {
+    internal static GUIStyle GetFusionHeaderBackStyle(int colorIndex) {
 
       if (_fusionHeaderStyles == null || _fusionHeaderStyles[0] == null) {
         string[] colorNames = Enum.GetNames(typeof(EditorHeaderBackColor));
@@ -8887,25 +8866,16 @@ namespace Fusion.Editor {
 #region Assets/Photon/Fusion/Scripts/Editor/Utilities/FusionEditorLog.cs
 
 namespace Fusion.Editor {
+  using System;
   using UnityEngine;
   using ConditionalAttribute = System.Diagnostics.ConditionalAttribute;
 
   public static class FusionEditorLog {
 
-    static string LogPrefix;
-    static string ImportPrefix;
-    static string ConfigPrefix;
-    static string InspectorPrefix;
-
-    static FusionEditorLog() {
-      // Color duplicated from FusionUnityLogger - should use a direct reference when ASMDEFs exist
-      var c = UnityEditor.EditorGUIUtility.isProSkin ? new Color32(115, 172, 229, 255) : new Color32(20, 64, 120, 255);
-      var cs = string.Format("#{0:X6}", (c.r << 16) | (c.g << 8) | c.b);
-      LogPrefix       = $"[<color={cs}>Fusion/Editor</color>]";
-      ImportPrefix    = $"[<color={cs}>Fusion/Import</color>]";
-      ConfigPrefix    = $"[<color={cs}>Fusion/Config</color>]";
-      InspectorPrefix = $"[<color={cs}>Fusion/Inspector</color>]";
-    }
+    const string LogPrefix =    "[<color=#add8e6>Fusion/Editor</color>]";
+    const string ImportPrefix = "[<color=#add8e6>Fusion/Import</color>]";
+    const string ConfigPrefix = "[<color=#add8e6>Fusion/Config</color>]";
+    const string InspectorPrefix = "[<color=#add8e6>Fusion/Inspector</color>]";
 
     [Conditional("FUSION_EDITOR_TRACE")]
     public static void Trace(string msg) {
@@ -9332,7 +9302,7 @@ namespace Fusion.Editor {
       if (candidates.Length == 0) {
         if (createIfMissing) {
 
-          var defaultPath = Path.Combine(EnsureConfigFolderExists() , NetworkProjectConfig.DefaultResourceName + NetworkProjectConfigImporter.Extension);
+          var defaultPath = EnsureConfigFolderExists() + "/" + NetworkProjectConfig.DefaultResourceName + NetworkProjectConfigImporter.Extension;
 
           if (AssetDatabase.IsAssetImportWorkerProcess()) {
             FusionEditorLog.WarnConfig($"Creating a new config at {defaultPath}, but an import is already taking place. " +
@@ -9427,9 +9397,8 @@ namespace Fusion.Editor {
     static void ListenToPlaymodeChanges() {
       EditorApplication.playModeStateChanged += mode => {
         if (mode == PlayModeStateChange.ExitingPlayMode) {
-          var it = NetworkRunner.GetInstancesEnumerator();
-          while (it.MoveNext()) {
-            it.Current.NotifyEditorPlayModeExit();
+          foreach (var instance in NetworkRunner.Instances) {
+            instance.NotifyEditorPlayModeExit();
           }
         }
       };

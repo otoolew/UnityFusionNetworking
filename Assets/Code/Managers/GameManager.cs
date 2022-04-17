@@ -25,18 +25,15 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 			return instance;
 		}
 	}
+	
+	public static NetworkRunner MasterRunner;
+	
 	#endregion --------------------------------------------------------
 	
 	#region Network Runner --------------------------------------------
 	
-	private NetworkRunner runner;
-	
-	public static NetworkRunner LocalRunner;
-	
-	/*
-	[SerializeField] private FusionNetwork fusionNetwork;
-	public FusionNetwork FusionNetwork { get => fusionNetwork; set => this.fusionNetwork = value; }*/
-	
+	private NetworkRunner runnerInstance;
+
 	[SerializeField] private ConnectionStatus connectionStatus;
 	public ConnectionStatus ConnectionStatus { get => connectionStatus; private set => connectionStatus = value; }
 	
@@ -44,8 +41,11 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	public Session Session 
 	{ 
 		get => session; 
-		set { session = value; session.transform.SetParent(runner.transform); } 
+		set { session = value; session.transform.SetParent(runnerInstance.transform); } 
 	}
+	
+	[SerializeField] private NetworkPrefabRef playerInfoPrefab;
+	public NetworkPrefabRef PlayerInfoPrefab { get => playerInfoPrefab; set => playerInfoPrefab = value; }
 	#endregion -------------------------------------------------------
 	
 	#region GameStatus
@@ -64,13 +64,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	[Space]
 	public LevelManager LevelManager;
 	#endregion
-
-	#region NetworkAssets
-	public NetworkPrefabRef Player;
-	#endregion
-	
-	//[SerializeField] private SceneReference _introScene;
-	//[SerializeField] private Player _playerPrefab;
+	public bool IsMaster => runnerInstance != null && (runnerInstance.IsServer || runnerInstance.IsSharedModeMasterClient);
 	[SerializeField] private Session _sessionPrefab;
 	[SerializeField] private ErrorBox _errorBox;
 	[SerializeField] private bool _sharedMode;
@@ -80,15 +74,13 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	[SerializeField] private SessionProps _autoSession = new SessionProps();
 	
 	private Action<List<SessionInfo>> _onSessionListUpdated;
-	private readonly Dictionary<PlayerRef, Player> _players = new Dictionary<PlayerRef, Player>();
+
 	private CharacterInputData _data;
 	
 	private string _lobbyId;
-	
 
-	
-	public ICollection<Player> Players => _players.Values;
-	public bool IsMaster => runner != null && (runner.IsServer || runner.IsSharedModeMasterClient);
+	private readonly Dictionary<PlayerRef, PlayerInfo> playerDictionary = new Dictionary<PlayerRef, PlayerInfo>();
+	public ICollection<PlayerInfo> AllPlayerInfo => playerDictionary.Values;
 	
 	public FusionEvent onPlayerJoined;
 	public FusionEvent onPlayerLeft;
@@ -96,6 +88,9 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	public FusionEvent onDisconnect;
 	public FusionEvent onSceneLoaded;
 	[SerializeField] private GameObject _exitCanvas;
+
+	#region MonoBehaviour
+	
 	private void Awake()
 	{
 		if (instance == null)
@@ -124,28 +119,29 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		SceneManager.activeSceneChanged -= SceneManagerOnactiveSceneChanged;
 		onPlayerLeft.RemoveResponse(PlayerDisconnected);
 	}
+	#endregion
 	
 	#region Network Connection
 	private void Connect()
 	{
-		if (runner == null)
+		if (runnerInstance == null)
 		{
 			SetConnectionStatus(ConnectionStatus.Connecting);
 			GameObject go = new GameObject("NetworkRunner");
 			go.transform.SetParent(transform);
 
-			_players.Clear();
-			runner = go.AddComponent<NetworkRunner>();
-			runner.AddCallbacks(this);
+			playerDictionary.Clear();
+			runnerInstance = go.AddComponent<NetworkRunner>();
+			runnerInstance.AddCallbacks(this);
 		}
 	}
 
 	public void Disconnect()
 	{
-		if (runner != null)
+		if (runnerInstance != null)
 		{
 			SetConnectionStatus(ConnectionStatus.Disconnected);
-			runner.Shutdown();
+			runnerInstance.Shutdown();
 		}
 	}
 
@@ -179,9 +175,12 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 
 	public void PrintLocalRunnerInfo()
 	{
-		Debug.Log($"Local Runner Player[{LocalRunner.LocalPlayer.PlayerId}]");
+		DebugLogMessage.Log($"Local Runner Player[{FusionNetwork.LocalRunner}]");
 	}
 	#endregion
+
+	#region Session
+	
 	private void StartSession(GameMode mode, SessionProps props, bool disableClientSessionCreation=true)
 	{
 		Connect();
@@ -189,8 +188,8 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		SetConnectionStatus(ConnectionStatus.Starting);
 
 		Debug.Log($"Starting Game Session {props.RoomName}, Player Limit {props.PlayerLimit}, Server Game Mode: {mode}");
-		runner.ProvideInput = mode != GameMode.Server;
-		runner.StartGame(new StartGameArgs
+		runnerInstance.ProvideInput = mode != GameMode.Server;
+		runnerInstance.StartGame(new StartGameArgs
 		{
 			GameMode = mode,
 			CustomLobbyName = _lobbyId,
@@ -212,7 +211,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		_onSessionListUpdated = onSessionListUpdated;
 
 		SetConnectionStatus(ConnectionStatus.EnteringLobby);
-		var result = await runner.JoinSessionLobby(SessionLobby.Custom, lobbyId);
+		var result = await runnerInstance.JoinSessionLobby(SessionLobby.Custom, lobbyId);
 
 		if (!result.Ok) {
 			_onSessionListUpdated = null;
@@ -220,52 +219,65 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 			onSessionListUpdated(null);
 		}
 	}
-
-	public void SetPlayer(PlayerRef playerRef, Player player)
-	{
-		Debug.Log($"SetPlayer {playerRef} {player}");
-		_players[playerRef] = player;
-		player.transform.SetParent(runner.transform);
-		
-		if (Session.Level != null)
-		{ // Late join
-			Session.Level.SpawnAvatar(player, true);
-		}
-	}
-
-	public Player GetPlayer(PlayerRef ply=default)
-	{
-		if (!runner)
-			return null;
-		if (ply == default)
-			ply = runner.LocalPlayer;
-		_players.TryGetValue(ply, out Player player);
-		return player;
-	}
-	public void PlayerDisconnected(PlayerRef player, NetworkRunner runner)
-	{
-		runner.Despawn(runner.GetPlayerObject(player).GetComponent<Player>().Instance);
-		runner.Despawn(runner.GetPlayerObject(player));
-	}
 	
-	
-	//Called by button
-	public void LeaveRoom()
-	{
-		_ = LeaveRoomAsync();
-	}
-
 	private async Task LeaveRoomAsync()
 	{
 		await ShutdownRunner();
 	}
 	
-	private async Task ShutdownRunner()
+	#endregion
+
+	#region Player
+
+	public void SetPlayer(PlayerRef playerRef, PlayerInfo playerInfo)
 	{
-		await runner?.Shutdown(destroyGameObject: false);
-		Status = GameStatus.Lobby;
+		Debug.Log($"SetPlayer {playerRef} {playerInfo}");
+		playerDictionary[playerRef] = playerInfo;
+		playerInfo.transform.SetParent(runnerInstance.transform);
+		
+		if (Session.Level != null)
+		{ // Late join
+			Session.Level.SpawnCharacter(playerInfo, true);
+		}
 	}
 
+	public PlayerInfo GetPlayer(PlayerRef ply=default)
+	{
+		if (!runnerInstance)
+			return null;
+		if (ply == default)
+			ply = runnerInstance.LocalPlayer;
+		playerDictionary.TryGetValue(ply, out PlayerInfo playerInfo);
+		return playerInfo;
+	}
+	public bool GetPlayerCharacter(out Character character, PlayerRef ply=default)
+	{
+		character = null; 
+		if (!runnerInstance)
+		{
+			return false;
+		}
+
+		if (ply == default)
+		{
+			ply = runnerInstance.LocalPlayer;
+		}
+
+		if (playerDictionary.TryGetValue(ply, out PlayerInfo playerInfo))
+		{
+			character = playerInfo.Character;
+			return true;
+		}
+
+		return false;
+	}
+	#endregion
+
+	public void LeaveRoom()
+	{
+		_ = LeaveRoomAsync();
+	}
+	
 	public void DisconnectedFromSession(PlayerRef player, NetworkRunner runner)
 	{
 		Debug.Log("Disconnected from the session");
@@ -279,7 +291,6 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		SceneManager.LoadScene(0);
 		_exitCanvas.SetActive(false);
 	}
-
 	public void ExitGame()
 	{
 		_ = ShutdownRunner();
@@ -305,59 +316,62 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	}
 	public void OnPlayerJoined(NetworkRunner runner, PlayerRef playerRef)
 	{
-		Debug.Log($"Player {playerRef} Joined!");
 		if (session == null && IsMaster)
 		{
 			Debug.Log("Spawning world");
 			session = runner.Spawn(_sessionPrefab, Vector3.zero, Quaternion.identity);
 			session.gameObject.name = "Session";
+			MasterRunner = runner;
 		}
 
-		if (runner.IsServer || runner.Topology == SimulationConfig.Topologies.Shared && playerRef == runner.LocalPlayer)
+		if (IsMaster)
 		{
-			Debug.Log("Spawning player");
-			runner.Spawn(Player, Vector3.zero, Quaternion.identity, playerRef);
+			DebugLogMessage.Log(Color.green,$"Player {playerRef} Joined!");
+			runner.Spawn(playerInfoPrefab, Vector3.zero, Quaternion.identity, inputAuthority: playerRef);
 		}
-
+		
 		SetConnectionStatus(ConnectionStatus.Started);
 		onPlayerJoined?.Raise(playerRef, runner);
 	}
+
 	public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
 	{
 		Debug.Log($"{player.PlayerId} disconnected.");
-		_players.Remove(player);
+		playerDictionary.Remove(player);
+	}
+	
+	public void PlayerDisconnected(PlayerRef player, NetworkRunner runner)
+	{
+		runner.Despawn(runner.GetPlayerObject(player).GetComponent<PlayerInfo>().Instance);
+		runner.Despawn(runner.GetPlayerObject(player));
 	}
 	public void OnShutdown(NetworkRunner runner, ShutdownReason reason)
 	{
 		Debug.Log($"OnShutdown {reason}");
 		SetConnectionStatus(ConnectionStatus.Disconnected, reason.ToString());
 
-		if(this.runner!=null && this.runner.gameObject)
-			Destroy(this.runner.gameObject);
+		if(this.runnerInstance!=null && this.runnerInstance.gameObject)
+			Destroy(this.runnerInstance.gameObject);
 
-		_players.Clear();
-		this.runner = null;
+		playerDictionary.Clear();
+		this.runnerInstance = null;
 		session = null;
 
 		LevelManager.LoadMainMenu();
 		onShutdown?.Raise(runner: runner);
 	}
+	
+	private async Task ShutdownRunner()
+	{
+		await runnerInstance?.Shutdown(destroyGameObject: false);
+		Status = GameStatus.Lobby;
+	}
+	
 	public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token)
 	{
 		request.Accept();
 	}
-	public void OnInput(NetworkRunner runner, NetworkInput input)
-	{
-		/*// Persistent button flags like GetKey should be read when needed so they always have the actual state for this tick
-		_data.Buttons |= Input.GetKey( KeyCode.W ) ? CharacterButton.FORWARD: 0;
-		_data.Buttons |= Input.GetKey( KeyCode.A ) ? CharacterButton.LEFT : 0;
-		_data.Buttons |= Input.GetKey( KeyCode.S ) ? CharacterButton.BACKWARD : 0;
-		_data.Buttons |= Input.GetKey( KeyCode.D ) ? CharacterButton.RIGHT : 0;
-
-		input.Set( _data );
-		// Clear the flags so they don't spill over into the next tick unless they're still valid input.
-		_data.Buttons = 0;*/
-	}
+	public void OnInput(NetworkRunner runner, NetworkInput input) { }
 	public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
 	{
 		SetConnectionStatus(ConnectionStatus.InLobby);

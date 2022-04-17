@@ -1,13 +1,14 @@
 using System.Text;
 using UIComponents;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace GameUI.Staging
 {
 	public class Staging : MonoBehaviour
 	{
-		[SerializeField] private GridBuilder _playerGrid;
+		[SerializeField] private GridBuilder playerGrid;
 		[SerializeField] private PlayerListItem _playerListItemPrefab;
 		[SerializeField] private Slider _sliderR;
 		[SerializeField] private Slider _sliderG;
@@ -44,10 +45,10 @@ namespace GameUI.Staging
 		{
 			int count = 0;
 			int ready = 0;
-			_playerGrid.BeginUpdate();
-			foreach (Player ply in GameManager.Instance.Players)
+			playerGrid.BeginUpdate();
+			foreach (PlayerInfo ply in GameManager.Instance.AllPlayerInfo)
 			{
-				_playerGrid.AddRow(_playerListItemPrefab, item => item.Setup(ply));
+				playerGrid.AddRow(_playerListItemPrefab, item => item.Setup(ply));
 				count++;
 				if (ply.Ready)
 					ready++;
@@ -62,7 +63,7 @@ namespace GameUI.Staging
 			_startButton.enabled = wait==null;
 			_startLabel.text = wait ?? "Start";
 	  
-			_playerGrid.EndUpdate();
+			playerGrid.EndUpdate();
 
 			if (_sessionRefresh <= 0)
 			{
@@ -80,20 +81,20 @@ namespace GameUI.Staging
 
 		public void OnToggleIsReady()
 		{
-			Player ply = GameManager.Instance.GetPlayer();
+			PlayerInfo ply = GameManager.Instance.GetPlayer();
 			_playerReady.SetActive(!ply.Ready);
 			ply.RPC_SetIsReady(!ply.Ready);
 		}
 
-		public void OnNameChanged(string name)
+		public void OnDisplayNameChanged(string name)
 		{
-			Player ply = GameManager.Instance.GetPlayer();
-			ply.RPC_SetName(name);
+			PlayerInfo ply = GameManager.Instance.GetPlayer();
+			ply.RPC_SetDisplayName(name);
 		}
 	
 		public void OnColorUpdated()
 		{
-			Player ply = GameManager.Instance.GetPlayer();
+			PlayerInfo ply = GameManager.Instance.GetPlayer();
 			Color c = new Color(_sliderR.value, _sliderG.value, _sliderB.value);
 			_color.color = c;
 			ply.RPC_SetColor( c);

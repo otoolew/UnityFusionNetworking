@@ -32,10 +32,10 @@ public class Session : NetworkBehaviour
 	}
 
 	[Rpc(RpcSources.All, RpcTargets.StateAuthority, Channel = RpcChannel.Reliable)]
-	public void RPC_FinishedLoading(PlayerRef playerRef)
+	public void RPC_FinishedLoadingLevel(PlayerRef playerRef)
 	{
 		_finishedLoading.Add(playerRef);
-		if (_finishedLoading.Count >= GameManager.Instance.Players.Count)
+		if (_finishedLoading.Count >= GameManager.Instance.AllPlayerInfo.Count)
 		{
 			PostLoadCountDown = TickTimer.CreateFromSeconds(Runner,3);
 		}
@@ -46,16 +46,16 @@ public class Session : NetworkBehaviour
 		if (PostLoadCountDown.Expired(Runner))
 		{
 			PostLoadCountDown = TickTimer.None;
-			foreach (Player player in GameManager.Instance.Players)
-				player.InputEnabled = true;
+			foreach (PlayerInfo playerInfo in GameManager.Instance.AllPlayerInfo)
+				playerInfo.InputEnabled = true;
 		}
 	}
 
 	public void LoadMap(MapIndex mapIndex)
 	{
 		_finishedLoading.Clear();
-		foreach (Player player in GameManager.Instance.Players)
-			player.InputEnabled = false;
+		foreach (PlayerInfo playerInfo in GameManager.Instance.AllPlayerInfo)
+			playerInfo.InputEnabled = false;
 		Runner.SetActiveScene((int)mapIndex);
 	}
 }
