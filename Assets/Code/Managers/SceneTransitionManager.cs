@@ -43,6 +43,5 @@ public class SceneTransitionManager : MonoBehaviour
         {
             FadeScreen.gameObject.SetActive(false);
         }
-        Debug.Log("Fade Coroutine Ended");
     }
 }

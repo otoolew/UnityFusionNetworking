@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7979975255234169266}
   - component: {fileID: 7979975255234169264}
-  - component: {fileID: 7979975255234169267}
+  - component: {fileID: 5974129478215998867}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -55,9 +55,9 @@ MonoBehaviour:
     RawGuidValue: e72d6d346cd174a55b95f70e519243d3
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 7979975255234169267}
+  - {fileID: 5974129478215998867}
   SimulationBehaviours: []
---- !u!114 &7979975255234169267
+--- !u!114 &5974129478215998867
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -66,16 +66,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 7979975255234169265}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 285ae7393ed0490eb806ceb4b8159c1a, type: 3}
+  m_Script: {fileID: 11500000, guid: 0bb3dad4de7ca8d43a0376e0d4e8870b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
-  Character: {fileID: 6599765012038102482, guid: 68aeddbde3751874c841d501aee8bf86, type: 3}
-  _DisplayName: Joe
-  _Color: {r: 1, g: 1, b: 1, a: 0}
+  _DisplayName: 
+  _Color: {r: 0, g: 0, b: 0, a: 0}
   _Ready:
     _value: 0
   _InputEnabled:
     _value: 0
-  _Instance: {fileID: 7979975255234169264}
-  OnPlayerDataSpawnedEvent: {fileID: 11400000, guid: 61be95a41fedd81499f804210043db11, type: 2}
+  _Instance: {fileID: 0}
+  Character: {fileID: 0}

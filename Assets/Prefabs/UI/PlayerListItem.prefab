@@ -62,6 +62,7 @@ MonoBehaviour:
   _name: {fileID: 323864154171697145}
   _color: {fileID: 5871771243377070239}
   _ready: {fileID: 4586142233472621653}
+  _nameInput: {fileID: 0}
 --- !u!1 &4586142233472621653
 GameObject:
   m_ObjectHideFlags: 0

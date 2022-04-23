@@ -1,9 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Fusion;
-using UnityEditor.Rendering;
+using Fusion.Sockets;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
-using Utility;
 
 /// <summary>
 /// Visual representation of a Player - the Character is instantiated by the map once it's loaded.
@@ -14,16 +14,20 @@ using Utility;
 /// </summary>
 
 [RequireComponent(typeof(NetworkCharacterControllerPrototype))]
-public class Character : NetworkBehaviour
+public class Character : NetworkBehaviour, INetworkRunnerCallbacks
 {
 	#region Player
-	[SerializeField] private PlayerInfo playerInfo;
-	public PlayerInfo PlayerInfo { get => playerInfo; set => playerInfo = value; }
+	[SerializeField] private NetworkPlayer playerInfo;
+	public NetworkPlayer PlayerInfo { get => playerInfo; set => playerInfo = value; }
 	#endregion
 	
 	#region Components
+
 	[SerializeField] private PlayerCamera playerCamera;
 	public PlayerCamera PlayerCamera { get => playerCamera; set => this.playerCamera = value; }
+	
+	[SerializeField] private CharacterInput characterInput;
+	public CharacterInput CharacterInput { get => characterInput; set => this.characterInput = value; }
 	
 	[SerializeField] private NetworkCharacterControllerPrototype networkCharacterController;
 	public NetworkCharacterControllerPrototype NetworkCharacterController { get => networkCharacterController; set => networkCharacterController = value; }
@@ -36,17 +40,19 @@ public class Character : NetworkBehaviour
 	#endregion
 
 	#region Networked Properties
+	[Networked]public CharacterState CharacterState { get; set; }
 	[Networked]public Vector3 MoveDirection { get; set; }
 	[Networked]public Vector3 LookDirection { get; set; }
-	 
-	#endregion
 	
-	public bool TransformLocal = false;
+	#endregion
 
 	[DrawIf(nameof(ShowSpeed), DrawIfHideType.Hide, DoIfCompareOperator.NotEqual)]
 	public float Speed = 6f;
 	bool HasNCC => GetComponent<NetworkCharacterControllerPrototype>();
 	bool ShowSpeed => this && !TryGetComponent<NetworkCharacterControllerPrototype>(out _);
+
+	public Vector3 WorldPosition => transform.position;
+	public Vector3 CenterMassPosition => transform.position += new Vector3(0,1.25f,0);
 	
 	[SerializeField] private FusionEvent onCharacterSpawn;
 	public void Awake() 
@@ -74,24 +80,11 @@ public class Character : NetworkBehaviour
 		if (nameTagText == null) NameTagText = GetComponent<Text>();
 	}
 	
-	
-	public enum State
-	{
-		NEW,
-		DESPAWNING,
-		SPAWNING,
-		ACTIVE,
-		DEAD
-	}
-	
-	[Networked(OnChanged = nameof(OnStateChanged))]
-	public State CurrentState { get; set; }
-	
 	public override void Spawned()
 	{
 		CacheComponents();
 		
-		playerInfo = GameManager.Instance.GetPlayer(Object.InputAuthority);
+		playerInfo = GameManager.Instance.GetNetworkPlayer(Object.InputAuthority);
 		nameTagText.text = playerInfo.DisplayName;
 		meshRenderer.material.color = playerInfo.Color;
 
@@ -102,16 +95,62 @@ public class Character : NetworkBehaviour
 			{
 				PlayerCamera.AssignFollowTarget(transform);
 			}
+			Runner.AddCallbacks(this);
 		}
 	}
 	
-	public override void FixedUpdateNetwork() 
+	public override void FixedUpdateNetwork()
 	{
-		if (Runner.Config.PhysicsEngine == NetworkProjectConfig.PhysicsEngines.None) {
+		if (Runner.Config.PhysicsEngine == NetworkProjectConfig.PhysicsEngines.None)
+		{
 			return;
 		}
-		
+
 		if (GetInput(out CharacterInputData input))
+		{
+			Vector3 moveVector = default;
+
+			if (Input.GetKey(KeyCode.W))
+			{
+				moveVector += Vector3.forward;
+			}
+
+			if (Input.GetKey(KeyCode.S))
+			{
+				moveVector -= Vector3.forward;
+			}
+
+			if (Input.GetKey(KeyCode.A))
+			{
+				moveVector -= Vector3.right;
+			}
+
+			if (Input.GetKey(KeyCode.D))
+			{
+				moveVector += Vector3.right;
+			}
+			moveVector = moveVector.normalized;
+			
+			MoveDirection = moveVector;
+			LookDirection = input.AimDirection; 
+			
+			Move(MoveDirection);
+			LookAt(LookDirection);
+			
+			if (input.IsDown(CharacterInputData.JUMP))
+			{
+				Jump();
+			}
+			if (input.IsDown(CharacterInputData.USE))
+			{
+				Use();
+			}
+			if (input.IsDown(CharacterInputData.RELOAD))
+			{
+				Reload();
+			}
+		}
+		/*if (GetInput(out CharacterInputData input))
 		{
 			Vector3 direction = default;
 
@@ -140,8 +179,9 @@ public class Character : NetworkBehaviour
 			LookDirection = input.AimDirection; 
 			Move(direction);
 			LookAt(input.AimDirection);
-		}
+		}*/
 	}
+
 	/// <summary>
 	/// Render is the Fusion equivalent of Unity's Update() and unlike FixedUpdateNetwork which is very different from FixedUpdate,
 	/// Render is in fact exactly the same. It even uses the same Time.deltaTime time steps. The purpose of Render is that
@@ -152,7 +192,7 @@ public class Character : NetworkBehaviour
 	/// </summary>
 	public override void Render()
 	{
-		meshRenderer.gameObject.SetActive(CurrentState == State.ACTIVE);
+		meshRenderer.gameObject.SetActive(CharacterState == CharacterState.ACTIVE);
 		/*collider.enabled = state != State.Dead;
 		_hitBoxRoot.enabled = state == State.Active;
 		_damageVisuals.CheckHealth(life);*/
@@ -160,26 +200,33 @@ public class Character : NetworkBehaviour
 	#region State Change
 	public static void OnStateChanged(Changed<Character> changed)
 	{
-		if(changed.Behaviour)
-			changed.Behaviour.OnStateChanged();
+		DebugLogMessage.Log($"[OnStateChanged({changed.Behaviour.CharacterState})]");
+		changed.Behaviour.OnStateChanged();
 	}
 	
 	public void OnStateChanged()
 	{
-		switch (CurrentState)
+		switch (CharacterState)
 		{
-			case State.SPAWNING:
-				Debug.Log($"[{playerInfo.Id}] Player {CurrentState}");
+			case CharacterState.NEW:
+				Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
 				break;
-			case State.ACTIVE:
-				Debug.Log($"[{playerInfo.Id}] Player {CurrentState}");
+			case CharacterState.ACTIVATING:
+				Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
 				break;
-			case State.DEAD:
-				Debug.Log($"[{playerInfo.Id}] Player {CurrentState}");
+			case CharacterState.ACTIVE:
+				Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
+				meshRenderer.gameObject.SetActive(false);
 				break;
-			case State.DESPAWNING:
-				Debug.Log($"[{playerInfo.Id}] Player {CurrentState}");
+			case CharacterState.DEACTIVATING:
+				Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
 				break;
+			case CharacterState.INACTIVE:
+				break;
+			default:
+				DebugLogMessage.Log($"[{playerInfo.Id}] Player {CharacterState}");
+				break;
+		
 		}
 	}
 	#endregion
@@ -188,29 +235,29 @@ public class Character : NetworkBehaviour
 	
 	public void Move()
 	{
-		if (CurrentState == State.ACTIVE)
+		if (CharacterState == CharacterState.ACTIVE)
 		{
 			networkCharacterController.Move(MoveDirection);
 		}
 	}
+	
 	public void Move(Vector3 direction)
 	{
-		if (CurrentState == State.ACTIVE)
+		MoveDirection = direction;
+		if (CharacterState == CharacterState.ACTIVE)
 		{
-			networkCharacterController.Move(direction);
+			networkCharacterController.Move(MoveDirection);
 		}
 	}
-	
 	
 	public void LookAt(Vector3 direction)
 	{
 		LookDirection = direction;
-		if (CurrentState == State.ACTIVE)
+		if (CharacterState == CharacterState.ACTIVE)
 		{
 			if (direction.sqrMagnitude > 0)
 			{
 				networkCharacterController.transform.rotation = Quaternion.Euler(direction);
-				
 				//networkCharacterController.transform.forward = Vector3.Lerp(networkCharacterController.transform.forward, direction, Time.deltaTime * 100f);
 			}
 		}
@@ -221,26 +268,65 @@ public class Character : NetworkBehaviour
 		{
 			networkCharacterController.Jump();
 		}
-		else
+		/*else
 		{
 			MoveDirection += (TransformLocal ? transform.up : Vector3.up);
-		}
+		}*/
 	}
 	#endregion
 
 	#region Behaviour
-
+	public void Use()
+	{
+		DebugLogMessage.Log(Color.white, $"{gameObject.name} TODO: IMPLEMENT USE");
+	}
+	public void Reload()
+	{
+		DebugLogMessage.Log(Color.white, $"{gameObject.name} TODO: IMPLEMENT RELOAD");
+	}
 	public void Kill()
 	{
-		Rpc_Kill();
+		if (Object.HasStateAuthority)
+		{
+			CharacterState = CharacterState.DEACTIVATING;
+		}
+		else
+		{
+			Rpc_Kill();
+		}
 	}
 	
-	[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+	[Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
 	public void Rpc_Kill()
 	{
-		
-		CurrentState = State.DEAD;
+		CharacterState = CharacterState.DEACTIVATING;
+
 	}
 	#endregion
-
+	#region INetworkRunnerCallbacks
+	public void OnConnectedToServer(NetworkRunner runner) {}
+	public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) {}
+	public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) {}
+	public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
+	public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
+	public void OnDisconnectedFromServer(NetworkRunner runner) {}
+	
+	public void OnInput(NetworkRunner runner, NetworkInput input)
+	{
+		if (CharacterInput != null)
+		{
+			input.Set(CharacterInput.GetInput());
+		}
+	}
+	
+	public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) {}
+	public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) {}
+	public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) {}
+	public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) {}
+	public void OnSceneLoadDone(NetworkRunner runner) {}
+	public void OnSceneLoadStart(NetworkRunner runner) {}
+	public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) {}
+	public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) {}
+	public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message){}
+	#endregion
 }

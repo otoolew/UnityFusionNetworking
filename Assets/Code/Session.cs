@@ -14,7 +14,7 @@ public class Session : NetworkBehaviour
 	public SessionInfo Info => Runner.SessionInfo;
 	public Level Level { get; set; }
 
-	private HashSet<PlayerRef> _finishedLoading = new HashSet<PlayerRef>();
+	private readonly HashSet<PlayerRef> finishedLoading = new HashSet<PlayerRef>();
 
 	public override void Spawned()
 	{
@@ -26,16 +26,14 @@ public class Session : NetworkBehaviour
 				LoadMap(props.StartMap);
 			else
 				Runner.SetActiveScene((int)MapIndex.Lobby);
-			
-			Debug.Log($"Session Created");
 		}
 	}
 
 	[Rpc(RpcSources.All, RpcTargets.StateAuthority, Channel = RpcChannel.Reliable)]
 	public void RPC_FinishedLoadingLevel(PlayerRef playerRef)
 	{
-		_finishedLoading.Add(playerRef);
-		if (_finishedLoading.Count >= GameManager.Instance.AllPlayerInfo.Count)
+		finishedLoading.Add(playerRef);
+		if (finishedLoading.Count >= GameManager.Instance.PlayerInfoList.Count)
 		{
 			PostLoadCountDown = TickTimer.CreateFromSeconds(Runner,3);
 		}
@@ -46,15 +44,15 @@ public class Session : NetworkBehaviour
 		if (PostLoadCountDown.Expired(Runner))
 		{
 			PostLoadCountDown = TickTimer.None;
-			foreach (PlayerInfo playerInfo in GameManager.Instance.AllPlayerInfo)
+			foreach (NetworkPlayer playerInfo in GameManager.Instance.PlayerInfoList)
 				playerInfo.InputEnabled = true;
 		}
 	}
 
 	public void LoadMap(MapIndex mapIndex)
 	{
-		_finishedLoading.Clear();
-		foreach (PlayerInfo playerInfo in GameManager.Instance.AllPlayerInfo)
+		finishedLoading.Clear();
+		foreach (NetworkPlayer playerInfo in GameManager.Instance.PlayerInfoList)
 			playerInfo.InputEnabled = false;
 		Runner.SetActiveScene((int)mapIndex);
 	}

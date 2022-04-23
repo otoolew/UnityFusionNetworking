@@ -23,30 +23,16 @@ namespace GameUI.Staging
 
 		private void Awake()
 		{
-			GameManager.Instance.GetPlayer()?.RPC_SetIsReady(false);
+			GameManager.Instance.GetNetworkPlayer()?.RPC_SetIsReady(false);
 			_playerReady.SetActive(false);
 		}
-
-		private void UpdateSessionInfo()
-		{
-			Session s = GameManager.Instance.Session;
-			StringBuilder sb = new StringBuilder();
-			if (s != null)
-			{
-				sb.AppendLine($"Session Name: {s.Info.Name}");
-				sb.AppendLine($"Region: {s.Info.Region}");
-				sb.AppendLine($"Game Type: {s.Props.PlayMode}");
-				sb.AppendLine($"Map: {s.Props.StartMap}");
-			}
-			_sessionInfo.text = sb.ToString();
-		}
-
+		
 		void Update()
 		{
 			int count = 0;
 			int ready = 0;
 			playerGrid.BeginUpdate();
-			foreach (PlayerInfo ply in GameManager.Instance.AllPlayerInfo)
+			foreach (NetworkPlayer ply in GameManager.Instance.PlayerInfoList)
 			{
 				playerGrid.AddRow(_playerListItemPrefab, item => item.Setup(ply));
 				count++;
@@ -68,11 +54,23 @@ namespace GameUI.Staging
 			if (_sessionRefresh <= 0)
 			{
 				UpdateSessionInfo();
-				_sessionRefresh = 2.0f;
+				_sessionRefresh = 1.0f;
 			}
 			_sessionRefresh -= Time.deltaTime;
 		}
-
+		private void UpdateSessionInfo()
+		{
+			Session s = GameManager.Instance.Session;
+			StringBuilder sb = new StringBuilder();
+			if (s != null)
+			{
+				sb.AppendLine($"Session Name: {s.Info.Name}");
+				sb.AppendLine($"Region: {s.Info.Region}");
+				sb.AppendLine($"Game Type: {s.Props.PlayMode}");
+				sb.AppendLine($"Map: {s.Props.StartMap}");
+			}
+			_sessionInfo.text = sb.ToString();
+		}
 		public void OnStart()
 		{
 			SessionProps props = GameManager.Instance.Session.Props;
@@ -81,20 +79,20 @@ namespace GameUI.Staging
 
 		public void OnToggleIsReady()
 		{
-			PlayerInfo ply = GameManager.Instance.GetPlayer();
+			NetworkPlayer ply = GameManager.Instance.GetNetworkPlayer();
 			_playerReady.SetActive(!ply.Ready);
 			ply.RPC_SetIsReady(!ply.Ready);
 		}
 
 		public void OnDisplayNameChanged(string name)
 		{
-			PlayerInfo ply = GameManager.Instance.GetPlayer();
+			NetworkPlayer ply = GameManager.Instance.GetNetworkPlayer();
 			ply.RPC_SetDisplayName(name);
 		}
 	
 		public void OnColorUpdated()
 		{
-			PlayerInfo ply = GameManager.Instance.GetPlayer();
+			NetworkPlayer ply = GameManager.Instance.GetNetworkPlayer();
 			Color c = new Color(_sliderR.value, _sliderG.value, _sliderB.value);
 			_color.color = c;
 			ply.RPC_SetColor( c);

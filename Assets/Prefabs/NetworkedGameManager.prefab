@@ -8,6 +8,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 5300799631922814029, guid: 8ff5f212714e94999abb71d8e7248bd9, type: 3}
+      propertyPath: session
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5300799631922814029, guid: 8ff5f212714e94999abb71d8e7248bd9, type: 3}
       propertyPath: playerInfoPrefab.RawGuidValue.Array.data[0]
       value: -6524359697486762521
       objectReference: {fileID: 0}
@@ -102,7 +106,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dae7c6671d9e4df47aca40428767d5eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MasterID: 
-  LocalID: 
   onPlayerJoined: {fileID: 11400000, guid: e461320136176e54481ad41f1b8d8838, type: 2}
   onPlayerLeft: {fileID: 11400000, guid: 5fe42084d6e77e149bab756e7b603f93, type: 2}

@@ -91,7 +91,6 @@ MonoBehaviour:
     RawGuidValue: 68aeddbde3751874c841d501aee8bf86
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: -2499736524151842055}
   - {fileID: 6599765012038102482}
   - {fileID: 7834668140746253566}
   SimulationBehaviours: []
@@ -107,7 +106,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95045f9d29987a64f82f7777d1f39436, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interpolationDataSource: 0
   character: {fileID: 6599765012038102482}
   mouseLookMask:
     serializedVersion: 2
@@ -129,16 +127,15 @@ MonoBehaviour:
   _interpolationDataSource: 0
   playerInfo: {fileID: 0}
   playerCamera: {fileID: 0}
+  characterInput: {fileID: -2499736524151842055}
   networkCharacterController: {fileID: 7834668140746253566}
   meshRenderer: {fileID: 6648770355697696286}
   nameTagText: {fileID: 6648770355910371729}
-  pooledObjComp: {fileID: 0}
+  _CharacterState: 0
   _MoveDirection: {x: 0, y: 0, z: 0}
   _LookDirection: {x: 0, y: 0, z: 0}
-  TransformLocal: 0
   Speed: 6
   onCharacterSpawn: {fileID: 11400000, guid: 3c463e6f72fa0264f8d772bb6ac3d4b5, type: 2}
-  _CurrentState: 0
 --- !u!114 &7834668140746253566
 MonoBehaviour:
   m_ObjectHideFlags: 0

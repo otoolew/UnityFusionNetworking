@@ -11,3 +11,4 @@ public static class DebugLogMessage
         Debug.Log(new LogString(color,message.ToString()));
     }
 }
+

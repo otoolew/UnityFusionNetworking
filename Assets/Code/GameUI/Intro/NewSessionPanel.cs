@@ -54,7 +54,6 @@ namespace GameUI.Intro
 		
 		public void OnCreateSession()
 		{
-			Debug.Log("New Session Panel Create Session");
 			SessionProps props = new SessionProps
 			{
 				StartMap = _toggleMap1.isOn ? MapIndex.Map0 : MapIndex.Map1,

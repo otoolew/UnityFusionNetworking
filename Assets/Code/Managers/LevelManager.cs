@@ -12,22 +12,21 @@ public enum MapIndex
     Map0,
     Map1,
 };
-
+public delegate void FinishedLoadingDelegate(IEnumerable<NetworkObject> sceneObjects);
 public class LevelManager : NetworkSceneManagerBase
 {
+    [SerializeField] private Level currentLevel;
     [SerializeField] private Scene currentScene;
-    public Scene CurrentScene { get => currentScene; set => this.currentScene = value; }
-    
     [SerializeField] private SceneTransitionManager sceneTransitionManager;
     [SerializeField] private SceneReference mainMenuScene;
     [SerializeField] private SceneReference lobbyScene;
     public SceneReference LobbyScene { get => lobbyScene; set => this.lobbyScene = value; }
     
     [SerializeField] private SceneReference[] levels;
+    // ReSharper disable Unity.PerformanceAnalysis
     protected override IEnumerator SwitchScene(SceneRef prevScene, SceneRef newScene, FinishedLoadingDelegate finished)
     {
         GameManager.Instance.Status = GameManager.GameStatus.Loading;
-        Debug.Log($"Switching Scene from {prevScene} to {newScene}");
 
         sceneTransitionManager.StartLoadingScreen();
         if (newScene <= 0)
@@ -37,19 +36,20 @@ public class LevelManager : NetworkSceneManagerBase
         }
 
         yield return new WaitForSeconds(1.0f);	
+        /*
         if (currentScene != default)
         {
             Debug.Log($"Unloading Scene {currentScene.buildIndex}");
             yield return SceneManager.UnloadSceneAsync(currentScene);
         }
-        Debug.Log($"Loading scene {newScene}");
+        */
+
         currentScene = default;
         List<NetworkObject> sceneObjects = new List<NetworkObject>();
         if (newScene >= 0)
         {
             yield return SceneManager.LoadSceneAsync(newScene);
             currentScene = SceneManager.GetSceneByBuildIndex(newScene);
-            Debug.Log($"Loaded scene {newScene}: {currentScene}");
             sceneObjects = FindNetworkObjects(currentScene, disable: false);
         }
         
@@ -69,10 +69,8 @@ public class LevelManager : NetworkSceneManagerBase
         yield return null;
         yield return new WaitForSeconds(1);
         finished(sceneObjects);
-
-        Debug.Log($"Switched Scene from {prevScene} to {newScene} - loaded {sceneObjects.Count} scene objects");
-
         sceneTransitionManager.FinishLoadingScreen();
+        DebugLogMessage.Log(Color.green,$"Loaded {newScene}\n SceneObject Count = {sceneObjects.Count}");
     }
     public void ResetLoadedScene()
     {
@@ -92,5 +90,13 @@ public class LevelManager : NetworkSceneManagerBase
         {
             SceneManager.LoadSceneAsync(lobbyScene);
         }
+    }
+    public void ResetLevel()
+    {
+        if (currentLevel != null)
+        {
+            currentLevel.OnLoadMap1();
+        }
+        currentScene = default;
     }
 }

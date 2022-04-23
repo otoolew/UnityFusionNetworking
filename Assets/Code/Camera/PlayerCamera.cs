@@ -22,7 +22,7 @@ public class PlayerCamera : MonoBehaviour
     
     private float step;
     
-    #region Monobehaviour
+    #region MonoBehaviour
 
     private void Start()
     {
