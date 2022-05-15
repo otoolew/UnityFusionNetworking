@@ -933,6 +933,7 @@ GameObject:
   - component: {fileID: 5300799631922814029}
   - component: {fileID: 6600041622086690048}
   - component: {fileID: 3448584412547625536}
+  - component: {fileID: 7587197558307618383}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -975,9 +976,9 @@ MonoBehaviour:
     RawGuidValue: e72d6d346cd174a55b95f70e519243d3
   status: 0
   LevelManager: {fileID: 6600041622086690048}
-  _sessionPrefab: {fileID: 1504012697553745423, guid: 17be35a8d6b4e4219a6291fa00407b61, type: 3}
-  _errorBox: {fileID: 6274724182691780849}
-  _sharedMode: 0
+  sessionPrefab: {fileID: 1504012697553745423, guid: 17be35a8d6b4e4219a6291fa00407b61, type: 3}
+  errorBox: {fileID: 0}
+  sharedMode: 0
   _autoConnect: 0
   _autoSession:
     RoomName: Room Name
@@ -990,7 +991,7 @@ MonoBehaviour:
   onShutdown: {fileID: 11400000, guid: 8fa9b658a12c96c4199de8d6abfb191f, type: 2}
   onDisconnect: {fileID: 11400000, guid: bc96744b5d5e87f4faa5f593f011bcac, type: 2}
   onSceneLoaded: {fileID: 11400000, guid: da48cf1c28d5aeb4f855863d74b82734, type: 2}
-  _exitCanvas: {fileID: 6274724182691780851}
+  exitCanvas: {fileID: 0}
 --- !u!114 &6600041622086690048
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1004,6 +1005,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowHierarchyWindowOverlay: 1
+  currentLevel: {fileID: 0}
   currentScene:
     m_Handle: 0
   sceneTransitionManager: {fileID: 3448584412547625536}
@@ -1013,7 +1015,11 @@ MonoBehaviour:
   lobbyScene:
     sceneAsset: {fileID: 102900000, guid: a792d8e8d40514fd6bd604718649edde, type: 3}
     scenePath: Assets/Scenes/Lobby.unity
-  levels: []
+  levels:
+  - sceneAsset: {fileID: 102900000, guid: 55768864b781d448c96a331c2a93a54f, type: 3}
+    scenePath: Assets/Scenes/3.Map0.unity
+  - sceneAsset: {fileID: 102900000, guid: a59870309d5b74e5ba9a394f7d8ce0c3, type: 3}
+    scenePath: Assets/Scenes/4.Map1.unity
 --- !u!114 &3448584412547625536
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1029,3 +1035,16 @@ MonoBehaviour:
   fadeScreen: {fileID: 4894581528293760906}
   fadeDuration: 1
   isFading: 0
+--- !u!114 &7587197558307618383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6274724183888813009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dae7c6671d9e4df47aca40428767d5eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onPlayerJoined: {fileID: 11400000, guid: e461320136176e54481ad41f1b8d8838, type: 2}

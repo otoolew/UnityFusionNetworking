@@ -7,14 +7,11 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Visual representation of a Player - the Character is instantiated by the map once it's loaded.
-/// Collider-based character controller movement (not related to Unity's CharacterController type).
-/// Replicates both the internal state (Velocity, MaxSpeed, etc) and the Unity Transform data from the
-/// NetworkObject.StateAuthority to all other peers. Add this component to a GameObject to control
-/// movement and sync the position and/or rotation accurately, including client-side prediction.
+/// This class handles camera tracking and player movement and is destroyed when the map is unloaded.
+/// (I.e. the player gets a new avatar in each map)
 /// </summary>
-
 [RequireComponent(typeof(NetworkCharacterControllerPrototype))]
-public class Character : NetworkBehaviour, INetworkRunnerCallbacks
+public class Character : NetworkBehaviour
 {
 	#region Player
 	[SerializeField] private NetworkPlayer playerInfo;
@@ -70,7 +67,7 @@ public class Character : NetworkBehaviour, INetworkRunnerCallbacks
 
 	private void CharacterSpawned(PlayerRef player, NetworkRunner runner)
 	{
-		Debug.Log($"CharacterSpawned Fusion Event -> Player [{player.PlayerId}]");
+		DebugLogMessage.Log(Color.yellow, $"CharacterSpawned Fusion Event -> Player [{player.PlayerId}]");
 	}
 	private void CacheComponents() 
 	{
@@ -90,98 +87,20 @@ public class Character : NetworkBehaviour, INetworkRunnerCallbacks
 
 		if (Object.HasInputAuthority)
 		{
-			PlayerCamera = Camera.main?.transform.GetComponent<PlayerCamera>();
+			PlayerCamera = Camera.main.transform.GetComponent<PlayerCamera>();
 			if (PlayerCamera != null)
 			{
 				PlayerCamera.AssignFollowTarget(transform);
 			}
-			Runner.AddCallbacks(this);
 		}
 	}
 	
 	public override void FixedUpdateNetwork()
 	{
-		if (Runner.Config.PhysicsEngine == NetworkProjectConfig.PhysicsEngines.None)
-		{
-			return;
-		}
 
-		if (GetInput(out CharacterInputData input))
-		{
-			Vector3 moveVector = default;
-
-			if (Input.GetKey(KeyCode.W))
-			{
-				moveVector += Vector3.forward;
-			}
-
-			if (Input.GetKey(KeyCode.S))
-			{
-				moveVector -= Vector3.forward;
-			}
-
-			if (Input.GetKey(KeyCode.A))
-			{
-				moveVector -= Vector3.right;
-			}
-
-			if (Input.GetKey(KeyCode.D))
-			{
-				moveVector += Vector3.right;
-			}
-			moveVector = moveVector.normalized;
-			
-			MoveDirection = moveVector;
-			LookDirection = input.AimDirection; 
-			
-			Move(MoveDirection);
-			LookAt(LookDirection);
-			
-			if (input.IsDown(CharacterInputData.JUMP))
-			{
-				Jump();
-			}
-			if (input.IsDown(CharacterInputData.USE))
-			{
-				Use();
-			}
-			if (input.IsDown(CharacterInputData.RELOAD))
-			{
-				Reload();
-			}
-		}
-		/*if (GetInput(out CharacterInputData input))
-		{
-			Vector3 direction = default;
-
-			if (input.IsDown(CharacterInputData.FORWARD))
-			{
-				direction += TransformLocal ? transform.forward : Vector3.forward;
-			}
-
-			if (input.IsDown(CharacterInputData.BACKWARD))
-			{
-				direction -= TransformLocal ? transform.forward : Vector3.forward;
-			}
-
-			if (input.IsDown(CharacterInputData.LEFT))
-			{
-				direction -= TransformLocal ? transform.right : Vector3.right;
-			}
-
-			if (input.IsDown(CharacterInputData.RIGHT))
-			{
-				direction += TransformLocal ? transform.right : Vector3.right;
-			}
-
-			direction = direction.normalized;
-			MoveDirection = direction;
-			LookDirection = input.AimDirection; 
-			Move(direction);
-			LookAt(input.AimDirection);
-		}*/
 	}
-
+	
+	
 	/// <summary>
 	/// Render is the Fusion equivalent of Unity's Update() and unlike FixedUpdateNetwork which is very different from FixedUpdate,
 	/// Render is in fact exactly the same. It even uses the same Time.deltaTime time steps. The purpose of Render is that
@@ -233,35 +152,40 @@ public class Character : NetworkBehaviour, INetworkRunnerCallbacks
 
 	#region Character Movement
 	
-	public void Move()
+	/*public void Move()
 	{
 		if (CharacterState == CharacterState.ACTIVE)
 		{
 			networkCharacterController.Move(MoveDirection);
 		}
-	}
-	
-	public void Move(Vector3 direction)
+	}*/
+	/*public void Move(Vector3 direction)
 	{
 		MoveDirection = direction;
 		if (CharacterState == CharacterState.ACTIVE)
 		{
 			networkCharacterController.Move(MoveDirection);
 		}
+	}*/
+	public void Move(Vector3 direction)
+	{
+		if (CharacterState == CharacterState.ACTIVE)
+		{
+			networkCharacterController.Move(direction);
+		}
 	}
-	
+
 	public void LookAt(Vector3 direction)
 	{
-		LookDirection = direction;
 		if (CharacterState == CharacterState.ACTIVE)
 		{
 			if (direction.sqrMagnitude > 0)
 			{
 				networkCharacterController.transform.rotation = Quaternion.Euler(direction);
-				//networkCharacterController.transform.forward = Vector3.Lerp(networkCharacterController.transform.forward, direction, Time.deltaTime * 100f);
 			}
 		}
 	}
+
 	public void Jump()
 	{
 		if (networkCharacterController)
@@ -303,30 +227,5 @@ public class Character : NetworkBehaviour, INetworkRunnerCallbacks
 
 	}
 	#endregion
-	#region INetworkRunnerCallbacks
-	public void OnConnectedToServer(NetworkRunner runner) {}
-	public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) {}
-	public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) {}
-	public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
-	public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
-	public void OnDisconnectedFromServer(NetworkRunner runner) {}
-	
-	public void OnInput(NetworkRunner runner, NetworkInput input)
-	{
-		if (CharacterInput != null)
-		{
-			input.Set(CharacterInput.GetInput());
-		}
-	}
-	
-	public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) {}
-	public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) {}
-	public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) {}
-	public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) {}
-	public void OnSceneLoadDone(NetworkRunner runner) {}
-	public void OnSceneLoadStart(NetworkRunner runner) {}
-	public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) {}
-	public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) {}
-	public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message){}
-	#endregion
+
 }

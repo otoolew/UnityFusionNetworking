@@ -2,6 +2,47 @@
 
 ## RC Nightly
 
+### Build 466 (May 03, 2022)
+
+**What's New**
+
+- Runner.Spawn() method added which accepts a GameObject as the prefab type
+
+**Bug Fixes**
+
+- Fixed: DisableClientSessionCreation
+- Fixed: Issue with incorrect overflow assert triggering in debugmode sometimes
+
+### Build 465 (May 02, 2022)
+
+**Bug Fixes**
+
+- Fixed: Issue in the broad-phase resolution of lag-compensated `OverlapBox` queries when using rotated boxes
+
+### Build 464 (Apr 30, 2022)
+
+**Bug Fixes**
+
+- Fixed: Hitbox Colliders are now recycled in the Lag-compensation structure after network objects are destroyed
+
+### Build 463 (Apr 29, 2022)
+
+**Bug Fixes**
+
+- Fixed: FusionStats no longer creates an EventSystem or StandaloneInputModule in scene if the new Unity Input System is present. (Considered present if the UnityEngine.InputSystem namespace is present in any assemblies)
+
+### Build 462 (Apr 26, 2022)
+
+**Bug Fixes**
+
+- Fixed: Issue with prediction sometimes going to high, especially on Android
+
+### Build 461 (Apr 25, 2022)
+
+**Bug Fixes**
+
+- Fixed: Corrected issue with large number of SimulationBehaviour/NetworkBehaviours exceeding the re-sorting safety limit when applying SortBefore and SortAfter attributes. Was quietly producing an invalid execution order on error
+
 ### Build 460 (Apr 22, 2022)
 
 **Bug Fixes**

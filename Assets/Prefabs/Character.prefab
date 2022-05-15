@@ -91,6 +91,7 @@ MonoBehaviour:
     RawGuidValue: 68aeddbde3751874c841d501aee8bf86
   NestedObjects: []
   NetworkedBehaviours:
+  - {fileID: -2499736524151842055}
   - {fileID: 6599765012038102482}
   - {fileID: 7834668140746253566}
   SimulationBehaviours: []
@@ -106,11 +107,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95045f9d29987a64f82f7777d1f39436, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _interpolationDataSource: 0
   character: {fileID: 6599765012038102482}
   mouseLookMask:
     serializedVersion: 2
     m_Bits: 64
-  transformLocal: 0
   aimOffset: {x: 0, y: -1.5, z: 0}
 --- !u!114 &6599765012038102482
 MonoBehaviour:

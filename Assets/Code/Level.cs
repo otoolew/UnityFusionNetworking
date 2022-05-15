@@ -49,14 +49,15 @@ public class Level : SimulationBehaviour, ISpawned
 		}
 		if (playerInfo.Object.HasStateAuthority) // We have StateAuth over the player if we are the host or if we're the player self in shared mode
 		{
-			DebugLogMessage.Log(Color.red,$"Spawning Character for {playerInfo.DisplayName} with input auth {playerInfo.Object.InputAuthority}");
+			DebugLogMessage.Log(Color.green,$"Spawning Character for {playerInfo.DisplayName} with input auth {playerInfo.Object.InputAuthority}");
 			// Note: This only works if the number of spawnpoints in the map matches the maximum number of players - otherwise there's a risk of spawning multiple players in the same location.
 			// For example, with 4 spawnpoints and a 5 player limit, the first player will get index 4 (max-1) and the second will get index 0, and both will then use the first spawn point.
 			Transform t = spawnPoints[((int)playerInfo.Object.InputAuthority) % spawnPoints.Length];
-			playerInfo.Character = Runner.Spawn(characterPrefab, t.position, t.rotation, playerInfo.Object.InputAuthority);
+			Character character = Runner.Spawn(playerInfo.CharacterPrefab, t.position, t.rotation, playerInfo.Object.InputAuthority);
 			
-			playerCharacterDictionary[playerInfo] = playerInfo.Character;
+			playerCharacterDictionary[playerInfo] = character;
 			playerInfo.InputEnabled = lateJoiner;
+			playerInfo.Character = character;
 			playerInfo.Character.CharacterState = CharacterState.ACTIVE;
 		}
 	}

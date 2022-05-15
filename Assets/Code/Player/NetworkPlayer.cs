@@ -12,7 +12,9 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
     [Networked] public NetworkBool Ready { get; set; }
     [Networked] public NetworkBool InputEnabled { get; set; }
     [Networked] public NetworkObject Instance { get; set; }
-	
+    
+    [SerializeField] public Character CharacterPrefab;
+    
     [SerializeField] public Character Character;
 
     public override void Spawned()

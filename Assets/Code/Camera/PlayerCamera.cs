@@ -31,57 +31,34 @@ public class PlayerCamera : MonoBehaviour
             cameraTransform = Camera.main.transform;
             cameraTransform.position = transformOffset;
             cameraTransform.rotation = Quaternion.Euler(rotationOffset);
-            //LookAtTarget();
         }
     }
-    #endregion
-
-    #region Methods
-    
-    public void LookAtTarget()
-    {
-        cameraTransform.LookAt(cameraTarget);
-        Debug.Log($"LookRotation eulerAngles {cameraTransform.rotation.eulerAngles}");
-        Debug.Log($"LookRotation normalized {cameraTransform.rotation.normalized}");
-        
-    }
-
-    public void AssignFollowTarget(Transform targetTransform)
-    {
-        cameraTarget = targetTransform;
-    }
-
-    public void UnfollowTarget()
-    {
-        cameraTarget = null;
-    }
-    
-    public void ResetValues()
-    {
-        transform.parent = null;
-        cameraTransform.position = transformOffset;
-        cameraTransform.rotation = Quaternion.Euler(rotationOffset);
-        transform.position = cameraTarget.position;
-    }
-
-    /*private void LateUpdate()
-    {
-        if (cameraTarget == null) return;
-
-        transform.position = Vector3.Lerp(transform.position, cameraTarget.position, Time.deltaTime * followSpeed);
-    }*/
     private void LateUpdate()
     {
         if (CameraTarget == null)
         {
             return;
         }
-
-        //step = followSpeed * Vector2.Distance(cameraTransform.position, cameraTarget.position) * Time.deltaTime;
-        //Vector2 pos = Vector2.MoveTowards(cameraTransform.position, cameraTarget.position + transformOffset, step);
-        //transform.position = pos;
         cameraTransform.position = Vector3.Lerp(cameraTransform.position, cameraTarget.position + transformOffset, Time.deltaTime * followSpeed);
-        //LookAtTarget();
+    }
+    #endregion
+
+    #region Methods
+    
+    public void AssignFollowTarget(Transform targetTransform)
+    {
+        cameraTarget = targetTransform;
+    }
+    public void UnfollowTarget()
+    {
+        cameraTarget = null;
+    }
+    public void ResetValues()
+    {
+        transform.parent = null;
+        cameraTransform.position = transformOffset;
+        cameraTransform.rotation = Quaternion.Euler(rotationOffset);
+        transform.position = cameraTarget.position;
     }
     #endregion
 }
