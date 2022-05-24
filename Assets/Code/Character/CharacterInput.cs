@@ -12,17 +12,20 @@ using UnityEngine.Serialization;
 /// </summary>
 public class CharacterInput : NetworkBehaviour, INetworkRunnerCallbacks
 {
-    
-    [SerializeField] private Character character;
-    public Character Character { get => character; set => character = value; }
-
     private CharacterInputData playerInput;
 
     [SerializeField] private LayerMask mouseLookMask;
     [SerializeField] private Vector3 aimOffset;
-    [SerializeField]private Vector3 moveDirection; 
-    [SerializeField]private Vector3 lookDirection;
+    [SerializeField] private Vector3 moveDirection; 
+    [SerializeField] private Vector3 lookDirection;
     
+    [SerializeField] private bool inputEnabled;
+    public bool InputEnabled { get => inputEnabled; set => inputEnabled = value; }
+    
+    [SerializeField] private Character character;
+    public Character Character { get => character; set => character = value; }
+
+
     #region MonoBehaviour Callbacks
     private void Awake()
     {
@@ -60,6 +63,10 @@ public class CharacterInput : NetworkBehaviour, INetworkRunnerCallbacks
 
     public override void FixedUpdateNetwork()
     {
+        
+        if(!inputEnabled)
+            return;
+
         if (GetInput(out CharacterInputData input))
         {
             Character.Move(input.MoveDirection);

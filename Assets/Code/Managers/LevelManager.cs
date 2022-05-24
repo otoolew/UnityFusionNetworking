@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
-public enum MapIndex 
+public enum LevelIndex 
 {
     MainMenu,
     Lobby,

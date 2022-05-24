@@ -6,7 +6,6 @@ using UnityEngine;
 /// Session gets created when a game session starts and exists in only one instance.
 /// It survives scene loading and can be used to control game-logic inside a session, across scenes.
 /// </summary>
-
 public class Session : NetworkBehaviour
 {
 	[Networked] public TickTimer PostLoadCountDown { get; set; }
@@ -25,7 +24,7 @@ public class Session : NetworkBehaviour
 			if (props.SkipStaging)
 				LoadMap(props.StartMap);
 			else
-				Runner.SetActiveScene((int)MapIndex.Lobby);
+				Runner.SetActiveScene((int)LevelIndex.Lobby);
 		}
 	}
 
@@ -44,16 +43,12 @@ public class Session : NetworkBehaviour
 		if (PostLoadCountDown.Expired(Runner))
 		{
 			PostLoadCountDown = TickTimer.None;
-			foreach (NetworkPlayer playerInfo in GameManager.Instance.PlayerInfoList)
-				playerInfo.InputEnabled = true;
 		}
 	}
 
-	public void LoadMap(MapIndex mapIndex)
+	public void LoadMap(LevelIndex mapIndex)
 	{
 		finishedLoading.Clear();
-		foreach (NetworkPlayer playerInfo in GameManager.Instance.PlayerInfoList)
-			playerInfo.InputEnabled = false;
 		Runner.SetActiveScene((int)mapIndex);
 	}
 }

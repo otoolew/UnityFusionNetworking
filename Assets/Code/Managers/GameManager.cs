@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Fusion;
 using Fusion.Sockets;
 using GameUI;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
@@ -143,8 +144,6 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		{
 			errorBox.Show(status,reason);
 		}
-		
-		//Debug.Log($"ConnectionStatus = {status} {reason}");
 	}
 	#endregion
 
@@ -226,20 +225,21 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		_ = ShutdownRunner();
 		Application.Quit();
 	}
+	
 	#endregion Session
 
 	#region Player
 
-	public void RegisterNetworkPlayer(PlayerRef playerRef, NetworkPlayer player)
+	public void RegisterNetworkPlayer(PlayerRef playerRef, NetworkPlayer networkPlayer)
 	{
-		Debug.Log($"Registering {playerRef} {player}");
-		playerRegistry[playerRef] = player;
-		player.transform.SetParent(runnerInstance.transform);
+		Debug.Log($"Registering {playerRef} {networkPlayer}");
+		playerRegistry[playerRef] = networkPlayer;
+		networkPlayer.transform.SetParent(runnerInstance.transform);
 		
-		// If a Session is in Progress
+		// If a game session has started
 		if (Session.Level != null)
 		{ 
-			Session.Level.SpawnPlayerCharacter(player, true);
+			Session.Level.SpawnPlayerCharacter(networkPlayer);
 		}
 	}
 

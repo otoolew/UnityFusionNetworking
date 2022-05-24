@@ -6,7 +6,7 @@ namespace GameUI
 	{
 		public void OnContinue()
 		{
-			GameManager.Instance.Session.LoadMap(MapIndex.Lobby);
+			GameManager.Instance.Session.LoadMap(LevelIndex.Lobby);
 		}
 	}
 }

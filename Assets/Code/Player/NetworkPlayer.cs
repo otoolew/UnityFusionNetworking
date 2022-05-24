@@ -12,6 +12,8 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
     [Networked] public NetworkBool Ready { get; set; }
     [Networked] public NetworkBool InputEnabled { get; set; }
     [Networked] public NetworkObject Instance { get; set; }
+
+    [SerializeField] public PlayerUI PlayerUI;
     
     [SerializeField] public Character CharacterPrefab;
     
@@ -22,8 +24,7 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
         Instance = Object;
         Runner.SetPlayerObject(Object.InputAuthority, Object);
         PlayerRef = Object.InputAuthority;
-
-        //GameManager.Instance.RegisterPlayerInfoToRef(PlayerRef, this);
+        
         if (Object.HasInputAuthority)
         {
             LocalPlayer = this;
@@ -57,5 +58,5 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
             Runner.Despawn(Object);
         }
     }
-    
+
 }

@@ -56,7 +56,7 @@ namespace GameUI.Intro
 		{
 			SessionProps props = new SessionProps
 			{
-				StartMap = _toggleMap1.isOn ? MapIndex.Map0 : MapIndex.Map1,
+				StartMap = _toggleMap1.isOn ? LevelIndex.Map0 : LevelIndex.Map1,
 				PlayMode = _playMode,
 				PlayerLimit = _maxPly,
 				RoomName = _inputName.text

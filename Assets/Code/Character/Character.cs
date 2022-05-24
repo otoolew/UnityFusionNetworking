@@ -80,7 +80,6 @@ public class Character : NetworkBehaviour
 	public override void Spawned()
 	{
 		CacheComponents();
-		
 		playerInfo = GameManager.Instance.GetNetworkPlayer(Object.InputAuthority);
 		nameTagText.text = playerInfo.DisplayName;
 		meshRenderer.material.color = playerInfo.Color;
@@ -92,6 +91,8 @@ public class Character : NetworkBehaviour
 			{
 				PlayerCamera.AssignFollowTarget(transform);
 			}
+
+			characterInput.InputEnabled = false;
 		}
 	}
 	
@@ -125,6 +126,7 @@ public class Character : NetworkBehaviour
 	
 	public void OnStateChanged()
 	{
+		Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
 		switch (CharacterState)
 		{
 			case CharacterState.NEW:
@@ -134,6 +136,7 @@ public class Character : NetworkBehaviour
 				Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
 				break;
 			case CharacterState.ACTIVE:
+				characterInput.InputEnabled = true;
 				Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
 				meshRenderer.gameObject.SetActive(false);
 				break;

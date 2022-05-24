@@ -477,6 +477,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e563eb7120cfbd429c282bc9335c552, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterPrefab: {fileID: 0}
   countdownMessageText: {fileID: 1719689243}
   spawnPoints:
   - {fileID: 353071471}
@@ -629,8 +630,8 @@ GameObject:
   - component: {fileID: 671003220}
   - component: {fileID: 671003219}
   - component: {fileID: 671003218}
-  m_Layer: 0
-  m_Name: Cube
+  m_Layer: 6
+  m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

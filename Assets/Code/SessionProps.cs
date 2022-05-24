@@ -17,7 +17,7 @@ public class SessionProps
 	public string RoomName = "AutoSession";
 	public int PlayerLimit = 2;
 	public PlayMode PlayMode;
-	public MapIndex StartMap;
+	public LevelIndex StartMap;
 	public bool SkipStaging;
 
 	/// <summary>
