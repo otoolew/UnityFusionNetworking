@@ -10,8 +10,8 @@ using UnityEngine.UI;
 /// This class handles camera tracking and player movement and is destroyed when the map is unloaded.
 /// (I.e. the player gets a new avatar in each map)
 /// </summary>
-[RequireComponent(typeof(NetworkCharacterControllerPrototype))]
-public class Character : NetworkBehaviour
+[RequireComponent(typeof(NetworkCharacterControllerPrototype), typeof(CharacterInput))]
+public class PlayerCharacter : NetworkBehaviour, IDamageable
 {
 	#region Player
 	[SerializeField] private NetworkPlayer playerInfo;
@@ -34,8 +34,15 @@ public class Character : NetworkBehaviour
 	
 	[SerializeField] private Text nameTagText;
 	public Text NameTagText { get => nameTagText; set => nameTagText = value; }
+	
+	[SerializeField] private AbilityController abilityController;
+	public AbilityController AbilityController { get => abilityController; set => abilityController = value; }
 	#endregion
 
+	[SerializeField] private int health;
+	public int Health { get => health; set => health = value; }
+	
+	
 	#region Networked Properties
 	[Networked]public CharacterState CharacterState { get; set; }
 	[Networked]public Vector3 MoveDirection { get; set; }
@@ -47,7 +54,7 @@ public class Character : NetworkBehaviour
 	public float Speed = 6f;
 	bool HasNCC => GetComponent<NetworkCharacterControllerPrototype>();
 	bool ShowSpeed => this && !TryGetComponent<NetworkCharacterControllerPrototype>(out _);
-
+	public Vector3 Velocity => networkCharacterController.Velocity;
 	public Vector3 WorldPosition => transform.position;
 	public Vector3 CenterMassPosition => transform.position += new Vector3(0,1.25f,0);
 	
@@ -118,7 +125,7 @@ public class Character : NetworkBehaviour
 		_damageVisuals.CheckHealth(life);*/
 	}
 	#region State Change
-	public static void OnStateChanged(Changed<Character> changed)
+	public static void OnStateChanged(Changed<PlayerCharacter> changed)
 	{
 		DebugLogMessage.Log($"[OnStateChanged({changed.Behaviour.CharacterState})]");
 		changed.Behaviour.OnStateChanged();
@@ -154,22 +161,7 @@ public class Character : NetworkBehaviour
 	#endregion
 
 	#region Character Movement
-	
-	/*public void Move()
-	{
-		if (CharacterState == CharacterState.ACTIVE)
-		{
-			networkCharacterController.Move(MoveDirection);
-		}
-	}*/
-	/*public void Move(Vector3 direction)
-	{
-		MoveDirection = direction;
-		if (CharacterState == CharacterState.ACTIVE)
-		{
-			networkCharacterController.Move(MoveDirection);
-		}
-	}*/
+
 	public void Move(Vector3 direction)
 	{
 		if (CharacterState == CharacterState.ACTIVE)
@@ -203,6 +195,34 @@ public class Character : NetworkBehaviour
 	#endregion
 
 	#region Behaviour
+	public void ApplyImpulse(Vector3 impulse)
+	{
+		if (Object.HasStateAuthority)
+		{
+			networkCharacterController.Velocity += impulse / 10.0f; // Magic constant to compensate for not properly dealing with masses
+			networkCharacterController.Move(Vector3.zero);
+		}
+	}
+
+	public void TakeDamage(int damageValue)
+	{
+		if (Object.HasStateAuthority)
+		{
+			health -= damageValue;
+			DebugLogMessage.Log(Color.red, $"{gameObject.name} was hit!");
+		}
+	}
+	public void TakeDamage(int damageValue, Vector3 impulse)
+	{
+		if (Object.HasStateAuthority)
+		{
+			health -= damageValue;
+			ApplyImpulse(impulse);
+		}
+	}
+
+	#endregion 
+	#region Ability
 	public void Use()
 	{
 		DebugLogMessage.Log(Color.white, $"{gameObject.name} TODO: IMPLEMENT USE");

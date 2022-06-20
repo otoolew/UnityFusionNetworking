@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Fusion;
@@ -15,10 +16,21 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
 
     [SerializeField] public PlayerUI PlayerUI;
     
-    [SerializeField] public Character CharacterPrefab;
+    [SerializeField] public PlayerCharacter CharacterPrefab;
     
-    [SerializeField] public Character Character;
+    [SerializeField] public PlayerCharacter Character;
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (Object.InputAuthority)
+            {
+                PlayerUI.TogglePauseMenu();
+            }
+        }
+    }
+    
     public override void Spawned()
     {
         Instance = Object;
@@ -32,7 +44,7 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
         }
         GameManager.Instance.RegisterNetworkPlayer(PlayerRef, this);
     }
-
+    
     [Rpc(sources: RpcSources.InputAuthority, targets: RpcTargets.StateAuthority)]
     public void RPC_SetDisplayName(string displayName)
     {
@@ -59,4 +71,8 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
         }
     }
 
+    public void DisplayUI()
+    {
+        PlayerUI.gameObject.SetActive(!PlayerUI.gameObject.activeInHierarchy);
+    }
 }

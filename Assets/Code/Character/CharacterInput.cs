@@ -16,14 +16,12 @@ public class CharacterInput : NetworkBehaviour, INetworkRunnerCallbacks
 
     [SerializeField] private LayerMask mouseLookMask;
     [SerializeField] private Vector3 aimOffset;
-    [SerializeField] private Vector3 moveDirection; 
-    [SerializeField] private Vector3 lookDirection;
     
     [SerializeField] private bool inputEnabled;
     public bool InputEnabled { get => inputEnabled; set => inputEnabled = value; }
     
-    [SerializeField] private Character character;
-    public Character Character { get => character; set => character = value; }
+    [SerializeField] private PlayerCharacter character;
+    public PlayerCharacter Character { get => character; set => character = value; }
 
 
     #region MonoBehaviour Callbacks
@@ -35,7 +33,7 @@ public class CharacterInput : NetworkBehaviour, INetworkRunnerCallbacks
 
     private void CacheComponents()
     {
-        if (!character) character = GetComponent<Character>();
+        if (!character) character = GetComponent<PlayerCharacter>();
     }
     public override void Spawned()
     {
@@ -74,7 +72,12 @@ public class CharacterInput : NetworkBehaviour, INetworkRunnerCallbacks
             
             if (input.GetButton(InputButton.FIRE))
             {
+                Character.AbilityController.FireWeapon();
                 //DebugLogMessage.Log(Color.white,$"Firing {character.PlayerInfo.DisplayName}");
+            }
+            if (input.GetButton(InputButton.RELOAD)) //TODO: Used as a quick means of debugging impulse hits from projectiles
+            {
+                Character.ApplyImpulse(new Vector3(-10,0,0));
             }
         }
     }

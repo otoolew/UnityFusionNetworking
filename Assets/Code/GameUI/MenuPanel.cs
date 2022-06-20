@@ -14,19 +14,6 @@ public class MenuPanel : MonoBehaviour, IPanel
     public GameObject Content { get => menuContent; set => menuContent = value; }
     public bool IsDisplayed => menuContent.gameObject.activeSelf && menuContent.gameObject.activeInHierarchy;
 
-    private void Start()
-    {
-        menuButton.onClick.AddListener(ToggleDisplay);
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            ToggleDisplay();
-        }
-    }
-
     public void Display(bool value)
     {
         DebugLogMessage.Log(Color.white, $"{menuContent.gameObject.name} Display {value}");

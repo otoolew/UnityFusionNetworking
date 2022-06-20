@@ -9,6 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
+using Object = UnityEngine.Object;
 
 public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 {
@@ -44,6 +45,8 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	
 	[SerializeField] private NetworkPrefabRef playerInfoPrefab;
 	public NetworkPrefabRef PlayerInfoPrefab { get => playerInfoPrefab; set => playerInfoPrefab = value; }
+	
+	private NetworkPoolManager poolManager;
 	#endregion -------------------------------------------------------
 	
 	#region GameStatus
@@ -57,7 +60,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	public GameStatus Status { get => status; set => status = value; }
 	#endregion
 
-	#region LevelManager
+	#region LevelManager //TODO: Fix obsolete Code.
 	[Space]
 	public LevelManager LevelManager;
 	#endregion
@@ -86,7 +89,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 
 	#region MonoBehaviour
 	
-	private void Awake()
+	/*private void Awake()
 	{
 		if (instance == null)
 		{
@@ -98,7 +101,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
-	}
+	}*/
 	
 	private void OnEnable()
 	{
@@ -118,7 +121,6 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 			SetConnectionStatus(ConnectionStatus.Connecting);
 			GameObject go = new GameObject("NetworkRunner");
 			go.transform.SetParent(transform);
-
 			playerRegistry.Clear();
 			runnerInstance = go.AddComponent<NetworkRunner>();
 			runnerInstance.AddCallbacks(this);
@@ -158,7 +160,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	
 	public void CreateSession(SessionProps props)
 	{
-		StartSession(sharedMode ? GameMode.Shared : GameMode.Host, props, !sharedMode);
+		StartSession(sharedMode ? GameMode.Shared : GameMode.Host, props,!sharedMode);
 	}
 	
 	private void StartSession(GameMode mode, SessionProps props, bool disableClientSessionCreation=true)
@@ -166,15 +168,21 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		Connect();
 
 		SetConnectionStatus(ConnectionStatus.Starting);
-
+		
+		DontDestroyOnLoad(gameObject);
+		
+		if(poolManager==null)
+			poolManager = gameObject.AddComponent<NetworkPoolManager>();
+		
 		Debug.Log($"Starting Game Session {props.RoomName}, Player Limit {props.PlayerLimit}, Server Game Mode: {mode}");
 		runnerInstance.ProvideInput = mode != GameMode.Server;
 		runnerInstance.StartGame(new StartGameArgs
 		{
 			GameMode = mode,
 			CustomLobbyName = lobbyId,
-			SceneObjectProvider = LevelManager,
+			SceneManager = LevelManager,
 			SessionName = props.RoomName,
+			ObjectPool = poolManager,
 			PlayerCount = props.PlayerLimit,
 			SessionProperties = props.Properties,
 			DisableClientSessionCreation = disableClientSessionCreation
@@ -189,9 +197,13 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		this.onSessionListUpdated = onSessionListUpdated;
 
 		SetConnectionStatus(ConnectionStatus.EnteringLobby);
+
+
+		//TODO: Display Joining Session...
 		var result = await runnerInstance.JoinSessionLobby(SessionLobby.Custom, lobbyId);
 
-		if (!result.Ok) {
+		if (!result.Ok) 
+		{
 			this.onSessionListUpdated = null;
 			SetConnectionStatus(ConnectionStatus.Failed);
 			onSessionListUpdated(null);
@@ -223,14 +235,19 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	public void ExitGame()
 	{
 		_ = ShutdownRunner();
+#if UNITY_STANDALONE
 		Application.Quit();
+#endif		
+#if UNITY_EDITOR
+		UnityEditor.EditorApplication.isPlaying = false;
+#endif
 	}
 	
 	#endregion Session
 
 	#region Player
 
-	public void RegisterNetworkPlayer(PlayerRef playerRef, NetworkPlayer networkPlayer)
+	public void RegisterNetworkPlayer(PlayerRef playerRef, NetworkPlayer networkPlayer) // TODO: Look into moving this to the runner callbacks
 	{
 		Debug.Log($"Registering {playerRef} {networkPlayer}");
 		playerRegistry[playerRef] = networkPlayer;
@@ -242,7 +259,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 			Session.Level.SpawnPlayerCharacter(networkPlayer);
 		}
 	}
-
+	
 	public NetworkPlayer GetNetworkPlayer(PlayerRef playerRef = default)
 	{
 		if (!runnerInstance)
@@ -259,7 +276,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		return player;
 	}
 
-	public bool TryGetPlayerCharacter(out Character character, PlayerRef playerRef = default)
+	public bool TryGetPlayerCharacter(out PlayerCharacter character, PlayerRef playerRef = default)
 	{
 		character = null;
 		if (!runnerInstance)
@@ -326,7 +343,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		{
 			Debug.Log("Spawning world");
 			session = runner.Spawn(sessionPrefab, Vector3.zero, Quaternion.identity);
-			session.gameObject.name = "Session";
+			session.gameObject.name = $"Session_{playerRef.PlayerId}";
 		}
 
 		
@@ -341,8 +358,11 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 
 	public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
 	{
-		Debug.Log($"{player.PlayerId} disconnected.");
-		playerRegistry.Remove(player);
+		Debug.Log($"{player.PlayerId} has left the game.");
+		if(playerRegistry.TryGetValue(player, out NetworkPlayer netPlayer))
+		{
+			playerRegistry.Remove(player);
+		}
 	}
 	
 	public void PlayerDisconnected(PlayerRef player, NetworkRunner runner)
@@ -362,12 +382,16 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		session = null;
 
 		LevelManager.LoadMainMenu();
-		onShutdown?.Raise(runner: runner);
+		
+		if (onShutdown != null)
+		{
+			onShutdown.Raise(runner: runner);
+		}
 	}
 	
 	private async Task ShutdownRunner()
 	{
-		await runnerInstance?.Shutdown(destroyGameObject: false);
+		await runnerInstance?.Shutdown(destroyGameObject: false); // TODO: check if this needs a try catch
 		Status = GameStatus.Lobby;
 	}
 	
@@ -376,19 +400,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		request.Accept();
 	}
 
-	public void OnInput(NetworkRunner runner, NetworkInput input)
-	{
-		/*// Persistent button flags like GetKey should be read when needed so they always have the actual state for this tick
-		_data.ButtonFlags |= Input.GetKey( KeyCode.W ) ? ButtonFlag.FORWARD : 0;
-		_data.ButtonFlags |= Input.GetKey( KeyCode.A ) ? ButtonFlag.LEFT : 0;
-		_data.ButtonFlags |= Input.GetKey( KeyCode.S ) ? ButtonFlag.BACKWARD : 0;
-		_data.ButtonFlags |= Input.GetKey( KeyCode.D ) ? ButtonFlag.RIGHT : 0;
-
-		input.Set( _data );
-
-		// Clear the flags so they don't spill over into the next tick unless they're still valid input.
-		_data.ButtonFlags = 0;*/
-	}
+	public void OnInput(NetworkRunner runner, NetworkInput input) { }
 	public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
 	{
 		SetConnectionStatus(ConnectionStatus.InLobby);

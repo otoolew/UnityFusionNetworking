@@ -79,7 +79,7 @@ MonoBehaviour:
     _value: 0
   _Instance: {fileID: 0}
   PlayerUI: {fileID: 7912048892115828611}
-  CharacterPrefab: {fileID: 6599765012038102482, guid: 68aeddbde3751874c841d501aee8bf86, type: 3}
+  CharacterPrefab: {fileID: 8536981597875681661, guid: 1f421f45df41cdc408977f5b119c93aa, type: 3}
   Character: {fileID: 0}
 --- !u!1001 &3648826479818485399
 PrefabInstance:
@@ -175,6 +175,10 @@ PrefabInstance:
     - target: {fileID: 2887643630950904042, guid: e5a8c948a817335428ac84f1afdbcbd8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6194033024317627308, guid: e5a8c948a817335428ac84f1afdbcbd8, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e5a8c948a817335428ac84f1afdbcbd8, type: 3}

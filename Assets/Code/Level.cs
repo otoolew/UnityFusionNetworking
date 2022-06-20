@@ -20,7 +20,7 @@ public class Level : SimulationBehaviour, ISpawned
 	[SerializeField] private Text countdownMessageText;
 	[SerializeField] private Transform[] spawnPoints;
 
-	private Dictionary<NetworkPlayer, Character> playerCharacterDictionary = new Dictionary<NetworkPlayer, Character>();
+	private Dictionary<NetworkPlayer, PlayerCharacter> playerCharacterDictionary = new Dictionary<NetworkPlayer, PlayerCharacter>();
 	
 	public void Spawned()
 	{
@@ -52,7 +52,7 @@ public class Level : SimulationBehaviour, ISpawned
 
 			for (int i = 0; i < playerCharacterDictionary.Values.Count; i++)
 			{
-				if (playerCharacterDictionary.TryGetValue(NetworkPlayer.LocalPlayer, out Character character))
+				if (playerCharacterDictionary.TryGetValue(NetworkPlayer.LocalPlayer, out PlayerCharacter character))
 				{
 					character.CharacterInput.InputEnabled = true;
 				}
@@ -81,7 +81,7 @@ public class Level : SimulationBehaviour, ISpawned
 			Transform t = spawnPoints[((int)playerInfo.Object.InputAuthority) % spawnPoints.Length];
 			
 			// Spawn Character
-			Character character = Runner.Spawn(playerInfo.CharacterPrefab, t.position, t.rotation, playerInfo.Object.InputAuthority);
+			PlayerCharacter character = Runner.Spawn(playerInfo.CharacterPrefab, t.position, t.rotation, playerInfo.Object.InputAuthority);
 			playerCharacterDictionary[playerInfo] = character;
 			playerInfo.Character = character;
 			playerInfo.Character.CharacterState = CharacterState.ACTIVE;

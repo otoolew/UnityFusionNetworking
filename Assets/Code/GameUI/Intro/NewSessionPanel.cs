@@ -1,22 +1,32 @@
+using System;
+using System.Collections.Generic;
+using Fusion;
+using Fusion.Sockets;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace GameUI.Intro
 {
 	public class NewSessionPanel : MonoBehaviour
 	{
-		[SerializeField] private InputField _inputName;
-		[SerializeField] private Text _textMaxPlayers;
-		[SerializeField] private Toggle _toggleMap1;
-		[SerializeField] private Toggle _toggleMap2;
-		
-		private int _maxPly = 4;
-		private PlayMode _playMode;
+		[SerializeField] private InputField inputName;
+		[SerializeField] private Text textMaxPlayers;
+		[SerializeField] private Toggle toggleMap1;
+		[SerializeField] private Toggle toggleMap2;
+		[SerializeField] private Button createGameButton;
+		private int maxPly = 4;
+		private PlayMode playMode;
+
+		private void OnEnable()
+		{
+			createGameButton.interactable = true;
+		}
 
 		public void Show(PlayMode mode)
 		{
 			gameObject.SetActive(true);
-			_playMode = mode;
+			playMode = mode;
 			UpdateUI();
 		}
 
@@ -27,14 +37,14 @@ namespace GameUI.Intro
 
 		public void OnDecreaseMaxPlayers()
 		{
-			if(_maxPly>2)
-				_maxPly--;
+			if(maxPly>2)
+				maxPly--;
 			UpdateUI();
 		}
 		public void OnIncreaseMaxPlayers()
 		{
-			if(_maxPly<16)
-				_maxPly++;
+			if(maxPly<16)
+				maxPly++;
 			UpdateUI();
 		}
 
@@ -45,23 +55,25 @@ namespace GameUI.Intro
 
 		private void UpdateUI()
 		{
-			_textMaxPlayers.text = $"Max Players: {_maxPly}";
-			if(!_toggleMap1.isOn && !_toggleMap2.isOn)
-				_toggleMap1.isOn = true;
-			if(string.IsNullOrWhiteSpace(_inputName.text))
-				_inputName.text = "Test Room";
+			textMaxPlayers.text = $"Max Players: {maxPly}";
+			if(!toggleMap1.isOn && !toggleMap2.isOn)
+				toggleMap1.isOn = true;
+			if(string.IsNullOrWhiteSpace(inputName.text))
+				inputName.text = "Test Room";
 		}
 		
 		public void OnCreateSession()
 		{
 			SessionProps props = new SessionProps
 			{
-				StartMap = _toggleMap1.isOn ? LevelIndex.Map0 : LevelIndex.Map1,
-				PlayMode = _playMode,
-				PlayerLimit = _maxPly,
-				RoomName = _inputName.text
+				StartMap = toggleMap1.isOn ? LevelIndex.Map0 : LevelIndex.Map1,
+				PlayMode = playMode,
+				PlayerLimit = maxPly,
+				RoomName = inputName.text
 			};
 			GameManager.Instance.CreateSession(props);
+			
 		}
+		
 	}
 }
