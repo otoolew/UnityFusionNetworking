@@ -19,6 +19,9 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
     [SerializeField] public PlayerCharacter CharacterPrefab;
     
     [SerializeField] public PlayerCharacter Character;
+    
+    [Networked] public int PlayerScore { get; set; }
+    
 
     private void Update()
     {
@@ -74,5 +77,10 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
     public void DisplayUI()
     {
         PlayerUI.gameObject.SetActive(!PlayerUI.gameObject.activeInHierarchy);
+    }
+
+    public void AddToScore(int value)
+    {
+        
     }
 }

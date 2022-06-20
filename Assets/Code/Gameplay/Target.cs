@@ -7,16 +7,18 @@ using UnityEngine.UI;
 
 public class Target : NetworkBehaviour, IDamageable
 {
-    [SerializeField] private int startingHealth;
+    [Networked]public int HealthValue { get; set; }
+    
+    [SerializeField] private int healthMax;
+    public int HealthMax { get => healthMax; set => healthMax = value; }
+    
     [SerializeField] private Text healthText;
     public Text HealthText { get => healthText; set => healthText = value; }
     
-    [Networked]public int HealthValue { get; set; }
-
     public override void Spawned()
     {
         base.Spawned();
-        HealthValue = startingHealth;
+        HealthValue = healthMax;
         healthText.text = HealthValue.ToString();
     }
 

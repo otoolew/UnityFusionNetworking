@@ -89,7 +89,8 @@ public class Ability : NetworkBehaviour
 
 		private void FireFx()
 		{
-			Debug.Log("TODO: Emit Particles");
+			//TODO: Emit Particles
+			
 			// Recharge the laser sight if this weapon has it
 			/*if (_laserSight != null)
 				_laserSight.Recharge();

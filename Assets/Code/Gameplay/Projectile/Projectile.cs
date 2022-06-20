@@ -1,31 +1,30 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
-using UnityEngine.Serialization;
-
-/// All motion is kinematic and is handled in FixedUpdateNetwork along with collision detection.
-/// Collision detection uses lag compensated hitboxes to allow server authoritative collision
-/// detection while still providing a WYSIWYG experience to players.
-/// Further, Bullet.cs uses predictive spawning to provide immediate feedback on the client
-/// firing the bullet even when this does not have state authority (hosted mode).
 
 [OrderAfter(typeof(HitboxManager))]
-public class Bullet : Projectile
+public class Projectile : Actor
 {
-		public interface ITargetVisuals
+
+	
+		/*public interface ITargetVisuals
 		{
 			void InitializeTargetMarker(Vector3 launchPos, Vector3 bulletVelocity, Bullet.BulletSettings bulletSettings);
 			void Destroy();
-		}
-	
+		}*/
+		
+		[SerializeField] private LayerMask hitMask;
+		public LayerMask HitMask { get => hitMask; set => hitMask = value; }
+
 		[Header("Visuals")] 
-		[SerializeField] private Transform _bulletVisualParent;
+		[SerializeField] private Transform visualContainer;
 		//[SerializeField] ExplosionFX _explosionFX;
 
-		[Header("Settings")] 
-		[SerializeField] private BulletSettings _bulletSettings;
-
+		[Header("Settings")]
+		[SerializeField] private ProjectileData projectileData;
+		public ProjectileData ProjectileData { get => projectileData; set => projectileData = value; }
 		[Serializable]
 		public class BulletSettings 
 		{
@@ -81,12 +80,12 @@ public class Bullet : Projectile
 		}
 
 		private List<LagCompensatedHit> _areaHits = new List<LagCompensatedHit>();
-		private ITargetVisuals _targetVisuals;
+		/*private ITargetVisuals _targetVisuals;
 
 		private void Awake()
 		{
 			_targetVisuals = GetComponent<ITargetVisuals>();
-		}
+		}*/
 
 		/// <summary>
 		/// PreSpawn is invoked directly when Spawn() is called, before any network state is shared, so this is where we initialize networked properties.
@@ -94,8 +93,8 @@ public class Bullet : Projectile
 		/// <param name="ownervelocity"></param>
 		public override void InitNetworkState(Vector3 ownervelocity)
 		{
-			lifeTimer = TickTimer.CreateFromSeconds(Runner, _bulletSettings.timeToLive + _bulletSettings.timeToFade);
-			fadeTimer = TickTimer.CreateFromSeconds(Runner, _bulletSettings.timeToFade);
+			lifeTimer = TickTimer.CreateFromSeconds(Runner, projectileData.timeToLive + projectileData.timeToFade);
+			fadeTimer = TickTimer.CreateFromSeconds(Runner, projectileData.timeToFade);
 
 			destroyed = false;
 
@@ -105,7 +104,7 @@ public class Bullet : Projectile
 			fwd.y = 0;
 			float multiplier = Mathf.Abs(Vector3.Dot(vel, fwd));
 			
-			Velocity = _bulletSettings.speed * transform.forward + ownervelocity * multiplier * _bulletSettings.ownerVelocityMultiplier;
+			Velocity = projectileData.speed * transform.forward + ownervelocity * multiplier * projectileData.ownerVelocityMultiplier;
 		}
 
 		/// <summary>
@@ -117,15 +116,15 @@ public class Bullet : Projectile
 		{
 			/*if (_explosionFX != null)
 				_explosionFX.ResetExplosion();*/
-			_bulletVisualParent.gameObject.SetActive(true);
+			visualContainer.gameObject.SetActive(true);
 
 			if (Velocity.sqrMagnitude > 0)
-				_bulletVisualParent.forward = Velocity;
+				visualContainer.forward = Velocity;
 
-			_bulletVisualParent.forward = transform.forward;
+			visualContainer.forward = transform.forward;
 
-			if(_targetVisuals!=null)
-				_targetVisuals.InitializeTargetMarker(transform.position, Velocity, _bulletSettings);
+			/*if(_targetVisuals!=null)
+				_targetVisuals.InitializeTargetMarker(transform.position, Velocity, _bulletSettings);*/
 
 			// We want bullet interpolation to use predicted data on all clients because we're moving them in FixedUpdateNetwork()
 			GetComponent<NetworkTransform>().InterpolationDataSource = InterpolationDataSources.Predicted;
@@ -134,8 +133,7 @@ public class Bullet : Projectile
 		private void OnDestroy()
 		{
 			// Explicitly destroy the target marker because it may not currently be a child of the bullet
-			if (_targetVisuals != null)
-				_targetVisuals.Destroy(); 
+			//_targetVisuals?.Destroy();
 		}
 
 		/// <summary>
@@ -146,7 +144,7 @@ public class Bullet : Projectile
 		{
 			if (!lifeTimer.Expired(Runner))
 			{
-				MoveBullet();
+				Move();
 			}
 			else
 			{
@@ -154,9 +152,8 @@ public class Bullet : Projectile
 			}
 		}
 
-		private void MoveBullet()
+		private void Move()
 		{
-
 			Transform xfrm = transform;
 			float dt = Runner.DeltaTime;
 			Vector3 vel = Velocity;
@@ -171,11 +168,11 @@ public class Bullet : Projectile
 				}
 				else
 				{
-					vel.y += dt * _bulletSettings.gravity;
+					vel.y += dt * projectileData.gravity;
 
 					// We move the origin back from the actual position to make sure we can't shoot through things even if we start inside them
 					Vector3 dir = vel.normalized;
-					if (Runner.LagCompensation.Raycast(pos -0.5f*dir, dir, Mathf.Max(_bulletSettings.radius, speed * dt), Object.InputAuthority, out var hitinfo, _bulletSettings.hitMask.value, HitOptions.IncludePhysX))
+					if (Runner.LagCompensation.Raycast(pos -0.5f*dir, dir, Mathf.Max(projectileData.radius, speed * dt), Object.InputAuthority, out var hitinfo, hitMask.value, HitOptions.IncludePhysX))
 					{
 						vel = HandleImpact(hitinfo);
 						pos = hitinfo.Point;
@@ -195,7 +192,7 @@ public class Bullet : Projectile
 
 			xfrm.position = pos;
 			if(vel.sqrMagnitude>0)
-				_bulletVisualParent.forward = vel.normalized;
+				visualContainer.forward = vel.normalized;
 		}
 
 		/// <summary>
@@ -221,7 +218,7 @@ public class Bullet : Projectile
 
 		public static void OnDestroyedChanged(Changed<NetworkBehaviour> changed)
 		{
-			((Bullet)changed.Behaviour)?.OnDestroyedChanged();
+			((Projectile)changed.Behaviour)?.OnDestroyedChanged();
 		}
 
 		private void OnDestroyedChanged()
@@ -233,7 +230,7 @@ public class Bullet : Projectile
 					transform.up = Vector3.up;
 					_explosionFX.PlayExplosion();
 				}*/
-				_bulletVisualParent.gameObject.SetActive(false);
+				visualContainer.gameObject.SetActive(false);
 			}
 		}
 		
@@ -257,7 +254,7 @@ public class Bullet : Projectile
 			IDamageable damageable = hit.GameObject.GetComponent<IDamageable>();
 			if (damageable != null)
 			{
-				damageable.TakeDamage(_bulletSettings.damage);
+				damageable.TakeDamage(projectileData.damage);
 			}
 			Detonate(hit.Point);
 
@@ -268,7 +265,7 @@ public class Bullet : Projectile
 		private void OnDrawGizmos()
 		{
 			Gizmos.color = Color.green;
-			Gizmos.DrawWireSphere(transform.position, _bulletSettings.radius);
+			Gizmos.DrawWireSphere(transform.position, projectileData.radius);
 		}
 #endif
 }

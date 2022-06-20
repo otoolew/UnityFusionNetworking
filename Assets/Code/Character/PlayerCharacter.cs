@@ -48,6 +48,14 @@ public class PlayerCharacter : NetworkBehaviour, IDamageable
 	[Networked]public Vector3 MoveDirection { get; set; }
 	[Networked]public Vector3 LookDirection { get; set; }
 	
+	[Networked]public int HealthValue { get; set; }
+    
+	[SerializeField] private int healthMax;
+	public int HealthMax { get => healthMax; set => healthMax = value; }
+    
+	[SerializeField] private Text healthText;
+	public Text HealthText { get => healthText; set => healthText = value; }
+	
 	#endregion
 
 	[DrawIf(nameof(ShowSpeed), DrawIfHideType.Hide, DoIfCompareOperator.NotEqual)]
@@ -203,24 +211,6 @@ public class PlayerCharacter : NetworkBehaviour, IDamageable
 			networkCharacterController.Move(Vector3.zero);
 		}
 	}
-
-	public void TakeDamage(int damageValue)
-	{
-		if (Object.HasStateAuthority)
-		{
-			health -= damageValue;
-			DebugLogMessage.Log(Color.red, $"{gameObject.name} was hit!");
-		}
-	}
-	public void TakeDamage(int damageValue, Vector3 impulse)
-	{
-		if (Object.HasStateAuthority)
-		{
-			health -= damageValue;
-			ApplyImpulse(impulse);
-		}
-	}
-
 	#endregion 
 	#region Ability
 	public void Use()
@@ -250,5 +240,23 @@ public class PlayerCharacter : NetworkBehaviour, IDamageable
 
 	}
 	#endregion
-
+	
+	#region Health
+	public void TakeDamage(int damageValue)
+	{
+		if (Object.HasStateAuthority)
+		{
+			health -= damageValue;
+			DebugLogMessage.Log(Color.red, $"{gameObject.name} was hit!");
+		}
+	}
+	public void TakeDamage(int damageValue, Vector3 impulse)
+	{
+		if (Object.HasStateAuthority)
+		{
+			health -= damageValue;
+			ApplyImpulse(impulse);
+		}
+	}
+	#endregion
 }
