@@ -1,3 +1,3 @@
-build: 1.1.1 RC Nightly 510
-date: 2022-06-10 20:33:53
-git: main (da671039)
+build: 1.1.2 Nightly 530
+date: 2022-07-07 20:34:18
+git: main (b09115d8)

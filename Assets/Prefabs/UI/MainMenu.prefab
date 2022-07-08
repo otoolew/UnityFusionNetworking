@@ -1705,6 +1705,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &4602198728127603889
 GameObject:
   m_ObjectHideFlags: 0
@@ -2035,7 +2047,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 4602198729421514153}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.37424994
+  m_Size: 0.4705
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2949,8 +2961,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2781d3228e754408b5c2353bceb6481e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _status: {fileID: 4602198728588387217}
-  _message: {fileID: 4602198728707825429}
+  status: {fileID: 0}
+  message: {fileID: 0}
 --- !u!1 &4602198728768113965
 GameObject:
   m_ObjectHideFlags: 0
@@ -3582,7 +3594,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4602198729232272179
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4043,7 +4055,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4602198729452857570
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4066,8 +4078,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 23.599993}
-  m_SizeDelta: {x: -20, y: -127.200005}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4602198729452857568
 CanvasRenderer:
@@ -4604,7 +4616,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 2
+  m_UiScaleMode: 0
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
@@ -4785,7 +4797,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000010268971}
+  m_AnchoredPosition: {x: 0, y: 155.24995}
   m_SizeDelta: {x: 0, y: 600}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &4602198729816882580

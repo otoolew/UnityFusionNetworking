@@ -386,6 +386,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2691341335317145020, guid: 62b6f610317f28e4bb0ecacf46a9d2e0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4867659438575463018, guid: 62b6f610317f28e4bb0ecacf46a9d2e0, type: 3}
       propertyPath: m_RootOrder
       value: 4
@@ -434,15 +438,7 @@ PrefabInstance:
       propertyPath: m_Name
       value: NetworkedGameManager
       objectReference: {fileID: 0}
-    - target: {fileID: 4867659438972344126, guid: 62b6f610317f28e4bb0ecacf46a9d2e0, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4867659439042402027, guid: 62b6f610317f28e4bb0ecacf46a9d2e0, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4867659439500781911, guid: 62b6f610317f28e4bb0ecacf46a9d2e0, type: 3}
+    - target: {fileID: 7243339821674751167, guid: 62b6f610317f28e4bb0ecacf46a9d2e0, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -493,26 +489,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4602198728491463839, guid: 785dd6c6f2a97894b9b46a26db92d9ab, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4602198729232272204, guid: 785dd6c6f2a97894b9b46a26db92d9ab, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4602198729421514153, guid: 785dd6c6f2a97894b9b46a26db92d9ab, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4602198729421514153, guid: 785dd6c6f2a97894b9b46a26db92d9ab, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4602198729421514153, guid: 785dd6c6f2a97894b9b46a26db92d9ab, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0.62575006
-      objectReference: {fileID: 0}
-    - target: {fileID: 4602198729452857571, guid: 785dd6c6f2a97894b9b46a26db92d9ab, type: 3}
-      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4602198729607511137, guid: 785dd6c6f2a97894b9b46a26db92d9ab, type: 3}

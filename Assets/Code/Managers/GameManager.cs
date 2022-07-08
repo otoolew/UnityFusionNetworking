@@ -19,14 +19,20 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	{
 		get
 		{
+			if (instance != null)
+			{
+				
+			}
 			if (instance == null)
+			{
 				instance = FindObjectOfType<GameManager>();
+			}
 			return instance;
 		}
 	}
 	
 	public static NetworkRunner MasterRunner;
-
+	public bool IsMaster => runnerInstance != null && (runnerInstance.IsServer || runnerInstance.IsSharedModeMasterClient);
 	#endregion --------------------------------------------------------
 	
 	#region Network Runner --------------------------------------------
@@ -64,9 +70,10 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	[Space]
 	public LevelManager LevelManager;
 	#endregion
-	public bool IsMaster => runnerInstance != null && (runnerInstance.IsServer || runnerInstance.IsSharedModeMasterClient);
+	
 	[SerializeField] private Session sessionPrefab;
-	[SerializeField] private ErrorBox errorBox;
+	[SerializeField] private MessagePanel messagePanel;//TODO: These can be a common class.
+	[SerializeField] private ErrorBox errorPanel;
 	[SerializeField] private bool sharedMode;
 
 	[Space(10)]
@@ -85,11 +92,10 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	public FusionEvent onShutdown;
 	public FusionEvent onDisconnect;
 	public FusionEvent onSceneLoaded;
-	[SerializeField] private GameObject exitCanvas;
 
 	#region MonoBehaviour
 	
-	/*private void Awake()
+	private void Awake()
 	{
 		if (instance == null)
 		{
@@ -101,7 +107,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 			Destroy(gameObject);
 		}
 		DontDestroyOnLoad(gameObject);
-	}*/
+	}
 	
 	private void OnEnable()
 	{
@@ -144,7 +150,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 
 		if (!string.IsNullOrWhiteSpace(reason) && reason != "Ok")
 		{
-			errorBox.Show(status,reason);
+			errorPanel.Show(status,reason);
 		}
 	}
 	#endregion
@@ -163,30 +169,50 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		StartSession(sharedMode ? GameMode.Shared : GameMode.Host, props,!sharedMode);
 	}
 	
-	private void StartSession(GameMode mode, SessionProps props, bool disableClientSessionCreation=true)
+	private async void StartSession(GameMode mode, SessionProps props, bool disableClientSessionCreation=true)
 	{
 		Connect();
 
 		SetConnectionStatus(ConnectionStatus.Starting);
-		
-		DontDestroyOnLoad(gameObject);
-		
+
 		if(poolManager==null)
 			poolManager = gameObject.AddComponent<NetworkPoolManager>();
 		
 		Debug.Log($"Starting Game Session {props.RoomName}, Player Limit {props.PlayerLimit}, Server Game Mode: {mode}");
+		messagePanel.gameObject.SetActive(true);
+		messagePanel.SetMessage("Creating Game", "attempting...");
 		runnerInstance.ProvideInput = mode != GameMode.Server;
-		runnerInstance.StartGame(new StartGameArgs
+		
+		try
 		{
-			GameMode = mode,
-			CustomLobbyName = lobbyId,
-			SceneManager = LevelManager,
-			SessionName = props.RoomName,
-			ObjectPool = poolManager,
-			PlayerCount = props.PlayerLimit,
-			SessionProperties = props.Properties,
-			DisableClientSessionCreation = disableClientSessionCreation
-		});
+			var result = await runnerInstance.StartGame(new StartGameArgs
+			{
+				GameMode = mode,
+				CustomLobbyName = lobbyId,
+				SceneManager = LevelManager,
+				SessionName = props.RoomName,
+				ObjectPool = poolManager,
+				PlayerCount = props.PlayerLimit,
+				SessionProperties = props.Properties,
+				DisableClientSessionCreation = disableClientSessionCreation
+			});
+			if (!result.Ok) 
+			{
+				messagePanel.gameObject.SetActive(false);
+				errorPanel.Show(ConnectionStatus.Failed, result.ShutdownReason.ToString());
+			}
+			else
+			{
+				messagePanel.gameObject.SetActive(false);
+			}
+		}
+		catch (AggregateException e)
+		{
+			foreach (var innerException in e.InnerExceptions)
+			{
+				DebugLogMessage.Log(Color.red, $"{innerException.Message}\nEnterLobby Failed");
+			}
+		}
 	}
 
 	public async Task EnterLobby(string lobbyId, Action<List<SessionInfo>> onSessionListUpdated)
@@ -195,18 +221,27 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 
 		this.lobbyId = lobbyId;
 		this.onSessionListUpdated = onSessionListUpdated;
-
 		SetConnectionStatus(ConnectionStatus.EnteringLobby);
-
-
-		//TODO: Display Joining Session...
-		var result = await runnerInstance.JoinSessionLobby(SessionLobby.Custom, lobbyId);
-
-		if (!result.Ok) 
+		try
 		{
-			this.onSessionListUpdated = null;
-			SetConnectionStatus(ConnectionStatus.Failed);
-			onSessionListUpdated(null);
+
+			var result = await runnerInstance.JoinSessionLobby(SessionLobby.Custom, lobbyId);
+
+			if (!result.Ok) 
+			{
+				this.onSessionListUpdated = null;
+				SetConnectionStatus(ConnectionStatus.Failed);
+				onSessionListUpdated(null);
+				messagePanel.gameObject.SetActive(false);
+				errorPanel.Show(ConnectionStatus.Failed, result.ShutdownReason.ToString());
+			}
+		}
+		catch (AggregateException e)
+		{
+			foreach (var innerException in e.InnerExceptions)
+			{
+				DebugLogMessage.Log(Color.red, $"{innerException.Message}\nEnterLobby Failed");
+			}
 		}
 	}
 	
@@ -230,7 +265,6 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		_ = ShutdownRunner();
 		LevelManager.ResetLoadedScene();
 		SceneManager.LoadScene(0);
-		exitCanvas.SetActive(false);
 	}
 	public void ExitGame()
 	{
@@ -319,7 +353,7 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	#endregion
 
 	
-	#region INetworkRunnerCallbacks
+	#region INetworkRunnerCallback
 	public void OnConnectedToServer(NetworkRunner runner)
 	{
 		Debug.Log("Connected to server");
@@ -335,6 +369,8 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 		Debug.Log($"Connect failed {reason}");
 		Disconnect();
 		SetConnectionStatus(ConnectionStatus.Failed, reason.ToString());
+		errorPanel.enabled = true;
+		errorPanel.Show(ConnectionStatus.Failed, reason.ToString());
 	}
 	public void OnPlayerJoined(NetworkRunner runner, PlayerRef playerRef)
 	{
@@ -372,26 +408,19 @@ public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 	}
 	public void OnShutdown(NetworkRunner runner, ShutdownReason reason)
 	{
-		Debug.Log($"OnShutdown {reason}");
-		SetConnectionStatus(ConnectionStatus.Disconnected, reason.ToString());
-
+		Debug.Log($"OnShutdown {reason.ToString()}");
+		errorPanel.enabled = true;
+		errorPanel.Show(ConnectionStatus.Disconnected,reason.ToString());/*
 		if(this.runnerInstance!=null && runnerInstance.gameObject)
-			Destroy(this.runnerInstance.gameObject);
+			Destroy(this.runnerInstance.gameObject);*/
 
 		playerRegistry.Clear(); runnerInstance = null;
 		session = null;
-
-		LevelManager.LoadMainMenu();
-		
-		if (onShutdown != null)
-		{
-			onShutdown.Raise(runner: runner);
-		}
 	}
 	
 	private async Task ShutdownRunner()
 	{
-		await runnerInstance?.Shutdown(destroyGameObject: false); // TODO: check if this needs a try catch
+		await runnerInstance.Shutdown(destroyGameObject: false, shutdownReason:ShutdownReason.IncompatibleConfiguration); // TODO: check if this needs a try catch
 		Status = GameStatus.Lobby;
 	}
 	

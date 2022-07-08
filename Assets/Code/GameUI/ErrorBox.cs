@@ -1,4 +1,6 @@
 using System;
+using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,8 +8,8 @@ namespace GameUI
 {
 	public class ErrorBox : MonoBehaviour
 	{
-		[SerializeField] private Text _status;
-		[SerializeField] private Text _message;
+		[SerializeField] private TMP_Text status;
+		[SerializeField] private TMP_Text message;
 
 		private void Awake()
 		{
@@ -16,8 +18,8 @@ namespace GameUI
 
 		public void Show(ConnectionStatus stat, string message)
 		{
-			_status.text = stat.ToString();
-			_message.text = message;
+			status.text = stat.ToString();
+			this.message.text = message;
 			gameObject.SetActive(true);
 		}
 

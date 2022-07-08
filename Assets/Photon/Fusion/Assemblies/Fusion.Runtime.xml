@@ -178,7 +178,7 @@
             <para>Value of condition method is converted to a long. Null = 0, False = 0, True = 1, Unity Object = InstanceId</para>
             </summary>
         </member>
-        <member name="M:Fusion.DrawIfAttribute.#ctor(System.String,System.Int64,Fusion.DrawIfHideType,Fusion.DoIfCompareOperator)">
+        <member name="M:Fusion.DrawIfAttribute.#ctor(System.String,System.Double,Fusion.DrawIfHideType,Fusion.DoIfCompareOperator)">
             <summary>
             Constructor.
             </summary>
@@ -198,7 +198,7 @@
             <param name="hide">How the field should be hidden (disabled or removed)</param>
             <param name="compare">How the condition member value and compareToValye will be evaluated.</param>
         </member>
-        <member name="M:Fusion.DrawIfAttribute.#ctor(System.String,System.Int64,Fusion.DoIfCompareOperator)">
+        <member name="M:Fusion.DrawIfAttribute.#ctor(System.String,System.Double,Fusion.DoIfCompareOperator)">
             <summary>
             Constructor.
             </summary>
@@ -553,7 +553,7 @@
             <para>Value of condition method is converted to a long. Null = 0, False = 0, True = 1, Unity Object = InstanceId</para>
             </summary>
         </member>
-        <member name="M:Fusion.WarnIfAttribute.#ctor(System.String,System.Int64,System.String,System.Int32,Fusion.DoIfCompareOperator)">
+        <member name="M:Fusion.WarnIfAttribute.#ctor(System.String,System.Double,System.String,System.Int32,Fusion.DoIfCompareOperator)">
             <summary>
             Constructor.
             </summary>
@@ -636,7 +636,11 @@
             Signal if the local peer is already inside a Room
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "P:Fusion.CloudServices.IsInLobby" -->
+        <member name="P:Fusion.CloudServices.IsInLobby">
+            <summary>
+            Signal if the local peer is already inside a Lobby
+            </summary>
+        </member>
         <member name="P:Fusion.CloudServices.SessionSlots">
             <summary>
             Max Number of players a Session can handle
@@ -764,11 +768,6 @@
             Disposes the current <see cref="T:Fusion.CloudServices"/>
             </summary>
         </member>
-        <member name="M:Fusion.CloudServices.Service_UpdateSessionInfo">
-            <summary>
-            Update the <see cref="T:Fusion.SessionInfo"/> data based on the current LBC Information after the peer enters a Room
-            </summary>
-        </member>
         <member name="M:Fusion.CloudServices.OnRoomChanged">
             <summary>
             Callback invoked when any Room Property has changed
@@ -797,7 +796,7 @@
             </summary>
             <param name="stunResult">Reference to StunResult used to build the Protocol Message</param>
         </member>
-        <member name="M:Fusion.CloudServices.SendStateSnapshot">
+        <member name="M:Fusion.CloudServices.SendStateSnapshot(System.Int32,System.Int32,System.UInt32,System.Byte[])">
             <summary>
             Build and send the latest Server Snapshot to the Fusion Plugin
             </summary>
@@ -848,6 +847,23 @@
             </summary>
             <returns>True if the Join Confirmation was received, false otherwise</returns>
         </member>
+        <member name="M:Fusion.CloudServices.Service_UpdateSessionInfo">
+            <summary>
+            Update the <see cref="T:Fusion.SessionInfo"/> data based on the current LBC Information after the peer enters a Room
+            </summary>
+        </member>
+        <member name="M:Fusion.CloudServices.Service_SendHostMigrationSnapshots">
+            <summary>
+            Try to send Server Snapshot to Plugin 
+            </summary>
+        </member>
+        <member name="M:Fusion.CloudServices.Run_ReversePing(Fusion.Sockets.NetAddress)">
+            <summary>
+            Reverse ping will send Empty UDP Packets to the RemoteAddr in order to setup the Routing Table
+            on the current NAT of the Server, forcing it to allow packages from the remote client to be received
+            </summary>
+            <param name="remoteAddr">Remove EndPoint to ping</param>
+        </member>
         <member name="M:Fusion.CloudServices.QueryReflexiveInfo">
             <summary>
             Run the STUN Service to retrieve the current Reflexive Addresses of the local peer
@@ -859,26 +875,6 @@
             Update the internal <see cref="T:Fusion.NetworkRunnerInitializeArgs"/> used to start the Fusion Runner
             </summary>
             <param name="newArgs">New arguments</param>
-        </member>
-        <member name="M:Fusion.CloudServices.StartReversePing(Fusion.Sockets.NetAddress,System.Threading.CancellationToken)">
-            <summary>
-            Reverse ping will send Empty UDP Packets to the RemoteAddr in order to setup the Routing Table
-            on the current NAT of the Server, forcing it to allow packages from the remote client to be received
-            </summary>
-            <param name="remoteAddr">Remove EndPoint to ping</param>
-            <param name="cancellationToken">CancellationToken</param>
-        </member>
-        <member name="M:Fusion.CloudServices.SendPing(Fusion.Sockets.NetAddress)">
-            <summary>
-            Send a "ping" to an EndPoint
-            </summary>
-            <param name="netAddress">EndPoint to send the ping</param>
-            <returns>True if the Ping was sent, false otherwise</returns>
-        </member>
-        <member name="M:Fusion.CloudServices.Service_SendHostMigrationSnapshots">
-            <summary>
-            Try to send Server Snapshot to Plugin 
-            </summary>
         </member>
         <member name="M:Fusion.CloudServices.CheckSubnet(Fusion.Sockets.NetAddress)">
             <summary>
@@ -1091,6 +1087,16 @@
             <summary>
             Called at the very start of the resimulation loop (on clients with prediction enabled), 
             immediately after state is set to the latest server snapshot.
+            </summary>
+        </member>
+        <member name="T:Fusion.IAfterHostMigration">
+            <summary>
+            Used to mark NetworkBehaviors that need to be react after a Host Migration process
+            </summary>
+        </member>
+        <member name="M:Fusion.IAfterHostMigration.AfterHostMigration">
+            <summary>
+            Invoked after the Host Migration happens in order to setup non-networked data on NetworkBehaviors
             </summary>
         </member>
         <member name="T:Fusion.IAfterPhysicsStep">
@@ -2066,6 +2072,9 @@
             <summary>
             Sets a rotation value to the engine. By default, the value is set to the transform's world rotation field.
             </summary>
+        </member>
+        <member name="M:Fusion.NetworkPositionRotation.AfterHostMigration">
+            <inheritdoc cref="M:Fusion.IAfterHostMigration.AfterHostMigration"/>
         </member>
         <member name="F:Fusion.NetworkPositionRotation.WORD_COUNT_NPR">
             <summary>
@@ -5817,6 +5826,12 @@
             </summary>
             <param name="networkObject">NetworkObject to copy the State from</param>
         </member>
+        <member name="M:Fusion.NetworkObject.CopyStateFromSceneObject(Fusion.NetworkObjectHeaderPtr)">
+            <summary>
+            Copies the entire State from another Scene Object.
+            They must have the same Scene Guid
+            </summary>
+        </member>
         <member name="M:Fusion.NetworkObject.SetInterestGroup(Fusion.PlayerRef,System.String,System.Boolean)">
             <summary>
             Add or remove Player's interest in a specific named Interest Group for this <see cref="T:Fusion.NetworkObject"/>.
@@ -6213,12 +6228,12 @@
         </member>
         <member name="F:Fusion.NetworkProjectConfig.PhysicsEngines.Physics2D">
             <summary>
-            The Unity PhysX2D simulation is used, but auto-simulation is disabled and simulations are controlled by Fusion.
+            The Unity Box2D simulation is used, but auto-simulation is disabled and simulations are controlled by Fusion.
             </summary>
         </member>
         <member name="F:Fusion.NetworkProjectConfig.PhysicsEngines.None">
             <summary>
-            Fusion preforms no simulation calls.
+            Fusion preforms no Physics Simulate() calls.
             </summary>
         </member>
         <member name="T:Fusion.NetworkProjectConfig.PhysicsModes">
@@ -6465,6 +6480,11 @@
             all types to be scanned and can increase weaving duration.
             </summary>
         </member>
+        <member name="F:Fusion.NetworkProjectConfig.CheckNetworkedPropertiesBeingEmpty">
+            <summary>
+            If set, the weaver will check if <see cref="T:Fusion.NetworkedAttribute"/> properties getters and setters are empty.
+            </summary>
+        </member>
         <member name="M:Fusion.NetworkProjectConfig.Copy">
             <summary>
             Make a copy of the <see cref="T:Fusion.NetworkProjectConfig"/>.
@@ -6601,6 +6621,11 @@
         <member name="F:Fusion.NetworkRunner._initializeOperation">
             <summary>
             Completion Source for the startup Photon Cloud Operations
+            </summary>
+        </member>
+        <member name="P:Fusion.NetworkRunner.IsInitialized">
+            <summary>
+            Check if the Runner was properly Initialized
             </summary>
         </member>
         <member name="P:Fusion.NetworkRunner.IsVisible">
@@ -6761,6 +6786,18 @@
             Returns the <see cref="T:Fusion.INetworkObjectPool"/> instance.
             </summary>
         </member>
+        <member name="F:Fusion.NetworkRunner.OperationsCancellationTokenSource">
+            <summary>
+            Global CancellationTokenSource for this NetworkRunner Instance
+            Used to control all async operations along the life cycle of the Runner
+            Should be used in conjunction with <see cref="T:Fusion.Async.TaskManager"/>
+            </summary>
+        </member>
+        <member name="P:Fusion.NetworkRunner.OperationsCancellationToken">
+            <summary>
+            Global copy of the Cancellation Token for this NetworkRunner Instance
+            </summary>
+        </member>
         <member name="P:Fusion.NetworkRunner.LagCompensation">
             <summary>
             Returns the global instance of a lag compensation buffer <see cref="T:Fusion.HitboxManager"/>.
@@ -6876,6 +6913,14 @@
             </summary>
             <param name="player">PlayerRef to check for a Connection Token</param>
             <returns>Copy of the Connection Token</returns>
+        </member>
+        <member name="M:Fusion.NetworkRunner.GetPlayerConnectionType(Fusion.PlayerRef)">
+            <summary>
+            Return the <see cref="T:Fusion.ConnectionType"/> with a Remote <see cref="T:Fusion.PlayerRef"/>.
+            Valid only when invoked from a Server (<see cref="P:Fusion.NetworkRunner.IsServer"/>)
+            </summary>
+            <param name="player">Remote Player to check the <see cref="T:Fusion.ConnectionType"/></param>
+            <returns><see cref="T:Fusion.ConnectionType"/> with a <see cref="T:Fusion.PlayerRef"/></returns>
         </member>
         <member name="M:Fusion.NetworkRunner.GetAllBehaviours(System.Type)">
             <summary>
@@ -7129,11 +7174,13 @@
         <member name="M:Fusion.NetworkRunner.AddSimulationBehaviour(Fusion.SimulationBehaviour,Fusion.NetworkObject)">
             <summary>
             Register a <see cref="T:Fusion.SimulationBehaviour"/> instance with the <see cref="T:Fusion.SimulationBehaviourUpdater"/>. 
+            Invalid if NetworkRunner has not been started and initialized.
             </summary>
         </member>
         <member name="M:Fusion.NetworkRunner.RemoveSimulationBehavior(Fusion.SimulationBehaviour)">
             <summary>
-            Unregister a <see cref="T:Fusion.SimulationBehaviour"/> instance from the <see cref="T:Fusion.SimulationBehaviourUpdater"/> callbacks.
+            Unregister a <see cref="T:Fusion.SimulationBehaviour"/> instance from the <see cref="T:Fusion.SimulationBehaviourUpdater"/> callbacks. 
+            Invalid if NetworkRunner has not been started and initialized.
             </summary>
         </member>
         <member name="M:Fusion.NetworkRunner.Attach(Fusion.NetworkObject,System.Nullable{Fusion.PlayerRef})">
@@ -7177,6 +7224,13 @@
             </summary>
             <returns>Iterable list of <see cref="T:Fusion.NetworkObject"/></returns>
         </member>
+        <member name="M:Fusion.NetworkRunner.GetResumeSnapshotNetworkSceneObjects">
+            <summary>
+            Iterate over the Scene NetworkObjects from the Resume Snapshot while giving the reference of the old 
+            Snapshot data associated with that particular Scene Object
+            </summary>
+            <returns>Iterable list of Scene <see cref="T:Fusion.NetworkObject"/> and Scene Object Header</returns>
+        </member>
         <member name="M:Fusion.NetworkRunner.CleanHostMigrationSnapshots">
             <summary>
             Clean all Snapshot references
@@ -7191,6 +7245,11 @@
         <member name="M:Fusion.NetworkRunner.GetNetworkObjectFromResumeSnapshot(Fusion.NetworkObjectHeaderPtr)">
             <summary>
             Gets a temporary representation of a <see cref="T:Fusion.NetworkObject"/> from the old Server Snapshot
+            </summary>
+        </member>
+        <member name="M:Fusion.NetworkRunner.GetSceneNetworkObjectFromResumeSnapshot(Fusion.NetworkObjectHeaderPtr)">
+            <summary>
+            Get the reference of a specific Scene Object associated with a NO Header from the old Server Snapshot
             </summary>
         </member>
         <member name="M:Fusion.NetworkRunner.SetupHostMigration(Fusion.Protocol.HostMigration)">
@@ -7270,6 +7329,11 @@
         <member name="P:Fusion.NetworkRunner.SessionInfo">
             <summary>
             Stores information about the current running session
+            </summary>
+        </member>
+        <member name="P:Fusion.NetworkRunner.LobbyInfo">
+            <summary>
+            Signal if the local peer is already inside a Lobby
             </summary>
         </member>
         <member name="P:Fusion.NetworkRunner.CurrentConnectionType">
@@ -7680,6 +7744,22 @@
         <member name="F:Fusion.SessionLobby.Custom">
             <summary>
             Custom Lobby - works in conjuction with a Lobby Name/ID
+            </summary>
+        </member>
+        <member name="T:Fusion.LobbyInfo">
+            <summary>
+            Holds information about a Lobby
+            </summary>
+        </member>
+        <member name="F:Fusion.LobbyInfo.IsValid">
+            <summary>
+            Flag to signal if the <see cref="T:Fusion.LobbyInfo"/> is ready for use.
+            This is only true if the peer is currently connected to a Lobby.
+            </summary>
+        </member>
+        <member name="F:Fusion.LobbyInfo.Name">
+            <summary>
+            Lobby Name
             </summary>
         </member>
         <member name="T:Fusion.SessionInfo">
@@ -8220,12 +8300,19 @@
             </para>
             </summary>
         </member>
-        <member name="M:Fusion.Simulation.PlayerConnectionToken(Fusion.PlayerRef)">
+        <member name="M:Fusion.Simulation.GetPlayerConnectionToken(Fusion.PlayerRef)">
             <summary>
             Return a copy if a Player's Connection Token
             </summary>
             <param name="player">Player to check for the Connection Token</param>
             <returns>Connection Token Copy</returns>
+        </member>
+        <member name="M:Fusion.Simulation.GetPlayerAddress(Fusion.PlayerRef)">
+            <summary>
+            Return the Address of a remote Player
+            </summary>
+            <param name="player">Player to check for the NetAddress</param>
+            <returns>NetAddress of a specific player</returns>
         </member>
         <member name="M:Fusion.Simulation.Update(System.Double)">
             <summary>
@@ -8639,7 +8726,7 @@
         </member>
         <member name="F:Fusion.NetworkSimulationConfiguration.DelayPeriod">
             <summary>
-            The period of the <see cref="F:Fusion.NetworkSimulationConfiguration.DelayShape"/> oscillator (the rate at which delay oscillates between <see cref="F:Fusion.NetworkSimulationConfiguration.DelayMin"/> and <see cref="F:Fusion.NetworkSimulationConfiguration.DelayMax"/>).
+            The period of the <see cref="F:Fusion.NetworkSimulationConfiguration.DelayShape"/> oscillator (the rate at which delay oscillates in seconds).
             </summary>
         </member>
         <member name="F:Fusion.NetworkSimulationConfiguration.DelayThreshold">
@@ -8679,7 +8766,7 @@
         </member>
         <member name="F:Fusion.NetworkSimulationConfiguration.AdditionalLoss">
             <summary>
-            After the <see cref="F:Fusion.NetworkSimulationConfiguration.LossChanceShape"/> oscillation loss calculated, an additional 0 to this (normalized) percentage of loss chance is added.
+            After the <see cref="F:Fusion.NetworkSimulationConfiguration.LossChanceShape"/> oscillation loss chance is calculated, an additional random value of 0 to this (normalized) percentage of loss chance is added.
             </summary>
         </member>
         <member name="T:Fusion.SimulationGlobalState">

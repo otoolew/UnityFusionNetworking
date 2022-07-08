@@ -1,17 +1,10 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace Utility
+public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
-	/// <summary>
-	/// Be aware this will not prevent a non singleton constructor
-	///   such as `T myT = new T();`
-	/// To prevent that, add `protected T () {}` to your singleton class.
-	/// 
-	/// As a note, this is made as MonoBehaviour because we need Coroutines.
-	/// </summary>
-	public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
-	{
-		private static T _instance;
+ 		private static T _instance;
 
 		private static readonly object _lock = new object();
 
@@ -29,12 +22,14 @@ namespace Utility
 				{
 					if (_instance == null)
 					{
-						var all = FindObjectsOfType<T>();
+						var all = Resources.FindObjectsOfTypeAll<T>();
 						_instance = all != null && all.Length > 0 ? all[0] : null;
 
 						if (all != null && all.Length > 1)
 						{
-							Debug.LogWarning("[Singleton] There are " + all.Length + " instances of " + typeof(T) + "... This may happen if your singleton is also a prefab, in which case there is nothing to worry about.");
+							Debug.LogWarning("[Singleton] There are " + all.Length + " instances of " + typeof(T) +
+							                 "... This may happen if your singleton is also a prefab, in which case there is nothing to worry about.");
+							return _instance;
 						}
 
 						if (_instance == null)
@@ -43,15 +38,16 @@ namespace Utility
 							_instance = singleton.AddComponent<T>();
 							singleton.name = "(singleton) " + typeof(T).ToString();
 
+							if (Application.isPlaying)
+								DontDestroyOnLoad(singleton);
+
 							Debug.Log("[Singleton] An instance of " + typeof(T) + " is needed in the scene, so '" + singleton + "' was created with DontDestroyOnLoad.");
 						}
 						else
 						{
-							Debug.Log("[Singleton] Using instance already created: " + _instance.gameObject.name);
+							Debug.Log("[Singleton] Using instance already created: " +
+							          _instance.gameObject.name);
 						}
-
-						if (Application.isPlaying)
-							DontDestroyOnLoad(_instance.gameObject);
 					}
 
 					return _instance;
@@ -73,5 +69,4 @@ namespace Utility
 		{
 			applicationIsQuitting = true;
 		}
-	}
 }

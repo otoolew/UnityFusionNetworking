@@ -17,7 +17,6 @@ public class NetworkPoolManager : MonoBehaviour, INetworkObjectPool
             pool = new NetworkObjectPool();
             prefabPoolDictionary[prefab] = pool;
         }
-
         return pool;
     }
 

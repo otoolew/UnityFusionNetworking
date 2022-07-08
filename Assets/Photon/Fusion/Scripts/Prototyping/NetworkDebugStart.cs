@@ -389,10 +389,7 @@ public class NetworkDebugStart : Fusion.Behaviour {
   }
 
   public void ShutdownAll() {
-
-    var runners = NetworkRunner.GetInstancesEnumerator();
-    while (runners.MoveNext()) {
-      var runner = runners.Current;
+    foreach (var runner in NetworkRunner.Instances.ToList()) {
       if (runner != null && runner.IsRunning) {
         runner.Shutdown();
       }
