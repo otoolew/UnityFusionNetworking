@@ -112,6 +112,13 @@ public class FusionStats : Fusion.Behaviour {
     return stats;
   }
 
+  [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+  static void ResetStatics() {
+    _statsForRunnerLookup.Clear();
+    _activeGuids.Clear();
+    _newInputSystemFound = null;
+  }
+
   public static Stats.NetStatFlags DefaultNetStatsMask => Stats.NetStatFlags.RoundTripTime | Stats.NetStatFlags.ReceivedPacketSizes | Stats.NetStatFlags.SentPacketSizes;
 
   /// <summary>
