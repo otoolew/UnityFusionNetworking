@@ -74,11 +74,6 @@ namespace UnityFusionNetworking
             {
                 Context.GameSession.Join(this);
             }
-
-            if (Context.Camera != null)
-            {
-                DebugLogMessage.Log(Color.cyan, $"Camera {Object.InputAuthority}");
-            }
             gameObject.name = $"Player{Object.InputAuthority}";
         }
 

@@ -10,6 +10,8 @@ namespace UnityFusionNetworking
 {
     public class PlayerInput : ContextBehaviour, IBeforeUpdate, IBeforeTick
     {
+        private Player _player;
+        
         /// <summary>
         /// Stops the collection of input
         /// </summary>
@@ -34,7 +36,7 @@ namespace UnityFusionNetworking
 
         // We need to store last known input to compare current input against (to track actions activation/deactivation). It is also used if an input for current frame is lost.
         // This is not needed on proxies, only input authority is registered to nameof(PlayerInput) interest group.
-        [Networked(nameof(CharacterInputBehaviour))]
+        [Networked(nameof(PlayerInput))]
         private CharacterInput _lastKnownInput { get; set; }
 
         private CharacterInput _fixedInput;
@@ -47,7 +49,7 @@ namespace UnityFusionNetworking
         private float _cachedMoveDirectionSize;
         private bool _resetCachedInput;
 
-        private Player _player;
+
         [SerializeField] private LayerMask mouseLookMask;
 
         [SerializeField] private Vector3 aimOffset;
@@ -253,10 +255,37 @@ namespace UnityFusionNetworking
             if (Input.GetKey(KeyCode.D) == true) moveDirection += Vector2.right;
 
             if(moveDirection.IsZero() == false) moveDirection.Normalize();
-         
-            var lookRotationDelta = GetMouseLookDirection();
-
+            
             _renderInput.MoveDirection = moveDirection * Time.deltaTime;
+            
+            var lookRotationDelta =  Vector2.zero;
+            //var lookRotationDelta = GetMouseLookDirection();
+            
+            var ray = Context.Camera.CameraComponent.ScreenPointToRay(Input.mousePosition);
+            ray.origin += aimOffset;
+            // Raycast towards the mouse collider box in the world
+            if (Physics.Raycast(ray, out var hit, 200.0f, mouseLookMask))
+            {
+                DebugLogMessage.Log(Color.yellow, $"Hit Something {Input.mousePosition} \n{hit.point}");
+                
+                if (hit.collider != null)
+                {
+                    var lookRotation = Quaternion.LookRotation(hit.point - transform.position);
+                    DebugLogMessage.Log(Color.yellow, $"GetMouseLook {lookRotation.eulerAngles}");
+                    if (lookRotation.eulerAngles != Vector3.zero) // It already shouldn't be...
+                    {
+                        lookRotation.x = 0f;
+                        lookRotation.z = 0f;
+                        lookRotation.eulerAngles += aimOffset;
+                        lookRotationDelta = lookRotation.eulerAngles;
+                    }
+                }
+                
+            }
+            
+            
+            //var screenPoint = Context.Camera.CameraComponent.WorldToScreenPoint(worldPosition);
+            DebugLogMessage.Log(Color.yellow, $"PlayerInput Look Rotation {lookRotationDelta}");
             _renderInput.LookRotationDelta = lookRotationDelta;
 
             _renderInput.Buttons.Set(EInputButton.USE, Input.GetKeyDown(KeyCode.E));
@@ -342,12 +371,40 @@ namespace UnityFusionNetworking
 
         private Vector3 GetMouseLookDirection()
         {
-            if (Camera.main != null)
+            if (Context.Camera != null)
+            {
+                var ray = Context.Camera.CameraComponent.ScreenPointToRay(Input.mousePosition);
+                ray.origin += aimOffset;
+                // Raycast towards the mouse collider box in the world
+                if (Physics.Raycast(ray, out var hit, 200.0f, mouseLookMask))
+                {
+                    if (hit.collider != null)
+                    {
+                        var lookRotation = Quaternion.LookRotation(hit.point - transform.position);
+                        if (lookRotation.eulerAngles != Vector3.zero) // It already shouldn't be...
+                        {
+                            lookRotation.x = 0f;
+                            lookRotation.z = 0f;
+                            lookRotation.eulerAngles += aimOffset;
+                            Debug.Log("GetMouseLook");
+                            return lookRotation.eulerAngles;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                DebugLogMessage.Log("GetMouseLookDirection is NULL");
+            }
+            
+            
+            /*if (Camera.main != null)
             {
                 var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 ray.origin += aimOffset;
                 // Raycast towards the mouse collider box in the world
-                if (Physics.Raycast(ray, out var hit, Mathf.Infinity, mouseLookMask))
+                if (Physics.Raycast(ray, out var hit, 200.0f, mouseLookMask))
+                {
                     if (hit.collider != null)
                     {
                         var lookRotation = Quaternion.LookRotation(hit.point - transform.position);
@@ -359,8 +416,8 @@ namespace UnityFusionNetworking
                             return lookRotation.eulerAngles;
                         }
                     }
-            }
-
+                }
+            }*/
             return Vector3.zero;
         }
         

@@ -67,7 +67,7 @@ namespace UnityFusionNetworking
 
 		// PUBLIC METHODS
 
-		public void ProcessInput(CharacterInputBehaviour input)
+		public void ProcessInput(PlayerInput input)
 		{
 			if (Object.IsProxy == true)
 				return;

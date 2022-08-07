@@ -21,7 +21,9 @@ namespace UnityFusionNetworking
         [SerializeField] private float _maxCameraAngle = 75f;
         [SerializeField] private Vector3 _jumpImpulse = new(0f, 6f, 0f);
         [SerializeField] private Transform cameraHandle;
+        [SerializeField] private LayerMask mouseLookMask;
 
+        [SerializeField] private Vector3 aimOffset;
         // MONOBEHAVIOUR
 
         protected override void Awake()
@@ -77,11 +79,14 @@ namespace UnityFusionNetworking
             // Clamp input look rotation delta
             
             var lookRotation = KCC.FixedData.GetLookRotation(true, true);
-            var lookRotationDelta = KCCUtility.GetClampedLookRotationDelta(lookRotation, input.LookRotationDelta,
-                -_maxCameraAngle, _maxCameraAngle);
-
+            
+            var lookRotationDelta = input.LookRotationDelta;
+            //DebugLogMessage.Log(Color.yellow, $"Agent Fixed{lookRotation}");
+            /*var lookRotationDelta = KCCUtility.GetClampedLookRotationDelta(lookRotation, input.LookRotationDelta,
+                -_maxCameraAngle, _maxCameraAngle);*/
+            KCC.SetLookRotation(lookRotationDelta);
             // Apply clamped look rotation delta
-            KCC.AddLookRotation(lookRotationDelta);
+            //KCC.AddLookRotation(lookRotationDelta);
 
             // Calculate input direction based on recently updated look rotation (the change propagates internally also to KCCData.TransformRotation)
             var inputDirection = KCC.FixedData.TransformRotation * new Vector3(input.MoveDirection.x, 0.0f, input.MoveDirection.y);
@@ -143,13 +148,33 @@ namespace UnityFusionNetworking
             var input = Owner.Input;
 
             // Get look rotation from last fixed update (not last render!)
-            //var lookRotation = KCC.FixedData.GetLookRotation(false, true);
-            var lookRotation = input.FixedInput.LookRotationDelta; // Maybe Cache
             
+            var ray = Context.Camera.CameraComponent.ScreenPointToRay(Input.mousePosition);
+            ray.origin += aimOffset;
+            // Raycast towards the mouse collider box in the world
+            if (Physics.Raycast(ray, out var hit, 200.0f, mouseLookMask))
+            {
+                DebugLogMessage.Log(Color.yellow, $"Hit Something {Input.mousePosition} \n{hit.point}");
+                
+                if (hit.collider != null)
+                {
+                    var lookRotation = Quaternion.LookRotation(hit.point - transform.position).eulerAngles;
+                    DebugLogMessage.Log(Color.yellow, $"GetMouseLook {lookRotation}");
+                    if (lookRotation != Vector3.zero) // It already shouldn't be...
+                    {
+                        lookRotation.x = 0f;
+                        lookRotation.z = 0f;
+                        lookRotation += aimOffset;
+                        DebugLogMessage.Log($"Ray Look {lookRotation}");
+                    }
+                }
+                
+            }
+            //var lookRotation = input.RenderInput.LookRotationDelta; // Maybe Cache
             // For correct look rotation, we have to apply deltas from all render frames since last fixed update => stored in Input.CachedInput
             var lookRotationDelta = input.CachedInput.LookRotationDelta;
 
-            KCC.SetLookRotation(lookRotation + lookRotationDelta);
+            //KCC.SetLookRotation(lookRotation + lookRotationDelta);
             //KCC.SetLookRotation(lookRotation);
             Vector3 inputDirection = default;
 
@@ -162,7 +187,6 @@ namespace UnityFusionNetworking
             // Jump is extrapolated for render as well.
             if (Owner.Input.WasPressed(EInputButton.JUMP) == true)
             {
-                DebugLogMessage.Log(Color.cyan, "Jump Pressed");
                 // By default the character jumps forward in facing direction
                 var jumpRotation = KCC.RenderData.TransformRotation;
 
