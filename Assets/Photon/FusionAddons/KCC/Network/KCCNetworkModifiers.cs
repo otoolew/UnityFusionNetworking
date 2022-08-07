@@ -19,7 +19,8 @@ namespace Fusion.KCC
 
 		public override void Read(int* ptr)
 		{
-			KCCData data = Context.Data;
+			KCCData       data   = Context.Data;
+			NetworkRunner runner = Context.KCC.Runner;
 
 			data.Modifiers.Clear(false);
 
@@ -31,7 +32,10 @@ namespace Fusion.KCC
 				KCCNetworkID networkID = KCCNetworkUtility.ReadNetworkID(modifierPtr);
 				modifierPtr += 4;
 
-				data.Modifiers.Add(Context.KCC, networkID);
+				if (networkID.IsValid == true)
+				{
+					data.Modifiers.Add(KCCNetworkID.GetNetworkObject(runner, networkID), networkID);
+				}
 			}
 		}
 

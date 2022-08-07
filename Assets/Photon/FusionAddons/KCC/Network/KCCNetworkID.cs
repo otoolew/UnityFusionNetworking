@@ -48,7 +48,7 @@ namespace Fusion.KCC
 			return networkID;
 		}
 
-		public static NetworkObject GetNetworkObject(KCC kcc, KCCNetworkID networkID)
+		public static NetworkObject GetNetworkObject(NetworkRunner runner, KCCNetworkID networkID)
 		{
 			if (networkID.IsValid == false)
 				return default;
@@ -57,7 +57,7 @@ namespace Fusion.KCC
 			{
 				NetworkId networkId = new NetworkId();
 				networkId.Raw = networkID.Raw;
-				NetworkObject networkObjectInstance = kcc.Runner.FindObject(networkId);
+				NetworkObject networkObjectInstance = runner.FindObject(networkId);
 				if (networkObjectInstance != null)
 					return networkObjectInstance;
 			}
@@ -66,7 +66,7 @@ namespace Fusion.KCC
 			networkObjectGuid.RawGuidValue[0] = networkID.Value0;
 			networkObjectGuid.RawGuidValue[1] = networkID.Value1;
 
-			if (kcc.Runner.Config.PrefabTable.TryGetId(networkObjectGuid, out NetworkPrefabId networkPrefabId) == true && kcc.Runner.Config.PrefabTable.TryGetPrefab(networkPrefabId, out NetworkObject networkObject) == true)
+			if (runner.Config.PrefabTable.TryGetId(networkObjectGuid, out NetworkPrefabId networkPrefabId) == true && runner.Config.PrefabTable.TryGetPrefab(networkPrefabId, out NetworkObject networkObject) == true)
 				return networkObject;
 
 			return default;

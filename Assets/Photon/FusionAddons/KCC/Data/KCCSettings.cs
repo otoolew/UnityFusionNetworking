@@ -61,6 +61,19 @@ namespace Fusion.KCC
 		[Tooltip("Allows input authority to call Teleport RPC. Use with caution.")]
 		public bool AllowClientTeleports = false;
 
+		[Tooltip("Defines minimum distance the KCC must move in single tick to treat the movement as instant (teleport). Affects interpolation and other KCC features.")]
+		public float TeleportThreshold = 1.0f;
+
+		[Tooltip("Controls maximum distance the KCC moves in single CCD step. Valid range is 25% - 75%. Use lower values if the character passes through geometry.\n" +
+		"CCD Max Step Distance = Radius * CCD Radius Multiplier")]
+		[Range(0.25f, 0.75f)]
+		public float CCDRadiusMultiplier = 0.75f;
+
+		[Tooltip("Defines render position distance to smooth out jitter. Higher values may introduce noticeable delay when switching move direction.\n" +
+		"X = Horizontal axis.\n" +
+		"Y = Vertical axis.")]
+		public Vector2 AntiJitterDistance;
+
 		[Tooltip("Maximum ground check distance for snapping.")]
 		public float GroundSnapDistance = 0.25f;
 
@@ -74,7 +87,7 @@ namespace Fusion.KCC
 		public float StepSpeed = 1.0f;
 
 		[Tooltip("Default processors, propagated to KCC.LocalProcessors upon initialization.")]
-		public KCCProcessor[] Processors;
+		public BaseKCCProcessor[] Processors;
 
 		[Space(4.0f)]
 
@@ -83,6 +96,18 @@ namespace Fusion.KCC
 
 		[Tooltip("Default rotation accuracy.")]
 		public Accuracy RotationAccuracy = new Accuracy(AccuracyDefaults.ROTATION);
+
+		[Space(4.0f)]
+
+		[Tooltip("Maximum count of collisions synchronized over network.")]
+		public int MaxNetworkedCollisions = 4;
+
+		[Tooltip("Maximum count of modifiers synchronized over network.")]
+		public int MaxNetworkedModifiers = 4;
+
+		[Tooltip("Maximum count of ignored colliders synchronized over network.")]
+		public int MaxNetworkedIgnores = 4;
+
 
 		// PUBLIC METHODS
 
@@ -100,14 +125,17 @@ namespace Fusion.KCC
 			Features             = other.Features;
 			SpawnColliderOnProxy = other.SpawnColliderOnProxy;
 			AllowClientTeleports = other.AllowClientTeleports;
+			TeleportThreshold    = other.TeleportThreshold;
+			CCDRadiusMultiplier  = other.CCDRadiusMultiplier;
+			AntiJitterDistance   = other.AntiJitterDistance;
 			GroundSnapDistance   = other.GroundSnapDistance;
 			GroundSnapSpeed      = other.GroundSnapSpeed;
 			StepHeight           = other.StepHeight;
 			StepSpeed            = other.StepSpeed;
 
-			if (other.Processors != null)
+			if (other.Processors != null && other.Processors.Length > 0)
 			{
-				Processors = new KCCProcessor[other.Processors.Length];
+				Processors = new BaseKCCProcessor[other.Processors.Length];
 				Array.Copy(other.Processors, Processors, Processors.Length);
 			}
 			else
@@ -115,8 +143,11 @@ namespace Fusion.KCC
 				Processors = null;
 			}
 
-			PositionAccuracy = other.PositionAccuracy;
-			RotationAccuracy = other.RotationAccuracy;
+			PositionAccuracy       = other.PositionAccuracy;
+			RotationAccuracy       = other.RotationAccuracy;
+			MaxNetworkedCollisions = other.MaxNetworkedCollisions;
+			MaxNetworkedModifiers  = other.MaxNetworkedModifiers;
+			MaxNetworkedIgnores    = other.MaxNetworkedIgnores;
 
 			CopyUserSettingsFromOther(other);
 		}

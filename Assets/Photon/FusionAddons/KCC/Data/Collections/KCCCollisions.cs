@@ -1,5 +1,6 @@
 namespace Fusion.KCC
 {
+	using System.Collections.Generic;
 	using UnityEngine;
 
 	/// <summary>
@@ -76,6 +77,22 @@ namespace Fusion.KCC
 			}
 
 			return default;
+		}
+
+		public void GetProcessors<T>(List<T> processors, bool clearList = true) where T : class
+		{
+			if (clearList == true)
+			{
+				processors.Clear();
+			}
+
+			for (int i = 0, count = All.Count; i < count; ++i)
+			{
+				if (All[i].Processor is T processor)
+				{
+					processors.Add(processor);
+				}
+			}
 		}
 
 		public KCCCollision Add(NetworkObject networkObject, IKCCInteractionProvider provider, Collider collider)

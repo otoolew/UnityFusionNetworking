@@ -15,7 +15,7 @@ public enum LevelIndex
 public delegate void FinishedLoadingDelegate(IEnumerable<NetworkObject> sceneObjects);
 public class LevelManager : NetworkSceneManagerBase
 {
-    [SerializeField] private Level currentLevel;
+    //[SerializeField] private Level currentLevel;
     [SerializeField] private Scene currentScene;
     [SerializeField] private SceneTransitionManager sceneTransitionManager;
     [SerializeField] private SceneReference mainMenuScene;
@@ -26,7 +26,7 @@ public class LevelManager : NetworkSceneManagerBase
     // ReSharper disable Unity.PerformanceAnalysis
     protected override IEnumerator SwitchScene(SceneRef prevScene, SceneRef newScene, FinishedLoadingDelegate finished)
     {
-        GameManager.Instance.Status = GameManager.GameStatus.Loading;
+        //GameManager.Instance.Status = GameManager.GameStatus.Loading;
 
         sceneTransitionManager.StartLoadingScreen();
         if (newScene <= 0)
@@ -93,10 +93,10 @@ public class LevelManager : NetworkSceneManagerBase
     }
     public void ResetLevel()
     {
-        if (currentLevel != null)
+        /*if (currentLevel != null)
         {
             currentLevel.OnLoadMap1();
-        }
+        }*/
         currentScene = default;
     }
 }

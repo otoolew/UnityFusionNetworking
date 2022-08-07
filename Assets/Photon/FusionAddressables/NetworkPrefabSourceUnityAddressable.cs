@@ -46,7 +46,7 @@ namespace Fusion {
   }
 
 #if UNITY_EDITOR
-  public class NetworkPrefabAssetFactoryAddressable : INetworkPrefabSourceFactory, INetworkPrefabSourceFactoryCustomEditorResolve {
+  public class NetworkPrefabAssetFactoryAddressable : INetworkPrefabSourceFactory {
     public const int DefaultOrder = 800;
 
     private ILookup<string, AddressableAssetEntry> _lookup = default;
@@ -75,7 +75,7 @@ namespace Fusion {
       return null;
     }
 
-    UnityEngine.GameObject INetworkPrefabSourceFactoryCustomEditorResolve.EditorResolveSource(NetworkPrefabSourceUnityBase prefabAsset) { 
+    UnityEngine.GameObject INetworkPrefabSourceFactory.EditorResolveSource(NetworkPrefabSourceUnityBase prefabAsset) { 
       return ((NetworkPrefabSourceUnityAddressable)prefabAsset).Address.editorAsset;
     }
 

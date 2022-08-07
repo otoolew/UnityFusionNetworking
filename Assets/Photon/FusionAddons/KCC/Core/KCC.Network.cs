@@ -16,8 +16,16 @@ namespace Fusion.KCC
 
 		private KCCNetworkContext     _networkContext;
 		private IKCCNetworkProperty[] _networkProperties;
+		private KCCNetworkProperties  _defaultProperties;
 
 		private static float _defaultPositionReadAccuracy = float.NaN;
+
+		// PUBLIC METHODS
+
+		public unsafe Vector3 ReadNetworkPosition(int* ptr)
+		{
+			return _defaultProperties.ReadPosition(ptr);
+		}
 
 		// NetworkAreaOfInterestBehaviour INTERFACE
 
@@ -114,7 +122,7 @@ namespace Fusion.KCC
 				Vector3 toPosition   = KCCNetworkUtility.ReadVector3(basePtrTo,   _defaultPositionReadAccuracy);
 
 				Vector3 positionDifference = toPosition - fromPosition;
-				if (positionDifference.sqrMagnitude > ticks * ticks)
+				if (positionDifference.sqrMagnitude > _settings.TeleportThreshold * _settings.TeleportThreshold * ticks * ticks)
 				{
 					_fixedData.TargetPosition = toPosition;
 					_fixedData.RealVelocity   = Vector3.zero;
@@ -153,12 +161,6 @@ namespace Fusion.KCC
 			RestoreUserHistoryData(historyData);
 		}
 
-		partial void InitializeUserNetworkProperties(KCCNetworkContext networkContext, List<IKCCNetworkProperty> networkProperties);
-		partial void InterpolateUserNetworkData(InterpolationData interpolationData);
-		partial void RestoreUserHistoryData(KCCData historyData);
-
-		// PRIVATE METHODS
-
 		private void InitializeNetworkProperties()
 		{
 			if (_defaultPositionReadAccuracy.IsNaN() == true)
@@ -173,17 +175,24 @@ namespace Fusion.KCC
 			_networkContext.KCC      = this;
 			_networkContext.Settings = _settings;
 
-			List<IKCCNetworkProperty> properties = new List<IKCCNetworkProperty>(32)
-			{
-				new KCCNetworkProperties(_networkContext, _settings.PositionAccuracy, _settings.RotationAccuracy),
-				new KCCNetworkCollisions(_networkContext, 8),
-				new KCCNetworkModifiers (_networkContext, 8),
-				new KCCNetworkIgnores   (_networkContext, 8),
-			};
+			_defaultProperties = new KCCNetworkProperties(_networkContext, _settings.PositionAccuracy, _settings.RotationAccuracy);
+
+			List<IKCCNetworkProperty> properties = new List<IKCCNetworkProperty>(32);
+			properties.Add(_defaultProperties);
+
+			if (_settings.MaxNetworkedCollisions > 0) { properties.Add(new KCCNetworkCollisions(_networkContext, _settings.MaxNetworkedCollisions)); }
+			if (_settings.MaxNetworkedModifiers  > 0) { properties.Add(new KCCNetworkModifiers (_networkContext, _settings.MaxNetworkedModifiers));  }
+			if (_settings.MaxNetworkedIgnores    > 0) { properties.Add(new KCCNetworkIgnores   (_networkContext, _settings.MaxNetworkedIgnores));    }
 
 			InitializeUserNetworkProperties(_networkContext, properties);
 
 			_networkProperties = properties.ToArray();
 		}
+
+		// PARTIAL METHODS
+
+		partial void InitializeUserNetworkProperties(KCCNetworkContext networkContext, List<IKCCNetworkProperty> networkProperties);
+		partial void InterpolateUserNetworkData(InterpolationData interpolationData);
+		partial void RestoreUserHistoryData(KCCData historyData);
 	}
 }

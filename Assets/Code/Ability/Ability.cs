@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 
-public class Ability : NetworkBehaviour
+namespace UnityFusionNetworking
 {
+	
+	public class Ability : NetworkBehaviour
+	{
 		[SerializeField] private Transform[] _gunExits;
 		[SerializeField] private Projectile _projectilePrefab; // Networked projectile
+
 		[SerializeField] private float _rateOfFire;
 		//[SerializeField] private byte _ammo;
 		//[SerializeField] private bool _infiniteAmmo;
@@ -25,7 +29,7 @@ public class Ability : NetworkBehaviour
 		private List<ParticleSystem> _muzzleFlashList = new List<ParticleSystem>();
 		public float delay => _rateOfFire;
 		public bool isShowing => _visible >= 1.0f;
-	
+
 		private void Awake()
 		{
 			/*// Create a muzzle flash for each gun exit point the weapon has
@@ -37,10 +41,12 @@ public class Ability : NetworkBehaviour
 				}
 			}*/
 		}
+
 		public override void Spawned()
 		{
 
 		}
+
 		/// <summary>
 		/// Control the visual appearance of the weapon. This is controlled by the Player based
 		/// on the currently selected weapon, so the boolean parameter is entirely derived from a
@@ -57,6 +63,7 @@ public class Ability : NetworkBehaviour
 			{
 				ToggleActive(true);
 			}
+
 			_visible = 1;
 		}
 
@@ -76,7 +83,7 @@ public class Ability : NetworkBehaviour
 		/// <param name="ownerVelocity"></param>
 		public void Fire(NetworkRunner runner, PlayerRef owner, Vector3 ownerVelocity)
 		{
-			
+
 			Transform exit = GetExitPoint();
 			SpawnNetworkShot(runner, owner, exit, ownerVelocity);
 			fireTick = Runner.Simulation.Tick;
@@ -90,7 +97,7 @@ public class Ability : NetworkBehaviour
 		private void FireFx()
 		{
 			//TODO: Emit Particles
-			
+
 			// Recharge the laser sight if this weapon has it
 			/*if (_laserSight != null)
 				_laserSight.Recharge();
@@ -112,11 +119,11 @@ public class Ability : NetworkBehaviour
 			Debug.Log($"Spawning Shot in tick {Runner.Simulation.Tick} stage={Runner.Simulation.Stage}");
 			// Create a key that is unique to this shot on this client so that when we receive the actual NetworkObject
 			// Fusion can match it against the predicted local bullet.
-			var key = new NetworkObjectPredictionKey {Byte0 = (byte) owner.RawEncoded, Byte1 = (byte) runner.Simulation.Tick};
-			runner.Spawn(_projectilePrefab, exit.position, exit.rotation, owner, (runner, obj) =>
-			{
-				obj.GetComponent<Projectile>().InitNetworkState(ownerVelocity);
-			}, key );
+			var key = new NetworkObjectPredictionKey
+				{ Byte0 = (byte)owner.RawEncoded, Byte1 = (byte)runner.Simulation.Tick };
+			// TODO: Implement the runner spawning
+			/*runner.Spawn(_projectilePrefab, exit.position, exit.rotation, owner,
+				(runner, obj) => { obj.GetComponent<Projectile>().InitNetworkState(ownerVelocity); }, key);*/
 		}
 
 		private Transform GetExitPoint()
@@ -125,4 +132,5 @@ public class Ability : NetworkBehaviour
 			Transform exit = _gunExits[_gunExit];
 			return exit;
 		}
+	}
 }

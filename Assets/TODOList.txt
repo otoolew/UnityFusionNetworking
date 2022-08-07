@@ -1,0 +1,8 @@
+TODOList
+
+SetUp GameplayUI 
+    - Game Info
+    - Countdown
+    - PlayerCharacterInfo
+        - Weapon State
+        - Health State

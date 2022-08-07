@@ -26,8 +26,8 @@ namespace Fusion.KCC.Editor
 			EKCCStage.SetKinematicSpeed,
 			EKCCStage.SetKinematicVelocity,
 			EKCCStage.ProcessPhysicsQuery,
-			EKCCStage.Stay,
-			EKCCStage.Interpolate,
+			EKCCStage.OnStay,
+			EKCCStage.OnInterpolate,
 			EKCCStage.ProcessUserLogic,
 		};
 
@@ -41,8 +41,8 @@ namespace Fusion.KCC.Editor
 			"Set Kinematic Speed",
 			"Set Kinematic Velocity",
 			"Process Physics Query",
-			"Stay",
-			"Interpolate",
+			"OnStay",
+			"OnInterpolate",
 			"Process User Logic",
 		};
 

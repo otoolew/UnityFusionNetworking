@@ -88,10 +88,4 @@ public class FusionStatsBillboard : Fusion.Behaviour {
       }
     }
   }
-
-  [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-  static void ResetStatics() {
-    _currentCam = default;
-    _lastCameraFindTime = default;
-  }
 }

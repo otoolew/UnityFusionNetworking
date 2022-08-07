@@ -243,8 +243,6 @@ namespace Fusion.CodeGen {
 
     private TypeDefinition MakeElementReaderWriter(ILWeaverAssembly asm, TypeReference declaringType, ICustomAttributeProvider member, TypeReference elementType) {
 
-      elementType = asm.Import(elementType);
-
       void AddIElementReaderWriterImplementation(ILWeaverAssembly asm, TypeDefinition readerWriterType, ICustomAttributeProvider member, TypeReference elementType, int elementWordCount, bool isExplicit = false) {
 
         var dataType = asm.Import(typeof(byte*));
@@ -331,7 +329,7 @@ namespace Fusion.CodeGen {
 
         return behaviour;
       } else {
-        var readerWriterName = "ReaderWriter@" + elementType.FullName.Replace(".", "_").Replace("/", "__");
+        var readerWriterName = "ReaderWriter@" + elementType.FullName.Replace(".", "_");
         if (typeInfo.IsAccuracySupported && typeInfo.TryGetEffectiveMemberAccuracy(member, out var accuracy)) {
           uint value = BitConverter.ToUInt32(BitConverter.GetBytes(accuracy), 0);
           readerWriterName += $"@Accuracy_0x{value:x}";
@@ -520,86 +518,7 @@ namespace Fusion.CodeGen {
       }
     }
 
-    void ThrowIfPropertyNotEmptyOrCompilerGenerated(PropertyDefinition property) {
-      Collection<Instruction> instructions;
-      int idx;
-
-      var getter = property.GetMethod;
-      var setter = property.SetMethod;
-
-      void ExpectNext(params OpCode[] opCodes) {
-        foreach (var opCode in opCodes) {
-          // skip nops
-          for (; idx < instructions.Count && instructions[idx].OpCode.Equals(OpCodes.Nop); ++idx) {
-          }
-
-          if (idx >= instructions.Count) {
-            throw new InvalidOperationException($"Expected {opCode}, but run out of instructions");
-          } else if (!instructions[idx].OpCode.Equals(opCode)) {
-            throw new InvalidOperationException($"Expected {opCode}, got {instructions[idx].OpCode} at {idx}. Full IL: {string.Join(", ", instructions)}");
-          }
-          ++idx;
-        }
-      }
-
-      if (getter != null && !getter.TryGetAttribute<CompilerGeneratedAttribute>(out _)) {
-        instructions = getter.Body.Instructions;
-        idx = 0;
-
-        bool expectLocalVariable = false;
-        var returnType = getter.ReturnType;
-
-        switch (returnType.MetadataType) {
-          case MetadataType.SByte:
-          case MetadataType.Byte:
-          case MetadataType.Int16:
-          case MetadataType.UInt16:
-          case MetadataType.Int32:
-          case MetadataType.UInt32:
-          case MetadataType.Boolean:
-          case MetadataType.Char:
-            ExpectNext(OpCodes.Ldc_I4_0);
-            break;
-          case MetadataType.Int64:
-          case MetadataType.UInt64:
-            ExpectNext(OpCodes.Ldc_I4_0, OpCodes.Conv_I8);
-            break;
-          case MetadataType.Single:
-            ExpectNext(OpCodes.Ldc_R4);
-            break;
-          case MetadataType.Double:
-            ExpectNext(OpCodes.Ldc_R8);
-            break;
-          case MetadataType.String:
-          case MetadataType.Object:
-            ExpectNext(OpCodes.Ldnull);
-            break;
-          default:
-            expectLocalVariable = true;
-            ExpectNext(OpCodes.Ldloca_S, OpCodes.Initobj, OpCodes.Ldloc_0);
-            break;
-        }
-
-        if (getter.Body.Variables.Count > (expectLocalVariable ? 1 : 0)) {
-          if (expectLocalVariable) {
-            ExpectNext(OpCodes.Stloc_1, OpCodes.Br_S, OpCodes.Ldloc_1);
-          } else {
-            ExpectNext(OpCodes.Stloc_0, OpCodes.Br_S, OpCodes.Ldloc_0);
-          }
-        }
-
-        ExpectNext(OpCodes.Ret);
-      }
-
-      if (setter != null && !setter.TryGetAttribute<CompilerGeneratedAttribute>(out _)) {
-        instructions = setter.Body.Instructions;
-        idx = 0;
-        ExpectNext(OpCodes.Ret);
-      }
-    }
-
     (MethodDefinition getter, MethodDefinition setter) PreparePropertyForWeaving(PropertyDefinition property) {
-     
       var getter = property.GetMethod;
       var setter = property.SetMethod;
 
@@ -1908,14 +1827,8 @@ namespace Fusion.CodeGen {
             }
           }
 
-          if (ILWeaverSettings.CheckNetworkedPropertiesBeingEmpty()) {
-            try {
-              ThrowIfPropertyNotEmptyOrCompilerGenerated(property);
-            } catch (Exception ex) {
-              Log.Warn($"{property} is not compiler-generated or empty: {ex.Message}");
-            }
-          }
 
+        
           var propertyWordCount = TypeRegistry.GetPropertyWordCount(property);
 
           property.GetMethod?.RemoveAttribute<CompilerGeneratedAttribute>(asm);
@@ -1938,6 +1851,7 @@ namespace Fusion.CodeGen {
           var storageField = new FieldDefinition($"_{property.Name}", FieldAttributes.Private, fixedBufferInfo);
 
           TypeRegistry.GetInfo(property.PropertyType).TryGetEffectiveMemberCapacity(property, out var capacity);
+          storageField.AddAttribute<SerializeField>(asm);
 
           var fixedBufferAttribute = storageField.AddAttribute<FixedBufferPropertyAttribute, TypeReference, TypeReference, int>(asm, property.PropertyType, surrogateType, capacity);
 
@@ -2106,7 +2020,7 @@ namespace Fusion.CodeGen {
       });
 
       if (addSerializeField) {
-        if (!hasNonSerialized && property.GetMethod.IsPublic) {
+        if (!hasNonSerialized && !property.GetMethod.IsPrivate) {
           if (field.IsNotSerialized) {
             // prohibited
           } else if (field.HasAttribute<SerializeField>()) {
@@ -2231,7 +2145,6 @@ namespace Fusion.CodeGen {
           }
 
 
-
           if (property.PropertyType.IsPointer || property.PropertyType.IsByReference) {
             var elementType = property.PropertyType.GetElementTypeWithGenerics();
             if (IsTypeAffectedByAccuracy(asm, elementType)) {
@@ -2259,13 +2172,7 @@ namespace Fusion.CodeGen {
             var readOnlyInit = GetReadOnlyPropertyInitializer(property);
 
             // prepare getter/setter methods
-            if (readOnlyInit == null && ILWeaverSettings.CheckNetworkedPropertiesBeingEmpty()) {
-              try {
-                ThrowIfPropertyNotEmptyOrCompilerGenerated(property);
-              } catch (Exception ex){
-                Log.Warn($"{property} is not compiler-generated or empty: {ex.Message}");
-              }
-            }
+
 
             var (getter, setter) = PreparePropertyForWeaving(property);
             var getterRef = getter.GetCallable();
@@ -2309,7 +2216,7 @@ namespace Fusion.CodeGen {
               IEnumerable<Instruction> fieldInit = null;
               VariableDefinition[] fieldInitLocalVariables = null;
 
-              if (readOnlyInit?.Instructions.Length > 0) {
+              if (readOnlyInit != null) {
                 fieldInit = readOnlyInit.Value.Instructions;
                 fieldInitLocalVariables = readOnlyInit.Value.Variables;
               } else if (propertyInfo.BackingField != null) {
@@ -2444,7 +2351,7 @@ namespace Fusion.CodeGen {
               // in each constructor, replace inline init, if present
               foreach (var constructor in type.GetConstructors()) {
 
-                if (readOnlyInit?.Instructions.Length > 0) {
+                if (readOnlyInit != null) {
                   var il = constructor.Body.GetILProcessor();
 
                   Instruction before = il.Body.Instructions[0];
@@ -2672,15 +2579,20 @@ namespace Fusion.CodeGen {
         // need to check if there's MakeRef/Ptr before getter gets obliterated 
         var instructions = property.GetMethod.Body.Instructions;
 
-
         for (int i = 0; i < instructions.Count; ++i) {
           var instr = instructions[i];
           if (IsMakeRefOrMakePtrCall(instr)) {
+            Log.Debug($"Property {property} has MakePtr/MakeRef init");
             // found it!
-            return new ReadOnlyInitializer() {
-              Instructions = instructions.Take(i).ToArray(),
-              Variables = property.GetMethod.Body.Variables.ToArray()
-            };
+            if (i == 0) {
+              // seems we're dealing with an empty MakeRef/MakePtr
+              return null;
+            } else {
+              return new ReadOnlyInitializer() {
+                Instructions = instructions.Take(i).ToArray(),
+                Variables = property.GetMethod.Body.Variables.ToArray()
+              };
+            }
           }
         }
       }
@@ -3768,11 +3680,7 @@ namespace Fusion.CodeGen {
 
       if (t is GenericParameter genericParameter) {
         foreach (var constraint in genericParameter.Constraints) {
-#if FUSION_CECIL_1_11_OR_NEWER
-          if (!Is(type, constraint.ConstraintType)) {
-#else
           if (!Is(type, constraint)) {
-#endif
             return false;
           }
         }
@@ -5213,13 +5121,6 @@ namespace Fusion.CodeGen {
       return result;
     }
 
-    internal static bool CheckNetworkedPropertiesBeingEmpty() {
-      bool result = true;
-      CheckNetworkedPropertiesBeingEmptyPartial(ref result);
-      return result;
-    }
-
-
     static partial void GetAccuracyPartial(string tag, ref float? accuracy);
 
     static partial void IsAssemblyWeavablePartial(string name, ref bool result);
@@ -5229,8 +5130,6 @@ namespace Fusion.CodeGen {
     static partial void NullChecksForNetworkedPropertiesPartial(ref bool result);
 
     static partial void CheckRpcAttributeUsagePartial(ref bool result);
-
-    static partial void CheckNetworkedPropertiesBeingEmptyPartial(ref bool result);
   }
 }
 #endif
@@ -5328,10 +5227,6 @@ namespace Fusion.CodeGen {
       result = _checkRpcAttributeUsage.Value ?? result;
     }
 
-    static partial void CheckNetworkedPropertiesBeingEmptyPartial(ref bool result) {
-      result = _checkNetworkedPropertiesBeingEmpty.Value ?? result;
-    }
-
     public static bool ValidateConfig(out ConfigStatus errorType, out Exception error) {
       try {
         error = null;
@@ -5397,9 +5292,6 @@ namespace Fusion.CodeGen {
       return (bool?)_config.Value.Root.Element(nameof(NetworkProjectConfig.CheckRpcAttributeUsage));
     });
 
-    static Lazy<bool?> _checkNetworkedPropertiesBeingEmpty = new Lazy<bool?>(() => {
-      return (bool?)_config.Value.Root.Element(nameof(NetworkProjectConfig.CheckNetworkedPropertiesBeingEmpty));
-    });
 
     public static string GetXPath(this XElement element) {
       var ancestors = element.AncestorsAndSelf()
@@ -5468,10 +5360,6 @@ namespace Fusion.CodeGen {
 
     static partial void CheckRpcAttributeUsagePartial(ref bool result) {
       result = NetworkProjectConfig.Global.CheckRpcAttributeUsage;
-    }
-
-    static partial void CheckNetworkedPropertiesBeingEmptyPartial(ref bool result) {
-      result = NetworkProjectConfig.Global.CheckNetworkedPropertiesBeingEmpty;
     }
   }
 }
@@ -5726,15 +5614,11 @@ namespace Fusion.CodeGen {
       attribute = null;
       return false;
     }
-    
+
     public static bool TryGetAttributeArgument<T>(this CustomAttribute attr, int index, out T value, T defaultValue = default) {
       if (index < attr.ConstructorArguments.Count) {
-        var val = attr.ConstructorArguments[index].Value;
-        if (val is T t) {
+        if (attr.ConstructorArguments[index].Value is T t) {
           value = t;
-          return true;
-        } else if ( typeof(T).IsEnum && val.GetType().IsPrimitive ) {
-          value = (T)Enum.ToObject(typeof(T), val);
           return true;
         }
       }

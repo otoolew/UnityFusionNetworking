@@ -126,7 +126,6 @@ GameObject:
   - component: {fileID: 4873404714749280357}
   - component: {fileID: 8762345656484559764}
   - component: {fileID: 4510421676990422658}
-  - component: {fileID: 3364391080360522080}
   m_Layer: 0
   m_Name: ProjectilePrefab
   m_TagString: Untagged
@@ -173,7 +172,6 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 4510421676990422658}
-  - {fileID: 3364391080360522080}
   SimulationBehaviours: []
 --- !u!114 &4510421676990422658
 MonoBehaviour:
@@ -201,27 +199,6 @@ MonoBehaviour:
     RotBlendStart: 0.1
     RotBlendEnd: 0.5
     RotTeleportRadians: 1.5
---- !u!114 &3364391080360522080
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2151661009135817398}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14b629d8a8024bf46ad03da45e22bbf4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _interpolationDataSource: 0
-  hitMask:
-    serializedVersion: 2
-    m_Bits: 2147483647
-  visualContainer: {fileID: 7969663462960621816}
-  projectileData: {fileID: 11400000, guid: cd0bf40ef9069a84c9efe66eea619e2b, type: 2}
-  _networkedVelocity: {x: 0, y: 0, z: 0}
-  _networkedDestroyed:
-    _value: 0
 --- !u!1 &3992835051451665789
 GameObject:
   m_ObjectHideFlags: 0

@@ -444,13 +444,8 @@ public class NetworkDebugStart : Fusion.Behaviour {
 
     // If NDS is starting more than 1 shared or auto client, they need to use the same Session Name, otherwise, they will end up on different Rooms
     // as Fusion creates a Random Session Name when no name is passed on the args
-    if ((serverMode == GameMode.Shared || serverMode == GameMode.AutoHostOrClient || serverMode == GameMode.Server || serverMode == GameMode.Host) && 
-         clientCount > 1 && config.PeerMode == NetworkProjectConfig.PeerModes.Multiple) {
-
-      if (string.IsNullOrEmpty(DefaultRoomName)) {
-        DefaultRoomName = Guid.NewGuid().ToString();
-        Debug.Log($"Generated Session Name: {DefaultRoomName}");
-      }
+    if ((serverMode == GameMode.Shared || serverMode == GameMode.AutoHostOrClient) && clientCount > 1 && config.PeerMode == NetworkProjectConfig.PeerModes.Multiple) {
+      DefaultRoomName = string.IsNullOrEmpty(DefaultRoomName) == false ? DefaultRoomName : Guid.NewGuid().ToString();
     }
 
     if (gameObject.transform.parent) {
@@ -471,30 +466,27 @@ public class NetworkDebugStart : Fusion.Behaviour {
         var name = _server.name; // closures do not capture values, need a local var to save it
         Debug.Log($"Server NetworkRunner '{name}' started.");
 #endif
+        // this action is called after InitializeNetworkRunner for the server has completed startup
+        StartCoroutine(StartClients(clientCount, serverMode, sceneRef));
       });
 
       while(serverTask.IsCompleted == false) {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForEndOfFrame();
       }
 
       if (serverTask.IsFaulted) {
-        Log.Debug($"Unable to start server: {serverTask.Exception}");
-
         ShutdownAll();
-        yield break;
       }
 
-      // this action is called after InitializeNetworkRunner for the server has completed startup
-      yield return StartClients(clientCount, serverMode, sceneRef);
-
     } else {
-      yield return StartClients(clientCount, serverMode, sceneRef);
+      StartCoroutine(StartClients(clientCount, serverMode, sceneRef));
     }
 
     // Add stats last, so any event systems that may be getting created are already in place.
     if (includesServerStart && AlwaysShowStats && serverMode != GameMode.Shared) {
       FusionStats.Create(runner: _server, screenLayout: FusionStats.DefaultLayouts.Left, objectLayout: FusionStats.DefaultLayouts.Left);
     }
+
   }
 
   [BehaviourButtonAction("Add Additional Client", conditionMember: nameof(CanAddClients))]
@@ -532,8 +524,10 @@ public class NetworkDebugStart : Fusion.Behaviour {
         Debug.Log($"Client NetworkRunner '{name}' started.");
       });
 #else
-      var clientTask = InitializeNetworkRunner(client, mode, NetAddress.Any(), sceneRef, null);
+    var clientTask = InitializeNetworkRunner(client, mode, NetAddress.Any(), sceneRef, null);
 #endif
+
+    //clientTasks.Add(clientTask);
 
     // Add stats last, so that event systems that may be getting created are already in place.
     if (AlwaysShowStats && LastCreatedClientIndex == 0) {
@@ -545,25 +539,37 @@ public class NetworkDebugStart : Fusion.Behaviour {
 
   protected IEnumerator StartClients(int clientCount, GameMode serverMode, SceneRef sceneRef = default) {
 
+    var clientTasks = new List<Task>();
+
     CurrentStage = Stage.ConnectingClients;
 
-    var clientTasks = new List<Task>();
     for (int i = 0; i < clientCount; ++i) {
-      clientTasks.Add(AddClient(serverMode, sceneRef));
-      yield return new WaitForSeconds(0.1f);
+      var clientTask =  AddClient(serverMode, sceneRef);
+      clientTasks.Add(clientTask);
     }
 
-    var clientsStartTask = Task.WhenAll(clientTasks);
+    bool done;
+    do {
+      done = true;
 
-    while (clientsStartTask.IsCompleted == false) {
-      yield return new WaitForSeconds(1f);
-    }
+      // yield until all tasks report as completed
+      foreach (var task in clientTasks) {
+        done &= task.IsCompleted;
 
-    if (clientsStartTask.IsFaulted) {
-      Debug.LogWarning(clientsStartTask.Exception);
-    }
+        if (done == false) {
+          break;
+        }
+
+        if (task.IsFaulted) {
+          Debug.LogWarning(task.Exception);
+        }
+      }
+      yield return new WaitForSeconds(0.5f);
+
+    } while (done == false);
 
     CurrentStage = Stage.AllConnected;
+    //ForceGUIUpdate();
   }
 
   protected virtual Task InitializeNetworkRunner(NetworkRunner runner, GameMode gameMode, NetAddress address, SceneRef scene, Action<NetworkRunner> initialized) {

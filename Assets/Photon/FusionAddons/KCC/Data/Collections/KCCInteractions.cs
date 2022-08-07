@@ -100,6 +100,22 @@ namespace Fusion.KCC
 			return default;
 		}
 
+		public void GetProviders<T>(List<T> providers, bool clearList = true) where T : class
+		{
+			if (clearList == true)
+			{
+				providers.Clear();
+			}
+
+			for (int i = 0, count = All.Count; i < count; ++i)
+			{
+				if (All[i].Provider is T provider)
+				{
+					providers.Add(provider);
+				}
+			}
+		}
+
 		public TInteraction Find(IKCCInteractionProvider provider)
 		{
 			return Find(provider, out int index);
@@ -110,12 +126,8 @@ namespace Fusion.KCC
 			return AddInternal(networkObject, provider, true);
 		}
 
-		public void Add(KCC kcc, KCCNetworkID networkID)
+		public void Add(NetworkObject networkObject, KCCNetworkID networkID)
 		{
-			if (networkID.IsValid == false)
-				return;
-
-			NetworkObject networkObject = KCCNetworkID.GetNetworkObject(kcc, networkID);
 			if (networkObject == null)
 				return;
 

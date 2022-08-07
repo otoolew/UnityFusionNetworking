@@ -13,9 +13,9 @@ public class KillLocalPlayer : NetworkBehaviour, INetworkRunnerCallbacks
     {
         if (localPlayerInfo == null)
         {
-            localPlayerInfo = GameManager.Instance.GetNetworkPlayer(Object.Runner.LocalPlayer);
+            //localPlayerInfo = GameManager.Instance.GetNetworkPlayer(Object.Runner.LocalPlayer);
         }
-        localPlayerInfo.Character.Kill();
+        //localPlayerInfo.Character.Kill();
     }
     #endregion
     

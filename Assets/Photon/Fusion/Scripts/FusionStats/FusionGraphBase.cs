@@ -8,13 +8,6 @@ using Fusion.StatsInternal;
 [ScriptHelp(BackColor = EditorHeaderBackColor.Olive)]
 public abstract class FusionGraphBase : Fusion.Behaviour, IFusionStatsView {
 
-  public enum StatsPer {
-    Default    = 0,
-    Individual = 1, //Stats.StatsPer.Individual,
-    Tick       = 2, //Stats.StatsPer.Tick,
-    Second     = 4, //Stats.StatsPer.Second,
-  }
-
   protected const int PAD = FusionStatsUtilities.PAD;
   protected const int MRGN = FusionStatsUtilities.MARGIN;
   protected const int MAX_FONT_SIZE_WITH_GRAPH = 24;
@@ -50,9 +43,6 @@ public abstract class FusionGraphBase : Fusion.Behaviour, IFusionStatsView {
       TryConnect();
     }
   }
-
-  [InlineHelp]
-  public StatsPer StatsPerDefault;
 
   [InlineHelp]
   public float WarnThreshold;
@@ -247,12 +237,8 @@ public abstract class FusionGraphBase : Fusion.Behaviour, IFusionStatsView {
       ApplyTitleText();
     }
 
-    // Try to use the Graph specified Per value, if it is valid. Otherwise use the Stat default Per.
-    if (((int)StatSourceInfo.PerFlags & (int)StatsPerDefault) != 0) {
-      CurrentPer = (Stats.StatsPer)StatsPerDefault;
-    } else {
-      CurrentPer = StatSourceInfo.PerDefault;
-    }
+
+    CurrentPer = StatSourceInfo.PerDefault;
 
     return (_statsBuffer != null);
   }

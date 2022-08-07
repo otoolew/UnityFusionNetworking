@@ -13,11 +13,13 @@ namespace Fusion.KCC
 		[SerializeField]
 		private NetworkAoIKCCProcessor _processor;
 
+		// IKCCInteractionProvider INTERFACE
+
+		bool IKCCInteractionProvider.CanStartInteraction(KCC kcc, KCCData data) => true;
+		bool IKCCInteractionProvider.CanStopInteraction(KCC kcc, KCCData data)  => true;
+
 		// IKCCProcessorProvider INTERFACE
 
-		IKCCProcessor IKCCProcessorProvider.GetProcessor()
-		{
-			return _processor;
-		}
+		IKCCProcessor IKCCProcessorProvider.GetProcessor() => _processor;
 	}
 }

@@ -56,22 +56,22 @@ namespace Fusion.KCC
 		/// <summary>
 		/// Called when a KCC starts interacting with the processor. Executed on KCC input and state authority only.
 		/// </summary>
-		void Enter(KCC kcc, KCCData data);
+		void OnEnter(KCC kcc, KCCData data);
 
 		/// <summary>
 		/// Called when a KCC stops interacting with the processor. Executed on KCC input and state authority only.
 		/// </summary>
-		void Exit(KCC kcc, KCCData data);
+		void OnExit(KCC kcc, KCCData data);
 
 		/// <summary>
 		/// Called when a KCC continues interacting with the processor. Executed on KCC input and state authority only.
 		/// </summary>
-		void Stay(KCC kcc, KCCData data);
+		void OnStay(KCC kcc, KCCData data);
 
 		/// <summary>
 		/// Called when a KCC is interacting with the processor. Executed on KCC input/state authority with EKCCRenderBehavior.Interpolate and KCC proxy.
 		/// </summary>
-		void Interpolate(KCC kcc, KCCData data);
+		void OnInterpolate(KCC kcc, KCCData data);
 
 		/// <summary>
 		/// Dedicated stage to process custom logic. Can be executed multiple times before or after KCC updates. Supports user data passed as parameter.

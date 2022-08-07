@@ -61,7 +61,11 @@ namespace Fusion.KCC
 		{
 			isWithinExtent = false;
 
+#if KCC_DISABLE_TERRAIN
+			if (groundCollider is MeshCollider)
+#else
 			if (groundCollider is MeshCollider || groundCollider is TerrainCollider)
+#endif
 			{
 				if (Physics.ComputePenetration(collider, position - new Vector3(0.0f, extent, 0.0f), Quaternion.identity, groundCollider, groundTransform.position, groundTransform.rotation, out Vector3 direction, out float distance) == true)
 				{

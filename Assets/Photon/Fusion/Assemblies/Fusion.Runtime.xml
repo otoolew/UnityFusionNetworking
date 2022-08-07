@@ -178,7 +178,7 @@
             <para>Value of condition method is converted to a long. Null = 0, False = 0, True = 1, Unity Object = InstanceId</para>
             </summary>
         </member>
-        <member name="M:Fusion.DrawIfAttribute.#ctor(System.String,System.Double,Fusion.DrawIfHideType,Fusion.DoIfCompareOperator)">
+        <member name="M:Fusion.DrawIfAttribute.#ctor(System.String,System.Int64,Fusion.DrawIfHideType,Fusion.DoIfCompareOperator)">
             <summary>
             Constructor.
             </summary>
@@ -198,7 +198,7 @@
             <param name="hide">How the field should be hidden (disabled or removed)</param>
             <param name="compare">How the condition member value and compareToValye will be evaluated.</param>
         </member>
-        <member name="M:Fusion.DrawIfAttribute.#ctor(System.String,System.Double,Fusion.DoIfCompareOperator)">
+        <member name="M:Fusion.DrawIfAttribute.#ctor(System.String,System.Int64,Fusion.DoIfCompareOperator)">
             <summary>
             Constructor.
             </summary>
@@ -235,11 +235,6 @@
             Constructor.
             </summary>
             <param name="hideInRelease">If using the release version of the fusion.runtime.dll, field will be hidden, rather than just disabled.</param>
-        </member>
-        <member name="T:Fusion.EditorDisabledGroupAttribute">
-            <summary>
-            Fusion editor attribute for disabling groups of fields.
-            </summary>
         </member>
         <member name="T:Fusion.EnumMaskAttribute">
             <summary>
@@ -522,12 +517,6 @@
             True if condition member value is greater than compareToValue.
             </summary>
         </member>
-        <member name="F:Fusion.DoIfCompareOperator.NotZero">
-            <summary>
-            Returns true if the condition member evaluates to anything other than zero.
-            In the case of object references, this means true for any non-null value.
-            </summary>
-        </member>
         <member name="T:Fusion.DoIfAttribute">
             <summary>
             Fusion editor attribute for selective editor rendering. Condition member can be a property, field or method (with a return value).
@@ -564,7 +553,7 @@
             <para>Value of condition method is converted to a long. Null = 0, False = 0, True = 1, Unity Object = InstanceId</para>
             </summary>
         </member>
-        <member name="M:Fusion.WarnIfAttribute.#ctor(System.String,System.Double,System.String,System.Int32,Fusion.DoIfCompareOperator)">
+        <member name="M:Fusion.WarnIfAttribute.#ctor(System.String,System.Int64,System.String,System.Int32,Fusion.DoIfCompareOperator)">
             <summary>
             Constructor.
             </summary>
@@ -779,6 +768,11 @@
             Disposes the current <see cref="T:Fusion.CloudServices"/>
             </summary>
         </member>
+        <member name="M:Fusion.CloudServices.Service_UpdateSessionInfo">
+            <summary>
+            Update the <see cref="T:Fusion.SessionInfo"/> data based on the current LBC Information after the peer enters a Room
+            </summary>
+        </member>
         <member name="M:Fusion.CloudServices.OnRoomChanged">
             <summary>
             Callback invoked when any Room Property has changed
@@ -807,7 +801,7 @@
             </summary>
             <param name="stunResult">Reference to StunResult used to build the Protocol Message</param>
         </member>
-        <member name="M:Fusion.CloudServices.SendStateSnapshot(System.Int32,System.Int32,System.UInt32,System.Byte[])">
+        <member name="M:Fusion.CloudServices.SendStateSnapshot">
             <summary>
             Build and send the latest Server Snapshot to the Fusion Plugin
             </summary>
@@ -858,23 +852,6 @@
             </summary>
             <returns>True if the Join Confirmation was received, false otherwise</returns>
         </member>
-        <member name="M:Fusion.CloudServices.Service_UpdateSessionInfo">
-            <summary>
-            Update the <see cref="T:Fusion.SessionInfo"/> data based on the current LBC Information after the peer enters a Room
-            </summary>
-        </member>
-        <member name="M:Fusion.CloudServices.Service_SendHostMigrationSnapshots">
-            <summary>
-            Try to send Server Snapshot to Plugin 
-            </summary>
-        </member>
-        <member name="M:Fusion.CloudServices.Run_ReversePing(Fusion.Sockets.NetAddress)">
-            <summary>
-            Reverse ping will send Empty UDP Packets to the RemoteAddr in order to setup the Routing Table
-            on the current NAT of the Server, forcing it to allow packages from the remote client to be received
-            </summary>
-            <param name="remoteAddr">Remove EndPoint to ping</param>
-        </member>
         <member name="M:Fusion.CloudServices.QueryReflexiveInfo">
             <summary>
             Run the STUN Service to retrieve the current Reflexive Addresses of the local peer
@@ -886,6 +863,26 @@
             Update the internal <see cref="T:Fusion.NetworkRunnerInitializeArgs"/> used to start the Fusion Runner
             </summary>
             <param name="newArgs">New arguments</param>
+        </member>
+        <member name="M:Fusion.CloudServices.StartReversePing(Fusion.Sockets.NetAddress,System.Threading.CancellationToken)">
+            <summary>
+            Reverse ping will send Empty UDP Packets to the RemoteAddr in order to setup the Routing Table
+            on the current NAT of the Server, forcing it to allow packages from the remote client to be received
+            </summary>
+            <param name="remoteAddr">Remove EndPoint to ping</param>
+            <param name="cancellationToken">CancellationToken</param>
+        </member>
+        <member name="M:Fusion.CloudServices.SendPing(Fusion.Sockets.NetAddress)">
+            <summary>
+            Send a "ping" to an EndPoint
+            </summary>
+            <param name="netAddress">EndPoint to send the ping</param>
+            <returns>True if the Ping was sent, false otherwise</returns>
+        </member>
+        <member name="M:Fusion.CloudServices.Service_SendHostMigrationSnapshots">
+            <summary>
+            Try to send Server Snapshot to Plugin 
+            </summary>
         </member>
         <member name="M:Fusion.CloudServices.CheckSubnet(Fusion.Sockets.NetAddress)">
             <summary>
@@ -1098,16 +1095,6 @@
             <summary>
             Called at the very start of the resimulation loop (on clients with prediction enabled), 
             immediately after state is set to the latest server snapshot.
-            </summary>
-        </member>
-        <member name="T:Fusion.IAfterHostMigration">
-            <summary>
-            Used to mark NetworkBehaviors that need to be react after a Host Migration process
-            </summary>
-        </member>
-        <member name="M:Fusion.IAfterHostMigration.AfterHostMigration">
-            <summary>
-            Invoked after the Host Migration happens in order to setup non-networked data on NetworkBehaviors
             </summary>
         </member>
         <member name="T:Fusion.IAfterPhysicsStep">
@@ -2083,9 +2070,6 @@
             <summary>
             Sets a rotation value to the engine. By default, the value is set to the transform's world rotation field.
             </summary>
-        </member>
-        <member name="M:Fusion.NetworkPositionRotation.AfterHostMigration">
-            <inheritdoc cref="M:Fusion.IAfterHostMigration.AfterHostMigration"/>
         </member>
         <member name="F:Fusion.NetworkPositionRotation.WORD_COUNT_NPR">
             <summary>
@@ -4289,11 +4273,6 @@
             If a hitbox or its HitboxRoot are not active, it will not be hit by lag-compensated queries.
             </summary>
         </member>
-        <member name="P:Fusion.Hitbox.ColliderIndex">
-            <summary>
-            Index assigned to the collider of this hitbox on the lag-compensated snapshots.
-            </summary>
-        </member>
         <member name="P:Fusion.Hitbox.Position">
             <summary>
             World-space position (includes Offset) of this <see cref="T:Fusion.Hitbox"/>.
@@ -4332,12 +4311,6 @@
         <member name="F:Fusion.HitOptions.DetailedHit">
             <summary>
             Compute surface normal and distance of raycast hit.
-            </summary>
-        </member>
-        <member name="F:Fusion.HitOptions.IgnoreInputAuthority">
-            <summary>
-            If the <see cref="T:Fusion.HitboxRoot"/> objects which the player performing the query
-            (if specified) has input authority over should be ignored by the query.
             </summary>
         </member>
         <member name="T:Fusion.LagCompensationSettings">
@@ -4418,23 +4391,7 @@
             Debug data from lag compensation history (registered <see cref="T:Fusion.Hitbox"/> count).
             </summary>
         </member>
-        <member name="M:Fusion.HitboxManager.ResolveQuery(Fusion.LagCompensation.Query@,System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Boolean)">
-            <summary>
-            Performs a raycast, raycast-all, sphere- or box-overlap query.
-            Use the <see cref="M:Fusion.LagCompensation.RaycastQuery.CreateQuery(UnityEngine.Vector3,UnityEngine.Vector3,System.Single,System.Boolean,Fusion.PlayerRef,System.Int32,Fusion.HitOptions,UnityEngine.QueryTriggerInteraction,Fusion.LagCompensation.PreProcessingDelegate)">
-            CreateQuery</see> method of <see cref="T:Fusion.LagCompensation.RaycastQuery"/>, <see cref="T:Fusion.LagCompensation.SphereOverlapQuery"/> or <see cref="T:Fusion.LagCompensation.BoxOverlapQuery"/>, respectively, to create a query.
-            </summary>
-            <param name="query">The lag-compensated query to be performed.</param>
-            <param name="hits">List to be filled with hits (both hitboxes and/or PhysX colliders, if included).</param>
-            <param name="clearHits">Clear list of hits before filling with new ones (defaults to true).</param>
-            <returns>The number of hits found by the query.</returns>
-            <exception cref="T:System.ArgumentException">If the query type is not supported by this method.</exception>
-            <code>
-            var query = Fusion.LagCompensation.SphereOverlapQuery.CreateQuery(center, radius, Object.InputAuthority);
-            var hitCount = Runner.LagCompensation.Query(ref query, hits);
-            </code>
-        </member>
-        <member name="M:Fusion.HitboxManager.Raycast(UnityEngine.Vector3,UnityEngine.Vector3,System.Single,Fusion.PlayerRef,Fusion.LagCompensatedHit@,System.Int32,Fusion.HitOptions,UnityEngine.QueryTriggerInteraction,Fusion.LagCompensation.PreProcessingDelegate)">
+        <member name="M:Fusion.HitboxManager.Raycast(UnityEngine.Vector3,UnityEngine.Vector3,System.Single,Fusion.PlayerRef,Fusion.LagCompensatedHit@,System.Int32,Fusion.HitOptions,UnityEngine.QueryTriggerInteraction)">
             <summary>
             Performs a lag-compensated raycast query against all registered hitboxes.
             If the <see cref="F:Fusion.HitOptions.IncludePhysX"/> flag is indicated, query will also include PhysX colliders, 
@@ -4448,17 +4405,9 @@
             <param name="layerMask">Only objects with matching layers will be checked against.</param>
             <param name="options">Opt-in flags to compute with sub-tick accuracy (<see cref="F:Fusion.HitOptions.SubtickAccuracy"/>) and/or to include PhysX (<see cref="F:Fusion.HitOptions.IncludePhysX"/>).</param>
             <param name="queryTriggerInteraction">Trigger interaction behavior when also querying PhysX.</param>
-            <param name="preProcessRoots">
-            Delegate to pre-process <see cref="T:Fusion.HitboxRoot">HitboxRoots</see> found in the broad-phase resolution of the query.
-            Roots removed from the list will not be processed any further.
-            Roots that remain on the candidates collection will be normally processed and fitting colliders will be evaluated in
-            the query narrow-phase resolution.
-            Hitbox collider indices added to the processed set will be evaluated in the narrow-phase regardless of further root
-            processing steps (e.g. layer mask match).
-            </param>
-            <returns>True if something is hit</returns>
+            <returns>true is something is hit</returns>
         </member>
-        <member name="M:Fusion.HitboxManager.Raycast(UnityEngine.Vector3,UnityEngine.Vector3,System.Single,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Single},Fusion.LagCompensatedHit@,System.Int32,Fusion.HitOptions,UnityEngine.QueryTriggerInteraction,Fusion.LagCompensation.PreProcessingDelegate)">
+        <member name="M:Fusion.HitboxManager.Raycast(UnityEngine.Vector3,UnityEngine.Vector3,System.Single,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Single},Fusion.LagCompensatedHit@,System.Int32,Fusion.HitOptions,UnityEngine.QueryTriggerInteraction)">
             <summary>
             Performs a lag-compensated raycast query against all registered hitboxes.
             If the <see cref="F:Fusion.HitOptions.IncludePhysX"/> flag is indicated, query will also include PhysX colliders, 
@@ -4483,17 +4432,9 @@
             <param name="layerMask">Only objects with matching layers will be checked against.</param>
             <param name="options">Opt-in flags to compute with sub-tick accuracy (<see cref="F:Fusion.HitOptions.SubtickAccuracy"/>) and/or to include PhysX (<see cref="F:Fusion.HitOptions.IncludePhysX"/>).</param>
             <param name="queryTriggerInteraction">Trigger interaction behavior when also querying PhysX.</param>
-            <param name="preProcessRoots">
-            Delegate to pre-process <see cref="T:Fusion.HitboxRoot">HitboxRoots</see> found in the broad-phase resolution of the query.
-            Roots removed from the list will not be processed any further.
-            Roots that remain on the candidates collection will be normally processed and fitting colliders will be evaluated in
-            the query narrow-phase resolution.
-            Hitbox collider indices added to the processed set will be evaluated in the narrow-phase regardless of further root
-            processing steps (e.g. layer mask match).
-            </param>
-            <returns>True if something is hit</returns>
+            <returns>true is something is hit</returns>
         </member>
-        <member name="M:Fusion.HitboxManager.RaycastAll(UnityEngine.Vector3,UnityEngine.Vector3,System.Single,Fusion.PlayerRef,System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,System.Boolean,Fusion.HitOptions,UnityEngine.QueryTriggerInteraction,Fusion.LagCompensation.PreProcessingDelegate)">
+        <member name="M:Fusion.HitboxManager.RaycastAll(UnityEngine.Vector3,UnityEngine.Vector3,System.Single,Fusion.PlayerRef,System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,System.Boolean,Fusion.HitOptions,UnityEngine.QueryTriggerInteraction)">
             <summary>
             Performs a lag-compensated raycast query against all registered hitboxes.
             If the <see cref="F:Fusion.HitOptions.IncludePhysX"/> flag is indicated, query will also include PhysX colliders, 
@@ -4509,17 +4450,9 @@
             <param name="options">Opt-in flags to compute with sub-tick accuracy (<see cref="F:Fusion.HitOptions.SubtickAccuracy"/>) and/or to include PhysX (<see cref="F:Fusion.HitOptions.IncludePhysX"/>).</param>
             <param name="clearHits">Clear list of hits before filling with new ones (defaults to true).</param>
             <param name="queryTriggerInteraction">Trigger interaction behavior when also querying PhysX.</param>
-            <param name="preProcessRoots">
-            Delegate to pre-process <see cref="T:Fusion.HitboxRoot">HitboxRoots</see> found in the broad-phase resolution of the query.
-            Roots removed from the list will not be processed any further.
-            Roots that remain on the candidates collection will be normally processed and fitting colliders will be evaluated in
-            the query narrow-phase resolution.
-            Hitbox collider indices added to the processed set will be evaluated in the narrow-phase regardless of further root
-            processing steps (e.g. layer mask match).
-            </param>
             <returns>total number of hits</returns>
         </member>
-        <member name="M:Fusion.HitboxManager.RaycastAll(UnityEngine.Vector3,UnityEngine.Vector3,System.Single,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Single},System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,System.Boolean,Fusion.HitOptions,UnityEngine.QueryTriggerInteraction,Fusion.LagCompensation.PreProcessingDelegate)">
+        <member name="M:Fusion.HitboxManager.RaycastAll(UnityEngine.Vector3,UnityEngine.Vector3,System.Single,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Single},System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,System.Boolean,Fusion.HitOptions,UnityEngine.QueryTriggerInteraction)">
             <summary>
             Performs a lag-compensated raycast query against all registered hitboxes.
             If the <see cref="F:Fusion.HitOptions.IncludePhysX"/> flag is indicated, query will also include PhysX colliders, 
@@ -4546,17 +4479,9 @@
             <param name="options">Opt-in flags to compute with sub-tick accuracy (<see cref="F:Fusion.HitOptions.SubtickAccuracy"/>) and/or to include PhysX (<see cref="F:Fusion.HitOptions.IncludePhysX"/>).</param>
             <param name="clearHits">Clear list of hits before filling with new ones (defaults to true).</param>
             <param name="queryTriggerInteraction">Trigger interaction behavior when also querying PhysX.</param>
-            <param name="preProcessRoots">
-            Delegate to pre-process <see cref="T:Fusion.HitboxRoot">HitboxRoots</see> found in the broad-phase resolution of the query.
-            Roots removed from the list will not be processed any further.
-            Roots that remain on the candidates collection will be normally processed and fitting colliders will be evaluated in
-            the query narrow-phase resolution.
-            Hitbox collider indices added to the processed set will be evaluated in the narrow-phase regardless of further root
-            processing steps (e.g. layer mask match).
-            </param>
             <returns>total number of hits</returns>
         </member>
-        <member name="M:Fusion.HitboxManager.OverlapSphere(UnityEngine.Vector3,System.Single,Fusion.PlayerRef,System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,Fusion.HitOptions,System.Boolean,UnityEngine.QueryTriggerInteraction,Fusion.LagCompensation.PreProcessingDelegate)">
+        <member name="M:Fusion.HitboxManager.OverlapSphere(UnityEngine.Vector3,System.Single,Fusion.PlayerRef,System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,Fusion.HitOptions,System.Boolean,UnityEngine.QueryTriggerInteraction)">
             <summary>
             Performs a lag-compensated overlap sphere query against all registered hitboxes.
             If the <see cref="F:Fusion.HitOptions.IncludePhysX"/> flag is indicated, query will also include PhysX colliders, 
@@ -4570,17 +4495,9 @@
             <param name="options">Opt-in flags to compute with sub-tick accuracy (<see cref="F:Fusion.HitOptions.SubtickAccuracy"/>) and/or to include PhysX (<see cref="F:Fusion.HitOptions.IncludePhysX"/>).</param>
             <param name="clearHits">Clear list of hits before filling with new ones (defaults to true).</param>
             <param name="queryTriggerInteraction">Trigger interaction behavior when also querying PhysX.</param>
-            <param name="preProcessRoots">
-            Delegate to pre-process <see cref="T:Fusion.HitboxRoot">HitboxRoots</see> found in the broad-phase resolution of the query.
-            Roots removed from the list will not be processed any further.
-            Roots that remain on the candidates collection will be normally processed and fitting colliders will be evaluated in
-            the query narrow-phase resolution.
-            Hitbox collider indices added to the processed set will be evaluated in the narrow-phase regardless of further root
-            processing steps (e.g. layer mask match).
-            </param>
             <returns>total number of hits</returns>
         </member>
-        <member name="M:Fusion.HitboxManager.OverlapSphere(UnityEngine.Vector3,System.Single,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Single},System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,Fusion.HitOptions,System.Boolean,UnityEngine.QueryTriggerInteraction,Fusion.LagCompensation.PreProcessingDelegate)">
+        <member name="M:Fusion.HitboxManager.OverlapSphere(UnityEngine.Vector3,System.Single,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Single},System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,Fusion.HitOptions,System.Boolean,UnityEngine.QueryTriggerInteraction)">
             <summary>
             Performs a lag-compensated overlap sphere query against all registered hitboxes.
             If the <see cref="F:Fusion.HitOptions.IncludePhysX"/> flag is indicated, query will also include PhysX colliders, 
@@ -4605,17 +4522,9 @@
             <param name="options">Opt-in flags to compute with sub-tick accuracy (<see cref="F:Fusion.HitOptions.SubtickAccuracy"/>) and/or to include PhysX (<see cref="F:Fusion.HitOptions.IncludePhysX"/>).</param>
             <param name="clearHits">Clear list of hits before filling with new ones (defaults to true).</param>
             <param name="queryTriggerInteraction">Trigger interaction behavior when also querying PhysX.</param>
-            <param name="preProcessRoots">
-            Delegate to pre-process <see cref="T:Fusion.HitboxRoot">HitboxRoots</see> found in the broad-phase resolution of the query.
-            Roots removed from the list will not be processed any further.
-            Roots that remain on the candidates collection will be normally processed and fitting colliders will be evaluated in
-            the query narrow-phase resolution.
-            Hitbox collider indices added to the processed set will be evaluated in the narrow-phase regardless of further root
-            processing steps (e.g. layer mask match).
-            </param>
             <returns>total number of hits</returns>
         </member>
-        <member name="M:Fusion.HitboxManager.OverlapBox(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Quaternion,Fusion.PlayerRef,System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,Fusion.HitOptions,System.Boolean,UnityEngine.QueryTriggerInteraction,Fusion.LagCompensation.PreProcessingDelegate)">
+        <member name="M:Fusion.HitboxManager.OverlapBox(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Quaternion,Fusion.PlayerRef,System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,Fusion.HitOptions,System.Boolean,UnityEngine.QueryTriggerInteraction)">
             <summary>
             Performs a lag-compensated box overlap query against all registered hitboxes.
             If the <see cref="F:Fusion.HitOptions.IncludePhysX"/> flag is indicated, query will also include PhysX colliders, 
@@ -4630,17 +4539,9 @@
             <param name="options">Opt-in flags to compute with sub-tick accuracy (<see cref="F:Fusion.HitOptions.SubtickAccuracy"/>) and/or to include PhysX (<see cref="F:Fusion.HitOptions.IncludePhysX"/>).</param>
             <param name="clearHits">Clear list of hits before filling with new ones (defaults to true).</param>
             <param name="queryTriggerInteraction">Trigger interaction behavior when also querying PhysX.</param>
-            <param name="preProcessRoots">
-            Delegate to pre-process <see cref="T:Fusion.HitboxRoot">HitboxRoots</see> found in the broad-phase resolution of the query.
-            Roots removed from the list will not be processed any further.
-            Roots that remain on the candidates collection will be normally processed and fitting colliders will be evaluated in
-            the query narrow-phase resolution.
-            Hitbox collider indices added to the processed set will be evaluated in the narrow-phase regardless of further root
-            processing steps (e.g. layer mask match).
-            </param>
             <returns>The total number of hits found.</returns>
         </member>
-        <member name="M:Fusion.HitboxManager.OverlapBox(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Quaternion,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Single},System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,Fusion.HitOptions,System.Boolean,UnityEngine.QueryTriggerInteraction,Fusion.LagCompensation.PreProcessingDelegate)">
+        <member name="M:Fusion.HitboxManager.OverlapBox(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Quaternion,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Single},System.Collections.Generic.List{Fusion.LagCompensatedHit},System.Int32,Fusion.HitOptions,System.Boolean,UnityEngine.QueryTriggerInteraction)">
             <summary>
             Performs a lag-compensated box overlap query against all registered hitboxes.
             If the <see cref="F:Fusion.HitOptions.IncludePhysX"/> flag is indicated, query will also include PhysX colliders, 
@@ -4666,14 +4567,6 @@
             <param name="options">Opt-in flags to compute with sub-tick accuracy (<see cref="F:Fusion.HitOptions.SubtickAccuracy"/>) and/or to include PhysX (<see cref="F:Fusion.HitOptions.IncludePhysX"/>).</param>
             <param name="clearHits">Clear list of hits before filling with new ones (defaults to true).</param>
             <param name="queryTriggerInteraction">Trigger interaction behavior when also querying PhysX.</param>
-            <param name="preProcessRoots">
-            Delegate to pre-process <see cref="T:Fusion.HitboxRoot">HitboxRoots</see> found in the broad-phase resolution of the query.
-            Roots removed from the list will not be processed any further.
-            Roots that remain on the candidates collection will be normally processed and fitting colliders will be evaluated in
-            the query narrow-phase resolution.
-            Hitbox collider indices added to the processed set will be evaluated in the narrow-phase regardless of further root
-            processing steps (e.g. layer mask match).
-            </param>
             <returns>The total number of hits found.</returns>
         </member>
         <member name="M:Fusion.HitboxManager.PositionRotation(Fusion.Hitbox,System.Int32,UnityEngine.Vector3@,UnityEngine.Quaternion@,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Single})">
@@ -4705,7 +4598,7 @@
             <param name="player">Player who "owns" this overlap. Used by the server to find the exact hitbox snapshots to check against.</param>
             <param name="position">Will be filled with the hitbox position at the time of the tick</param>
             <param name="rotation">Will be filled with the hitbox rotation at the time of the tick</param>
-            <param name="subTickAccuracy">If the query should interpolate between ticks to reflect exactly what was seen on the client.</param>
+            <param name="subtickAccuracy">If the query should interpolate between ticks to reflect exactly what was seen on the client.</param>
         </member>
         <member name="M:Fusion.HitboxManager.FixedUpdateNetwork">
             <summary>
@@ -5928,12 +5821,6 @@
             </summary>
             <param name="networkObject">NetworkObject to copy the State from</param>
         </member>
-        <member name="M:Fusion.NetworkObject.CopyStateFromSceneObject(Fusion.NetworkObjectHeaderPtr)">
-            <summary>
-            Copies the entire State from another Scene Object.
-            They must have the same Scene Guid
-            </summary>
-        </member>
         <member name="M:Fusion.NetworkObject.SetInterestGroup(Fusion.PlayerRef,System.String,System.Boolean)">
             <summary>
             Add or remove Player's interest in a specific named Interest Group for this <see cref="T:Fusion.NetworkObject"/>.
@@ -6330,12 +6217,12 @@
         </member>
         <member name="F:Fusion.NetworkProjectConfig.PhysicsEngines.Physics2D">
             <summary>
-            The Unity Box2D simulation is used, but auto-simulation is disabled and simulations are controlled by Fusion.
+            The Unity PhysX2D simulation is used, but auto-simulation is disabled and simulations are controlled by Fusion.
             </summary>
         </member>
         <member name="F:Fusion.NetworkProjectConfig.PhysicsEngines.None">
             <summary>
-            Fusion preforms no Physics Simulate() calls.
+            Fusion preforms no simulation calls.
             </summary>
         </member>
         <member name="T:Fusion.NetworkProjectConfig.PhysicsModes">
@@ -6582,11 +6469,6 @@
             all types to be scanned and can increase weaving duration.
             </summary>
         </member>
-        <member name="F:Fusion.NetworkProjectConfig.CheckNetworkedPropertiesBeingEmpty">
-            <summary>
-            If set, the weaver will check if <see cref="T:Fusion.NetworkedAttribute"/> properties getters and setters are empty.
-            </summary>
-        </member>
         <member name="M:Fusion.NetworkProjectConfig.Copy">
             <summary>
             Make a copy of the <see cref="T:Fusion.NetworkProjectConfig"/>.
@@ -6723,11 +6605,6 @@
         <member name="F:Fusion.NetworkRunner._initializeOperation">
             <summary>
             Completion Source for the startup Photon Cloud Operations
-            </summary>
-        </member>
-        <member name="P:Fusion.NetworkRunner.IsInitialized">
-            <summary>
-            Check if the Runner was properly Initialized
             </summary>
         </member>
         <member name="P:Fusion.NetworkRunner.IsVisible">
@@ -6886,18 +6763,6 @@
         <member name="P:Fusion.NetworkRunner.ObjectPool">
             <summary>
             Returns the <see cref="T:Fusion.INetworkObjectPool"/> instance.
-            </summary>
-        </member>
-        <member name="F:Fusion.NetworkRunner.OperationsCancellationTokenSource">
-            <summary>
-            Global CancellationTokenSource for this NetworkRunner Instance
-            Used to control all async operations along the life cycle of the Runner
-            Should be used in conjunction with <see cref="T:Fusion.Async.TaskManager"/>
-            </summary>
-        </member>
-        <member name="P:Fusion.NetworkRunner.OperationsCancellationToken">
-            <summary>
-            Global copy of the Cancellation Token for this NetworkRunner Instance
             </summary>
         </member>
         <member name="P:Fusion.NetworkRunner.LagCompensation">
@@ -7066,12 +6931,11 @@
         </member>
         <member name="M:Fusion.NetworkRunner.AddPlayerAreaOfInterest(Fusion.PlayerRef,UnityEngine.Vector3,System.Single,System.Int32)">
             <summary>
-            Adds an area of interest region for a specific player. A player can have multiple areas of interest regions added. 
-            These are cleared every tick, so this needs to be called every <see cref="M:Fusion.NetworkBehaviour.FixedUpdateNetwork"/>.
+            Adds a area of interest radius for a specific player at a position. A player can have several areas of interests added. Needs to be called every frame.
             </summary>
             <param name="player">The player</param>
             <param name="position">Center position of the area of interest</param>
-            <param name="extent">The extents of the area of interest.</param>
+            <param name="radius">Radius of the area of interest</param>
         </member>
         <member name="M:Fusion.NetworkRunner.GetInputForPlayer``1(Fusion.PlayerRef)">
             <summary>
@@ -7277,13 +7141,11 @@
         <member name="M:Fusion.NetworkRunner.AddSimulationBehaviour(Fusion.SimulationBehaviour,Fusion.NetworkObject)">
             <summary>
             Register a <see cref="T:Fusion.SimulationBehaviour"/> instance with the <see cref="T:Fusion.SimulationBehaviourUpdater"/>. 
-            Invalid if NetworkRunner has not been started and initialized.
             </summary>
         </member>
         <member name="M:Fusion.NetworkRunner.RemoveSimulationBehavior(Fusion.SimulationBehaviour)">
             <summary>
-            Unregister a <see cref="T:Fusion.SimulationBehaviour"/> instance from the <see cref="T:Fusion.SimulationBehaviourUpdater"/> callbacks. 
-            Invalid if NetworkRunner has not been started and initialized.
+            Unregister a <see cref="T:Fusion.SimulationBehaviour"/> instance from the <see cref="T:Fusion.SimulationBehaviourUpdater"/> callbacks.
             </summary>
         </member>
         <member name="M:Fusion.NetworkRunner.Attach(Fusion.NetworkObject,System.Nullable{Fusion.PlayerRef})">
@@ -7327,13 +7189,6 @@
             </summary>
             <returns>Iterable list of <see cref="T:Fusion.NetworkObject"/></returns>
         </member>
-        <member name="M:Fusion.NetworkRunner.GetResumeSnapshotNetworkSceneObjects">
-            <summary>
-            Iterate over the Scene NetworkObjects from the Resume Snapshot while giving the reference of the old 
-            Snapshot data associated with that particular Scene Object
-            </summary>
-            <returns>Iterable list of Scene <see cref="T:Fusion.NetworkObject"/> and Scene Object Header</returns>
-        </member>
         <member name="M:Fusion.NetworkRunner.CleanHostMigrationSnapshots">
             <summary>
             Clean all Snapshot references
@@ -7348,11 +7203,6 @@
         <member name="M:Fusion.NetworkRunner.GetNetworkObjectFromResumeSnapshot(Fusion.NetworkObjectHeaderPtr)">
             <summary>
             Gets a temporary representation of a <see cref="T:Fusion.NetworkObject"/> from the old Server Snapshot
-            </summary>
-        </member>
-        <member name="M:Fusion.NetworkRunner.GetSceneNetworkObjectFromResumeSnapshot(Fusion.NetworkObjectHeaderPtr)">
-            <summary>
-            Get the reference of a specific Scene Object associated with a NO Header from the old Server Snapshot
             </summary>
         </member>
         <member name="M:Fusion.NetworkRunner.SetupHostMigration(Fusion.Protocol.HostMigration)">
@@ -7854,13 +7704,13 @@
             Holds information about a Lobby
             </summary>
         </member>
-        <member name="P:Fusion.LobbyInfo.IsValid">
+        <member name="F:Fusion.LobbyInfo.IsValid">
             <summary>
             Flag to signal if the <see cref="T:Fusion.LobbyInfo"/> is ready for use.
             This is only true if the peer is currently connected to a Lobby.
             </summary>
         </member>
-        <member name="P:Fusion.LobbyInfo.Name">
+        <member name="F:Fusion.LobbyInfo.Name">
             <summary>
             Lobby Name
             </summary>
@@ -8829,7 +8679,7 @@
         </member>
         <member name="F:Fusion.NetworkSimulationConfiguration.DelayPeriod">
             <summary>
-            The period of the <see cref="F:Fusion.NetworkSimulationConfiguration.DelayShape"/> oscillator (the rate at which delay oscillates in seconds).
+            The period of the <see cref="F:Fusion.NetworkSimulationConfiguration.DelayShape"/> oscillator (the rate at which delay oscillates between <see cref="F:Fusion.NetworkSimulationConfiguration.DelayMin"/> and <see cref="F:Fusion.NetworkSimulationConfiguration.DelayMax"/>).
             </summary>
         </member>
         <member name="F:Fusion.NetworkSimulationConfiguration.DelayThreshold">
@@ -8869,7 +8719,7 @@
         </member>
         <member name="F:Fusion.NetworkSimulationConfiguration.AdditionalLoss">
             <summary>
-            After the <see cref="F:Fusion.NetworkSimulationConfiguration.LossChanceShape"/> oscillation loss chance is calculated, an additional random value of 0 to this (normalized) percentage of loss chance is added.
+            After the <see cref="F:Fusion.NetworkSimulationConfiguration.LossChanceShape"/> oscillation loss calculated, an additional 0 to this (normalized) percentage of loss chance is added.
             </summary>
         </member>
         <member name="T:Fusion.SimulationGlobalState">

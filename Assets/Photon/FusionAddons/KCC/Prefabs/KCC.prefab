@@ -101,6 +101,9 @@ MonoBehaviour:
     Features: -1
     SpawnColliderOnProxy: 1
     AllowClientTeleports: 0
+    TeleportThreshold: 1
+    CCDRadiusMultiplier: 0.75
+    AntiJitterDistance: {x: 0, y: 0}
     GroundSnapDistance: 0.25
     GroundSnapSpeed: 4
     StepHeight: 0.3
@@ -116,3 +119,6 @@ MonoBehaviour:
       _value: 0.0001
       _inverse: 0
       _hash: -258202764
+    MaxNetworkedCollisions: 4
+    MaxNetworkedModifiers: 4
+    MaxNetworkedIgnores: 4

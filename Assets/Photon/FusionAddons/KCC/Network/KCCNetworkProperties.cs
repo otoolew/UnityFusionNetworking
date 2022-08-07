@@ -41,6 +41,20 @@ namespace Fusion.KCC
 			_rotationWriteAccuracy = rotationReadAccuracy > 0.0f ? 1.0f / rotationReadAccuracy : 0.0f;
 		}
 
+		// PUBLIC METHODS
+
+		public Vector3 ReadPosition(int* ptr)
+		{
+			Vector3 targetPosition = ReadVector3(_positionReadAccuracy, ref ptr);
+
+			if (_hasPositionOffset == true)
+			{
+				targetPosition += ReadVector3(_positionOffsetReadAccuracy, ref ptr);
+			}
+
+			return targetPosition;
+		}
+
 		// KCCNetworkProperty INTERFACE
 
 		public override void Read(int* ptr)

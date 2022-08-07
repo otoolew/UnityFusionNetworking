@@ -16,9 +16,9 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
 
     [SerializeField] public PlayerUI PlayerUI;
     
-    [SerializeField] public PlayerCharacter CharacterPrefab;
+    //[SerializeField] public PlayerCharacter CharacterPrefab;
     
-    [SerializeField] public PlayerCharacter Character;
+   // [SerializeField] public PlayerCharacter Character;
     
     [Networked] public int PlayerScore { get; set; }
     
@@ -45,7 +45,7 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
             LocalPlayer = this;
             RPC_SetDisplayName("Player " + Object.Id);
         }
-        GameManager.Instance.RegisterNetworkPlayer(PlayerRef, this);
+        //GameManager.Instance.RegisterNetworkPlayer(PlayerRef, this);
     }
     
     [Rpc(sources: RpcSources.InputAuthority, targets: RpcTargets.StateAuthority)]

@@ -26,7 +26,9 @@ namespace Fusion.KCC
 		private static readonly Type CapsuleColliderType = typeof(CapsuleCollider);
 		private static readonly Type BoxColliderType     = typeof(BoxCollider);
 		private static readonly Type MeshColliderType    = typeof(MeshCollider);
+#if !KCC_DISABLE_TERRAIN
 		private static readonly Type TerrainColliderType = typeof(TerrainCollider);
+#endif
 
 		// PUBLIC METHODS
 
@@ -56,6 +58,7 @@ namespace Fusion.KCC
 					IsConvertible = mesh != null && mesh.isReadable == true;
 				}
 			}
+#if !KCC_DISABLE_TERRAIN
 			else if (colliderType == TerrainColliderType)
 			{
 				Type          = EColliderType.Terrain;
@@ -63,6 +66,7 @@ namespace Fusion.KCC
 				IsPrimitive   = false;
 				IsConvertible = false;
 			}
+#endif
 			else if (colliderType == SphereColliderType)
 			{
 				Type          = EColliderType.Sphere;

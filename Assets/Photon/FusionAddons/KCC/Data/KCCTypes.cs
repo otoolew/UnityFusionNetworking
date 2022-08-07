@@ -52,8 +52,8 @@ namespace Fusion.KCC
 		SetKinematicSpeed     = 5,
 		SetKinematicVelocity  = 6,
 		ProcessPhysicsQuery   = 7,
-		Stay                  = 8,
-		Interpolate           = 9,
+		OnStay                = 8,
+		OnInterpolate         = 9,
 		ProcessUserLogic      = 10,
 	}
 
@@ -68,6 +68,9 @@ namespace Fusion.KCC
 		SetKinematicSpeed     = 1 << EKCCStage.SetKinematicSpeed,
 		SetKinematicVelocity  = 1 << EKCCStage.SetKinematicVelocity,
 		ProcessPhysicsQuery   = 1 << EKCCStage.ProcessPhysicsQuery,
+		OnStay                = 1 << EKCCStage.OnStay,
+		OnInterpolate         = 1 << EKCCStage.OnInterpolate,
+		ProcessUserLogic      = 1 << EKCCStage.ProcessUserLogic,
 		All                   = -1
 	}
 
@@ -77,6 +80,7 @@ namespace Fusion.KCC
 		StepUp               = 1,
 		SnapToGround         = 2,
 		PredictionCorrection = 3,
+		AntiJitter           = 4,
 	}
 
 	[Flags]
@@ -86,6 +90,7 @@ namespace Fusion.KCC
 		StepUp               = 1 << EKCCFeature.StepUp,
 		SnapToGround         = 1 << EKCCFeature.SnapToGround,
 		PredictionCorrection = 1 << EKCCFeature.PredictionCorrection,
+		AntiJitter           = 1 << EKCCFeature.AntiJitter,
 		All                  = -1
 	}
 

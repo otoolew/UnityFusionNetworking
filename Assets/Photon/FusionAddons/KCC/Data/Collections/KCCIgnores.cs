@@ -40,12 +40,8 @@ namespace Fusion.KCC
 			return ignore;
 		}
 
-		public void Add(KCC kcc, KCCNetworkID networkID)
+		public void Add(NetworkObject networkObject, KCCNetworkID networkID)
 		{
-			if (networkID.IsValid == false)
-				return;
-
-			NetworkObject networkObject = KCCNetworkID.GetNetworkObject(kcc, networkID);
 			if (networkObject == null)
 				return;
 

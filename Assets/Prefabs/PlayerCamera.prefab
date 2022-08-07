@@ -97,8 +97,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e59cf4bcc34bac24d82e7aed99b91ab2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  step: 0
+  cameraComponent: {fileID: 5566572078074820379}
   cameraTransform: {fileID: 5566572078074820380}
   transformOffset: {x: 0, y: 20, z: -10}
   rotationOffset: {x: 63.43, y: 0, z: 0}
   followSpeed: 10
   cameraTarget: {fileID: 0}
+  shakeEffect: {fileID: 0}

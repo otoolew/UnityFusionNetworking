@@ -112,33 +112,21 @@ namespace Fusion.KCC
 		{
 		}
 
-		// IKCCProcessor INTERFACE
+		// IKCCInteractionProvider INTERFACE
 
-		void IKCCProcessor.Enter(KCC kcc, KCCData data)
-		{
-			OnEnter(kcc, data);
-		}
+		/// <summary>
+		/// Used to control start of the interaction with KCC. Executed on KCC input and state authority only.
+		/// </summary>
+		public virtual bool CanStartInteraction(KCC kcc, KCCData data) => true;
 
-		void IKCCProcessor.Exit(KCC kcc, KCCData data)
-		{
-			OnExit(kcc, data);
-		}
-
-		void IKCCProcessor.Stay(KCC kcc, KCCData data)
-		{
-			OnStay(kcc, data);
-		}
-
-		void IKCCProcessor.Interpolate(KCC kcc, KCCData data)
-		{
-			OnInterpolate(kcc, data);
-		}
+		/// <summary>
+		/// Used to control end of the interaction with KCC. Executed on KCC input and state authority only.
+		/// All interactions are force stopped on despawn regardless of the return value.
+		/// </summary>
+		public virtual bool CanStopInteraction(KCC kcc, KCCData data) => true;
 
 		// IKCCProcessorProvider INTERFACE
 
-		IKCCProcessor IKCCProcessorProvider.GetProcessor()
-		{
-			return this;
-		}
+		IKCCProcessor IKCCProcessorProvider.GetProcessor() => this;
 	}
 }
