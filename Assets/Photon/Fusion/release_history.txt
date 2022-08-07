@@ -2,6 +2,54 @@
 
 ## Nightly
 
+### Build 549 (Aug 04, 2022)
+
+**Changes**
+
+- SessionProperty.Convert throw exception if type not supported
+
+**Bug Fixes**
+
+- Fixed: Missing NullCheck when building Session Custom Properties
+- Fixed: Missing NetAddress.CreateFromIpPort args validation
+
+### Build 548 (Aug 03, 2022)
+
+**Changes**
+
+- Removed NanoSockets VCRuntime Dependency
+
+### Build 546 (Jul 28, 2022)
+
+**Bug Fixes**
+
+- Fixed: Potential `NullReferenceException` when performing a lag-compensated query against a `HitboxRoot` that is alive but has a network `Object` that is not alive
+
+### Build 545 (Jul 27, 2022)
+
+**What's New**
+
+- Support to Session Creation Control
+- SimulationBehaviour and NetworkBehaviour property shortcuts for HasStateAuthority, HasInputAuthority and IsProxy added. Runner.Tick shortcut added
+
+### Build 543 (Jul 25, 2022)
+
+**Removed**
+
+- Old NanoSockets libs for macOS
+
+**Bug Fixes**
+
+- Fixed: NanoSockets signature for macOS
+- Fixed: TickRate increasing with each Play Mode enter when Domain Reloading is off
+- Fixed: Mixing `OnChanged` callbacks for statically and dynamically defined properties
+
+### Build 542 (Jul 24, 2022)
+
+**Bug Fixes**
+
+- Fixed: Fixxed isssues with NetBitBuffer and burst delta compressor
+
 ### Build 540 (Jul 22, 2022)
 
 **Bug Fixes**

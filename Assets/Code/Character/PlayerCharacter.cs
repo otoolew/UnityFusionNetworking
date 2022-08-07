@@ -57,8 +57,7 @@ public class PlayerCharacter : NetworkBehaviour, IDamageable
 	public Text HealthText { get => healthText; set => healthText = value; }
 	
 	#endregion
-
-	[DrawIf(nameof(ShowSpeed), DrawIfHideType.Hide, DoIfCompareOperator.NotEqual)]
+	
 	public float Speed = 6f;
 	bool HasNCC => GetComponent<NetworkCharacterControllerPrototype>();
 	bool ShowSpeed => this && !TryGetComponent<NetworkCharacterControllerPrototype>(out _);

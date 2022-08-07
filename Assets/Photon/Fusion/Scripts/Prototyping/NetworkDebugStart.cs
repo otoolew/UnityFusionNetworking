@@ -49,20 +49,16 @@ public class NetworkDebugStart : Fusion.Behaviour {
   /// such as <see cref="NetworkEvents"/> or your own custom INetworkInput implementations.
   /// </summary>
   [InlineHelp]
-  [WarnIf(nameof(RunnerPrefab), 0, "No " + nameof(RunnerPrefab) + " supplied. Will search for a " + nameof(NetworkRunner) + " in the scene at startup.")]
+  [WarnIf(nameof(RunnerPrefab), false, "No " + nameof(RunnerPrefab) + " supplied. Will search for a " + nameof(NetworkRunner) + " in the scene at startup.")]
+  [MultiPropertyDrawersFix]
   public NetworkRunner RunnerPrefab;
 
   /// <summary>
   /// Select how network startup will be triggered. Automatically, by in-game menu selection, or exclusively by script.
   /// </summary>
   [InlineHelp]
-  [WarnIf(nameof(StartMode), (long)StartModes.Manual, "Start network by calling the methods " +
-                                                         nameof(StartHost) + "(), " +
-                                                         nameof(StartServer) + "(), " +
-                                                         nameof(StartClient) + "(), " +
-                                                         nameof(StartHostPlusClients) + "(), or " +
-                                                         nameof(StartServerPlusClients) + "()"
-  )]
+  [MultiPropertyDrawersFix]
+  [WarnIf(nameof(StartMode), (double)StartModes.Manual, "Start network by calling the methods " + nameof(StartHost) + "(), " + nameof(StartServer) + "(), " + nameof(StartClient) + "(), " + nameof(StartHostPlusClients) + "(), or " + nameof(StartServerPlusClients) + "()", MsgType = 1)]
   public StartModes StartMode = StartModes.UserInterface;
 
   /// <summary>
@@ -71,14 +67,14 @@ public class NetworkDebugStart : Fusion.Behaviour {
   /// </summary>
   [InlineHelp]
   [UnityEngine.Serialization.FormerlySerializedAs("Server")]
-  [DrawIf(nameof(StartMode), (long)StartModes.Automatic, DrawIfHideType.Hide)]
+  [DrawIf(nameof(StartMode), (long)StartModes.Automatic, Hide = true)]
   public GameMode AutoStartAs = GameMode.Shared;
 
   /// <summary>
   /// <see cref="NetworkDebugStartGUI"/> will not render GUI elements while <see cref="CurrentStage"/> == <see cref="Stage.AllConnected"/>.
   /// </summary>
   [InlineHelp]
-  [DrawIf(nameof(StartMode), (long)StartModes.UserInterface, DrawIfHideType.Hide)]
+  [DrawIf(nameof(StartMode), (long)StartModes.UserInterface, Hide = true)]
   public bool AutoHideGUI = true;
 
   /// <summary>
@@ -86,7 +82,7 @@ public class NetworkDebugStart : Fusion.Behaviour {
   /// When using the Select start mode, this number will be the default value for the additional clients option box.
   /// </summary>
   [InlineHelp]
-  [DrawIf(nameof(ShowAutoClients), true, DrawIfHideType.Hide)]
+  [DrawIf(nameof(ShowAutoClients), Hide = true)]
   public int AutoClients = 1;
 
 

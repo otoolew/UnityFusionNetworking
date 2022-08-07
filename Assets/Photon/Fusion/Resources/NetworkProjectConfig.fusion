@@ -3,10 +3,10 @@
     "TypeId": "NetworkProjectConfig",
     "PeerMode": 0,
     "PhysicsEngine": 0,
-    "ServerPhysicsMode": 1,
+    "ServerPhysicsMode": 0,
     "UseLagCompensation": true,
     "LagCompensation": {
-        "HitboxBufferSize": 60,
+        "HitboxBufferSize": 12,
         "HitboxCapacity": 512,
         "ExpansionFactor": 0.20000000298023225,
         "Optimize": false,
@@ -160,5 +160,6 @@
     ],
     "UseSerializableDictionary": true,
     "NullChecksForNetworkedProperties": true,
-    "CheckRpcAttributeUsage": false
+    "CheckRpcAttributeUsage": false,
+    "CheckNetworkedPropertiesBeingEmpty": false
 }
