@@ -47,6 +47,8 @@ namespace UnityFusionNetworking
 
         private Vector2 _cachedMoveDirection;
         private float _cachedMoveDirectionSize;
+        private Quaternion _cachedLookRotation;
+        private float _cachedLookRotationSize;
         private bool _resetCachedInput;
 
 
@@ -244,6 +246,7 @@ namespace UnityFusionNetworking
 
         private void ProcessStandaloneInput()
         {
+            // Calc Move Direction
             Vector2 moveDirection = Vector2.zero;
 
             if (Input.GetKey(KeyCode.W) == true) moveDirection += Vector2.up;
@@ -256,38 +259,85 @@ namespace UnityFusionNetworking
 
             if(moveDirection.IsZero() == false) moveDirection.Normalize();
             
-            _renderInput.MoveDirection = moveDirection * Time.deltaTime;
+            DebugLogMessage.Log(Color.yellow, $"moveDirection {moveDirection}");
+            // Set
+            _renderInput.MoveDirection = moveDirection;
+
+            // Calc Look Rotation
+            /*Vector2 mouseVec = new Vector2(Input.mousePosition.x / Screen.width - 0.5f,
+                Input.mousePosition.y / Screen.height - 0.5f);
+            DebugLogMessage.Log($"Mouse Vector {mouseVec}");
             
-            var lookRotationDelta =  Vector2.zero;
-            //var lookRotationDelta = GetMouseLookDirection();
-            
+            Vector3 lookRotation = Vector3.zero;
+            // Raycast towards the mouse collider box in the world
             var ray = Context.Camera.CameraComponent.ScreenPointToRay(Input.mousePosition);
+            ray.origin += aimOffset;
+            DebugLogMessage.Log(Color.green, $"Ray {ray.GetPoint(100).ToString()}");
+            // Raycast towards the mouse collider box in the world
+            if (Physics.Raycast(ray, out var hit, Mathf.Infinity, mouseLookMask))
+            {
+                DebugLogMessage.Log(Color.red, $"HIT {lookRotation}");
+                if (hit.collider != null)
+                {
+                    DebugLogMessage.Log(Color.red, $"hit {lookRotation}");
+                    Quaternion lookDirection = Quaternion.LookRotation(hit.point - transform.position);
+                    if (lookDirection.eulerAngles != Vector3.zero) // It already shouldn't be...
+                    {
+                        lookDirection.x = 0f;
+                        lookDirection.z = 0f;
+                        lookRotation = lookDirection.eulerAngles += aimOffset;
+                        if(lookRotation.IsZero() == false) lookRotation.Normalize();
+                        _cachedLookRotation = lookRotation;
+                    }
+                }
+            }*/
+            
+            Quaternion lookRotation = Quaternion.identity;
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             ray.origin += aimOffset;
             // Raycast towards the mouse collider box in the world
             if (Physics.Raycast(ray, out var hit, 200.0f, mouseLookMask))
             {
-                DebugLogMessage.Log(Color.yellow, $"Hit Something {Input.mousePosition} \n{hit.point}");
-                
                 if (hit.collider != null)
                 {
-                    var lookRotation = Quaternion.LookRotation(hit.point - transform.position);
-                    DebugLogMessage.Log(Color.yellow, $"GetMouseLook {lookRotation.eulerAngles}");
+                    lookRotation = Quaternion.LookRotation(hit.point - transform.position);
                     if (lookRotation.eulerAngles != Vector3.zero) // It already shouldn't be...
                     {
                         lookRotation.x = 0f;
                         lookRotation.z = 0f;
                         lookRotation.eulerAngles += aimOffset;
-                        lookRotationDelta = lookRotation.eulerAngles;
+                        if(lookRotation.IsZero() == false) lookRotation.Normalize();
+                        _renderInput.LookRotation = lookRotation;
                     }
                 }
-                
             }
-            
-            
+            else
+            {
+                DebugLogMessage.Log(Color.magenta, $"Miss  {ray.GetPoint(20).ToString()}");
+                lookRotation = Quaternion.LookRotation(ray.GetPoint(20) - _player.ActiveAgent.transform.position);
+                if (lookRotation.eulerAngles != Vector3.zero) // It already shouldn't be...
+                {
+                    lookRotation.x = 0f;
+                    lookRotation.z = 0f;
+                    lookRotation.eulerAngles += aimOffset;
+                    if(lookRotation.IsZero() == false) lookRotation.Normalize();
+                    _renderInput.LookRotation = lookRotation;
+                }
+            }
+            _renderInput.LookRotation = lookRotation;
+            DebugLogMessage.Log(Color.yellow, $"lookRotation {lookRotation}");
+            //var lookRotationDelta = GetMouseLookDirection();
+            /*Vector2 mouseVec = new Vector2(Input.mousePosition.x / Screen.width - 0.5f, Input.mousePosition.y / Screen.height - 0.5f);
+            _renderInput.Yaw = Mathf.Atan2(mouseVec.y, mouseVec.x) * Mathf.Rad2Deg;*/
             //var screenPoint = Context.Camera.CameraComponent.WorldToScreenPoint(worldPosition);
-            DebugLogMessage.Log(Color.yellow, $"PlayerInput Look Rotation {lookRotationDelta}");
-            _renderInput.LookRotationDelta = lookRotationDelta;
+            //DebugLogMessage.Log(Color.yellow, $"PlayerInput Look Rotation {lookRotationDelta}");
+            
+            // Set
+            //_renderInput.LookRotationDelta = lookRotation;
 
+            DebugLogMessage.Log(Color.yellow, $"lookRotation {lookRotation}");
+     
+            
             _renderInput.Buttons.Set(EInputButton.USE, Input.GetKeyDown(KeyCode.E));
             _renderInput.Buttons.Set(EInputButton.FIRE, Input.GetMouseButton(0));
             _renderInput.Buttons.Set(EInputButton.FIRE_ALT, Input.GetMouseButton(1));
@@ -325,9 +375,14 @@ namespace UnityFusionNetworking
 
             _cachedMoveDirection += moveDirection * deltaTime;
             _cachedMoveDirectionSize += deltaTime;
-
             _cachedInput.MoveDirection = _cachedMoveDirection / _cachedMoveDirectionSize;
-            _cachedInput.LookRotationDelta += _renderInput.LookRotationDelta;
+            
+            //_cachedLookRotation += lookRotation.eulerAngles * deltaTime;
+            _cachedLookRotationSize += deltaTime;
+            //_cachedInput.LookRotationDelta = _cachedLookRotation / _cachedLookRotationSize;
+            //_cachedInput.LookRotation = _cachedLookRotation / _cachedLookRotationSize;
+            
+            
             _cachedInput.Buttons = new NetworkButtons(_cachedInput.Buttons.Bits | _renderInput.Buttons.Bits);
             _cachedInput.WeaponButton = _renderInput.WeaponButton != 0 ? _renderInput.WeaponButton : _cachedInput.WeaponButton;
         }
@@ -352,50 +407,80 @@ namespace UnityFusionNetworking
             return weaponButton;
         }*/
 
-        private Vector3 GetMoveDirection()
+        /*private void MovementLook()
         {
-            Vector2 direction = Vector2.zero;
+            if (input.IsDown(NetworkInputPrototype.BUTTON_FORWARD))
+            {
+            direction += TransformLocal ? transform.forward : Vector3.forward;
+            }
 
-            if (Input.GetKey(KeyCode.W) == true) direction += Vector2.up;
+            if (input.IsDown(NetworkInputPrototype.BUTTON_BACKWARD))
+            {
+            direction -= TransformLocal ? transform.forward : Vector3.forward;
+            }
 
-            if (Input.GetKey(KeyCode.S) == true) direction += Vector2.down;
+            if (input.IsDown(NetworkInputPrototype.BUTTON_LEFT))
+            {
+            direction -= TransformLocal ? transform.right : Vector3.right;
+            }
 
-            if (Input.GetKey(KeyCode.A) == true) direction += Vector2.left;
+            if (input.IsDown(NetworkInputPrototype.BUTTON_RIGHT))
+            {
+            direction += TransformLocal ? transform.right : Vector3.right;
+            }
 
-            if (Input.GetKey(KeyCode.D) == true) direction += Vector2.right;
-
-            if(direction.IsZero() == false) direction.Normalize();
-            
-            return direction.normalized;
-        }
-
+            direction = direction.normalized;
+        }*/
         private Vector3 GetMouseLookDirection()
         {
-            if (Context.Camera != null)
+
+            /*Vector2 mouseVec = new Vector2(Input.mousePosition.x / Screen.width - 0.5f,
+                Input.mousePosition.y / Screen.height - 0.5f);
+            DebugLogMessage.Log($"Mouse Vector {mouseVec}");
+            
+            
+            DebugLogMessage.Log($"Yaw {_renderInput.Yaw}");*/
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            ray.origin += aimOffset;
+            // Raycast towards the mouse collider box in the world
+            if (Physics.Raycast(ray, out var hit, 200.0f, mouseLookMask))
             {
-                var ray = Context.Camera.CameraComponent.ScreenPointToRay(Input.mousePosition);
-                ray.origin += aimOffset;
-                // Raycast towards the mouse collider box in the world
-                if (Physics.Raycast(ray, out var hit, 200.0f, mouseLookMask))
+                if (hit.collider != null)
                 {
-                    if (hit.collider != null)
+                    var lookRotation = Quaternion.LookRotation(hit.point - transform.position);
+                    if (lookRotation.eulerAngles != Vector3.zero) // It already shouldn't be...
                     {
-                        var lookRotation = Quaternion.LookRotation(hit.point - transform.position);
-                        if (lookRotation.eulerAngles != Vector3.zero) // It already shouldn't be...
-                        {
-                            lookRotation.x = 0f;
-                            lookRotation.z = 0f;
-                            lookRotation.eulerAngles += aimOffset;
-                            Debug.Log("GetMouseLook");
-                            return lookRotation.eulerAngles;
-                        }
+                        lookRotation.x = 0f;
+                        lookRotation.z = 0f;
+                        lookRotation.eulerAngles += aimOffset;
+                        return lookRotation.eulerAngles;
                     }
                 }
             }
-            else
+            
+            /*_renderInput.Yaw = Mathf.Atan2(mouseVec.y, mouseVec.x) * Mathf.Rad2Deg;
+            
+            Vector3 direction = new Vector3(
+                Mathf.Cos((float)_renderInput.Yaw * Mathf.Deg2Rad),
+                0,
+                Mathf.Sin((float)_renderInput.Yaw * Mathf.Deg2Rad)
+            );*/
+            
+            
+                //input.Yaw = Mathf.Atan2(mouseVec.y, mouseVec.x) * Mathf.Rad2Deg;
+            /*if (Input.GetMouseButton(0) && EventSystem.current.IsPointerOverGameObject() == false)
             {
-                DebugLogMessage.Log("GetMouseLookDirection is NULL");
+                frameworkInput.Buttons.Set(NetworkInputPrototype.BUTTON_WALK, true);
+
+                Vector2 mouseVec = new Vector2(Input.mousePosition.x / Screen.width - 0.5f, Input.mousePosition.y / Screen.height - 0.5f);
+                frameworkInput.Yaw = Mathf.Atan2(mouseVec.y, mouseVec.x) * Mathf.Rad2Deg;
             }
+            
+            Vector3 direction = new Vector3(
+                Mathf.Cos((float)input.Yaw * Mathf.Deg2Rad),
+                0,
+                Mathf.Sin((float)input.Yaw * Mathf.Deg2Rad)
+            );*/
             
             
             /*if (Camera.main != null)
@@ -486,5 +571,12 @@ namespace UnityFusionNetworking
         }
 
         #endregion
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawRay(_player.ActiveAgent.transform.position + Vector3.up,_renderInput.LookRotation.eulerAngles + Vector3.forward * 100);
+  
+        }
     }
 }

@@ -30,8 +30,10 @@ namespace UnityFusionNetworking
     public struct CharacterInput : INetworkInput
     {
         public Vector2 MoveDirection;
+        public Angle Yaw;
+        public Quaternion LookRotation;
         public Vector2 LookRotationDelta;
-        public NetworkButtons Buttons;    
+        public NetworkButtons Buttons;
         public byte WeaponButton;
         public int WeaponSlot => WeaponButton - 1;
     }

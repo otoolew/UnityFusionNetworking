@@ -17,8 +17,6 @@ namespace UnityFusionNetworking
         /*[SerializeField] private Transform _cameraPivot;
         [SerializeField] private Transform _cameraHandle;*/
         [SerializeField] private GameObject _visual;
-
-        [SerializeField] private float _maxCameraAngle = 75f;
         [SerializeField] private Vector3 _jumpImpulse = new(0f, 6f, 0f);
         [SerializeField] private Transform cameraHandle;
         [SerializeField] private LayerMask mouseLookMask;
@@ -77,16 +75,12 @@ namespace UnityFusionNetworking
             // For following lines, we should use Input.FixedInput only. This property holds input for fixed updates.
 
             // Clamp input look rotation delta
+
+            var lookRotation = input.LookRotation;
             
-            var lookRotation = KCC.FixedData.GetLookRotation(true, true);
-            
-            var lookRotationDelta = input.LookRotationDelta;
-            //DebugLogMessage.Log(Color.yellow, $"Agent Fixed{lookRotation}");
-            /*var lookRotationDelta = KCCUtility.GetClampedLookRotationDelta(lookRotation, input.LookRotationDelta,
-                -_maxCameraAngle, _maxCameraAngle);*/
-            KCC.SetLookRotation(lookRotationDelta);
+            KCC.SetLookRotation(lookRotation);
             // Apply clamped look rotation delta
-            //KCC.AddLookRotation(lookRotationDelta);
+            //KCC.AddLookRotation(lookRotation);
 
             // Calculate input direction based on recently updated look rotation (the change propagates internally also to KCCData.TransformRotation)
             var inputDirection = KCC.FixedData.TransformRotation * new Vector3(input.MoveDirection.x, 0.0f, input.MoveDirection.y);
