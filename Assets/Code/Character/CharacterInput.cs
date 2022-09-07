@@ -15,14 +15,15 @@ public class CharacterInput : NetworkBehaviour, INetworkRunnerCallbacks
     private CharacterInputData playerInput;
 
     [SerializeField] private LayerMask mouseLookMask;
-    [SerializeField] private Vector3 aimOffset;
-    
+    [SerializeField] private float heightOffset;
     [SerializeField] private bool inputEnabled;
     public bool InputEnabled { get => inputEnabled; set => inputEnabled = value; }
     
     [SerializeField] private PlayerCharacter character;
     public PlayerCharacter Character { get => character; set => character = value; }
 
+    [SerializeField] private Vector3 moveDirectionInput;
+    [SerializeField] private Vector3 mouseLookDirection;
 
     #region MonoBehaviour Callbacks
     private void Awake()
@@ -44,7 +45,9 @@ public class CharacterInput : NetworkBehaviour, INetworkRunnerCallbacks
     }
     private void Update()
     {
-        playerInput.AimDirection = GetMouseLookDirection();
+        moveDirectionInput = GetMoveDirection();
+        mouseLookDirection = GetMouseLookDirection();
+
         playerInput.Buttons |= Input.GetKeyDown(KeyCode.E) ? InputButton.USE : 0;
         playerInput.Buttons |= Input.GetMouseButtonDown(0) ? InputButton.FIRE : 0;
         playerInput.Buttons |= Input.GetMouseButton(1) ? InputButton.FIRE_ALT : 0;
@@ -84,15 +87,14 @@ public class CharacterInput : NetworkBehaviour, INetworkRunnerCallbacks
     public void OnInput(NetworkRunner runner, NetworkInput input)
     {
         input.Set(GetInput());
-
     }
     public CharacterInputData GetInput()
     {
         CharacterInputData input = new CharacterInputData();
         if (character != null && character.Object != null && character.CharacterState == CharacterState.ACTIVE)
         {
-            input.MoveDirection = GetMoveDirection();
-            input.AimDirection = GetMouseLookDirection();
+            input.MoveDirection = moveDirectionInput;
+            input.AimDirection = mouseLookDirection;
 
             if (Input.GetMouseButton(0))
             {
@@ -133,54 +135,53 @@ public class CharacterInput : NetworkBehaviour, INetworkRunnerCallbacks
     }
     private Vector3 GetMoveDirection()
     {
-        Vector3 direction = default;
+        moveDirectionInput = Vector3.zero;
 
         if (Input.GetKey(KeyCode.W))
         {
-            direction += Vector3.forward;
+            moveDirectionInput += Vector3.forward;
         }
 
         if (Input.GetKey(KeyCode.S))
         {
-            direction -= Vector3.forward;
+            moveDirectionInput -= Vector3.forward;
         }
 
         if (Input.GetKey(KeyCode.A))
         {
-            direction -= Vector3.right;
+            moveDirectionInput -= Vector3.right;
         }
 
         if (Input.GetKey(KeyCode.D))
         {
-            direction += Vector3.right;
+            moveDirectionInput += Vector3.right;
         }
         
-        return direction.normalized;
+        return moveDirectionInput.normalized;
     }
     private Vector3 GetMouseLookDirection()
     {
+        mouseLookDirection = Vector3.zero;
         if (Camera.main != null)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            ray.origin += aimOffset;
+            ray.origin += new Vector3(0, heightOffset, 0);
             // Raycast towards the mouse collider box in the world
             if (Physics.Raycast(ray, out var hit, Mathf.Infinity, mouseLookMask))
             {
                 if (hit.collider != null)
                 {
-                    Quaternion lookRotation = Quaternion.LookRotation(hit.point - transform.position);
-                    if (lookRotation.eulerAngles != Vector3.zero) // It already shouldn't be...
-                    {
-                        lookRotation.x = 0f;
-                        lookRotation.z = 0f;
-                        lookRotation.eulerAngles += aimOffset;
-                        return lookRotation.eulerAngles;
-                    }
+                    Quaternion lookRotation = Quaternion.LookRotation(hit.point - character.WorldPosition);
+                    lookRotation.x = 0f;
+                    lookRotation.z = 0f;
+                    
+                    mouseLookDirection = lookRotation.eulerAngles;
+                    return mouseLookDirection;
                 }
             }
         }
 
-        return Vector3.zero;
+        return mouseLookDirection;
     }
 
     #region INetworkRunnerCallbacks

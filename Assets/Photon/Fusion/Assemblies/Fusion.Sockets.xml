@@ -295,6 +295,11 @@
             Server refused the connection
             </summary>
         </member>
+        <member name="F:Fusion.Sockets.NetConnection.UNIQUE_ID_SIZE">
+            <summary>
+            Client Unique ID size in bytes
+            </summary>
+        </member>
         <member name="T:Fusion.Sockets.NetDisconnectReason">
             <summary>
             Disconnect Reason Flag
@@ -871,6 +876,11 @@
             Requests sent from Plugin
             </summary>
         </member>
+        <member name="F:Fusion.Protocol.Join.UniqueId">
+            <summary>
+            Peer Unique ID
+            </summary>
+        </member>
         <member name="T:Fusion.Protocol.SyncType">
             <summary>
             Network Config Msg Type
@@ -937,6 +947,11 @@
         <member name="P:Fusion.Protocol.ReflexiveInfo.IsValid">
             <summary>
             Signal if this Reflexive Info is Valid or not
+            </summary>
+        </member>
+        <member name="F:Fusion.Protocol.ReflexiveInfo.UniqueId">
+            <summary>
+            Peer Unique ID
             </summary>
         </member>
         <member name="T:Fusion.Protocol.SnapshotType">
@@ -1169,6 +1184,11 @@
         <member name="F:Fusion.Protocol.ProtocolMessageVersion.V1_2_2">
             <summary>
             Added Host Migration Support
+            </summary>
+        </member>
+        <member name="F:Fusion.Protocol.ProtocolMessageVersion.V1_2_3">
+            <summary>
+            Added Peer Unique Key
             </summary>
         </member>
         <member name="F:Fusion.Protocol.ProtocolMessageVersion.LATEST">

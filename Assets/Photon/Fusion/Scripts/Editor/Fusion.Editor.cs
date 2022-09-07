@@ -6088,7 +6088,7 @@ namespace Fusion.Editor {
     internal const string DOCUMENTATION_TEXT = "Open the documentation.";
     internal const string DOCUMENTATION_HEADER = "Documentation";
     internal const string WELCOME_TEXT = "Thank you for installing Photon Fusion, " +
-      "and welcome to the Photon Fusion Beta.\n\n" +
+      "and welcome to the Photon Fusion.\n\n" +
       "Once you have set up your Fusion App Id, explore the sections on the left to get started. " +
       "More samples, tutorials, and documentation are being added regularly - so check back often.";
 
@@ -7532,8 +7532,14 @@ namespace Fusion.Editor {
 
           if (runner.IsServer && playerCount > 0) {
             foreach (var item in runner.ActivePlayers) {
+
+              // skip local player
+              if (runner.LocalPlayer == item) { continue; }
+
               Label("Player:PlayerId", item.PlayerId);
               Label("Player:ConnectionType", runner.GetPlayerConnectionType(item));
+              Label("Player:UserId", runner.GetPlayerUserId(item));
+              Label("Player:RTT", runner.GetPlayerRtt(item));
             }
           }
 

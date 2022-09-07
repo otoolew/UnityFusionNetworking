@@ -2,6 +2,39 @@
 
 ## Nightly
 
+### Build 555 (Aug 12, 2022)
+
+**What's New**
+
+- Added distance based priority send scheduling when using area of interest
+- Added round-robin priority scheduler for object sends when not using area of interest
+- NetworkRunner.PushHostMigrationSnapshot
+
+**Changes**
+
+- NetworkObjectConnectionDataStatus enum is no longer public
+
+**Bug Fixes**
+
+- Fixed: Issue with client input redundancy consuming too much bandwidth (especially in VR games with big input structs)
+- Fixed: Issue with SetPlayerObject mapping not being replicated when area of interest was being used
+- Fixed: Issue with 'All Players' interested mode not working in shared mode properly
+- Fixed: NetCommandConnect Size Check
+- Fixed: SharedMode: StateAuthority being potentially lost when running under poor network conditions
+
+### Build 554 (Aug 11, 2022)
+
+**Bug Fixes**
+
+- Fixed: Dispose order on NetBitBufferBlock causing rare crash on ARM
+- Fixed: WarnIfAttribute render order changed to work in Unity 2020 and 2021 both
+
+### Build 552 (Aug 09, 2022)
+
+**What's New**
+
+- Client UniqueId Support
+
 ### Build 549 (Aug 04, 2022)
 
 **Changes**

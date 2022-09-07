@@ -47,10 +47,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
-  _gunExits:
-  - {fileID: 4416465909417624326}
-  _projectilePrefab: {fileID: 3364391080360522080, guid: 8142638a22970524284ba83baf460c0a, type: 3}
-  _rateOfFire: 0.5
+  projectilePrefab: {fileID: 3364391080360522080, guid: 8142638a22970524284ba83baf460c0a, type: 3}
+  _rateOfFire: 0.1
+  firePoint: {fileID: 4416465909417624326}
 --- !u!1 &3733625856491738872
 GameObject:
   m_ObjectHideFlags: 0
@@ -194,13 +193,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95045f9d29987a64f82f7777d1f39436, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interpolationDataSource: 0
+  _interpolationDataSource: 2
   mouseLookMask:
     serializedVersion: 2
     m_Bits: 64
-  aimOffset: {x: 0, y: -1.5, z: 0}
+  heightOffset: -1.25
   inputEnabled: 0
   character: {fileID: 0}
+  moveDirectionInput: {x: 0, y: 0, z: 0}
+  mouseLookDirection: {x: 0, y: 0, z: 0}
 --- !u!114 &8536981597875681661
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -230,6 +231,7 @@ MonoBehaviour:
   healthText: {fileID: 0}
   Speed: 6
   onCharacterSpawn: {fileID: 11400000, guid: 3c463e6f72fa0264f8d772bb6ac3d4b5, type: 2}
+  ignoreHeight: 0
 --- !u!114 &7834668140746253566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -256,7 +258,7 @@ MonoBehaviour:
     RotBlendStart: 0.1
     RotBlendEnd: 0.5
     RotTeleportRadians: 1.5
-  gravity: -10
+  gravity: -20
   jumpImpulse: 8
   acceleration: 20
   braking: 10
@@ -280,7 +282,7 @@ CharacterController:
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
+  m_MinMoveDistance: 0
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &3819738666363949152
 MonoBehaviour:
@@ -295,7 +297,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
-  currentWeapon: {fileID: 5290836005008010268}
+  currentAbility: {fileID: 5290836005008010268}
   playerCharacter: {fileID: 8536981597875681661}
 --- !u!1 &5172886790898351190
 GameObject:

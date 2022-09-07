@@ -19,7 +19,8 @@ public class Level : SimulationBehaviour, ISpawned
 	[SerializeField] private LevelStatus status;
 	[SerializeField] private Text countdownMessageText;
 	[SerializeField] private Transform[] spawnPoints;
-
+	[SerializeField] private EnemySpawnManager enemySpawnManager;
+	
 	private Dictionary<NetworkPlayer, PlayerCharacter> playerCharacterDictionary = new Dictionary<NetworkPlayer, PlayerCharacter>();
 	
 	public void Spawned()
@@ -55,15 +56,15 @@ public class Level : SimulationBehaviour, ISpawned
 				if (playerCharacterDictionary.TryGetValue(NetworkPlayer.LocalPlayer, out PlayerCharacter character))
 				{
 					character.CharacterInput.InputEnabled = true;
+					character.NetworkCharacterController.Velocity = Vector3.zero;
 				}
-		
 			}
+			enemySpawnManager.StartSpawning();
 		}
 		else if (session.PostLoadCountDown.IsRunning)
 		{
 			countdownMessageText.text = Mathf.CeilToInt(session.PostLoadCountDown.RemainingTime(Runner)??0 ).ToString();
 		}
-			
 	}
 	
 	public void SpawnPlayerCharacter(NetworkPlayer playerInfo)

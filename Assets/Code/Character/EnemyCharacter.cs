@@ -2,8 +2,10 @@ using System;
 using Fusion;
 using UnityEngine;
 using UnityEngine.UI;
+
+[OrderAfter(typeof(HitboxManager))]
 [RequireComponent(typeof(NetworkCharacterControllerPrototype))]
-public class EnemyCharacter : NetworkBehaviour, IDamageable
+public class EnemyCharacter : Actor, IDamageable
 {
 	[Header("Visuals")] 
 	[SerializeField] private Transform visualContainer;
@@ -32,6 +34,19 @@ public class EnemyCharacter : NetworkBehaviour, IDamageable
     {
 	    get => Object.IsPredictedSpawn ? _predictedVelocity : networkedVelocity;
 	    set { if (Object.IsPredictedSpawn) _predictedVelocity = value; else networkedVelocity = value; }
+    }
+    [Networked(OnChanged = nameof(OnDestroyedChanged))]
+    public NetworkBool networkedDestroyed { get; set; }
+    private bool _predictedDestroyed;
+    private bool destroyed
+    {
+	    get => Object.IsPredictedSpawn ? _predictedDestroyed : (bool)networkedDestroyed;
+	    set { if (Object.IsPredictedSpawn) _predictedDestroyed = value; else networkedDestroyed = value; }
+    }
+
+    public override void InitNetworkState()
+    {
+	    
     }
     
     public override void Spawned()
@@ -67,6 +82,29 @@ public class EnemyCharacter : NetworkBehaviour, IDamageable
 		}
 		networkCharacterController.Move(transform.forward);
 	}
+
+	#region Network Static Calls
+	public static void OnDestroyedChanged(Changed<NetworkBehaviour> changed)
+	{
+		((EnemyCharacter)changed.Behaviour)?.OnDestroyedChanged();
+	}
+
+	private void OnDestroyedChanged()
+	{
+		if (destroyed)
+		{
+			/*if (_explosionFX != null)
+			{
+				transform.up = Vector3.up;
+				_explosionFX.PlayExplosion();
+			}*/
+			visualContainer.gameObject.SetActive(false);
+		}
+	}
+	
+
+	#endregion
+	
 	
     #region IDamagable
     public void TakeDamage(int damageValue)
@@ -104,4 +142,6 @@ public class EnemyCharacter : NetworkBehaviour, IDamageable
             healthText.text = healthMax.ToString();
         }
     }
+
+
 }

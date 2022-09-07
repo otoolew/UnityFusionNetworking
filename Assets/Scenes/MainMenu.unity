@@ -438,6 +438,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: NetworkedGameManager
       objectReference: {fileID: 0}
+    - target: {fileID: 6703910619238051305, guid: 62b6f610317f28e4bb0ecacf46a9d2e0, type: 3}
+      propertyPath: _autoSession.SkipStaging
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7243339821674751167, guid: 62b6f610317f28e4bb0ecacf46a9d2e0, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -475,6 +479,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1324268245}
+    - target: {fileID: 4602198728107439805, guid: 785dd6c6f2a97894b9b46a26db92d9ab, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 4602198728491463839, guid: 785dd6c6f2a97894b9b46a26db92d9ab, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

@@ -59,13 +59,14 @@ public class PlayerCharacter : NetworkBehaviour, IDamageable
 	#endregion
 	
 	public float Speed = 6f;
-	bool HasNCC => GetComponent<NetworkCharacterControllerPrototype>();
-	bool ShowSpeed => this && !TryGetComponent<NetworkCharacterControllerPrototype>(out _);
 	public Vector3 Velocity => networkCharacterController.Velocity;
-	public Vector3 WorldPosition => transform.position;
+	public Vector3 WorldPosition => networkCharacterController.transform.position;
 	public Vector3 CenterMassPosition => transform.position += new Vector3(0,1.25f,0);
 	
 	[SerializeField] private FusionEvent onCharacterSpawn;
+	
+	[SerializeField] private bool ignoreHeight;
+	
 	public void Awake() 
 	{
 		CacheComponents();
@@ -131,41 +132,7 @@ public class PlayerCharacter : NetworkBehaviour, IDamageable
 		_hitBoxRoot.enabled = state == State.Active;
 		_damageVisuals.CheckHealth(life);*/
 	}
-	#region State Change
-	public static void OnStateChanged(Changed<PlayerCharacter> changed)
-	{
-		DebugLogMessage.Log($"[OnStateChanged({changed.Behaviour.CharacterState})]");
-		changed.Behaviour.OnStateChanged();
-	}
-	
-	public void OnStateChanged()
-	{
-		Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
-		switch (CharacterState)
-		{
-			case CharacterState.NEW:
-				Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
-				break;
-			case CharacterState.ACTIVATING:
-				Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
-				break;
-			case CharacterState.ACTIVE:
-				characterInput.InputEnabled = true;
-				Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
-				meshRenderer.gameObject.SetActive(false);
-				break;
-			case CharacterState.DEACTIVATING:
-				Debug.Log($"[{playerInfo.Id}] Player {CharacterState}");
-				break;
-			case CharacterState.INACTIVE:
-				break;
-			default:
-				DebugLogMessage.Log($"[{playerInfo.Id}] Player {CharacterState}");
-				break;
-		
-		}
-	}
-	#endregion
+
 
 	#region Character Movement
 
@@ -177,13 +144,13 @@ public class PlayerCharacter : NetworkBehaviour, IDamageable
 		}
 	}
 
-	public void LookAt(Vector3 direction)
+	public void LookAt(Vector3 point)
 	{
 		if (CharacterState == CharacterState.ACTIVE)
 		{
-			if (direction.sqrMagnitude > 0)
+			if (point.sqrMagnitude > 0)
 			{
-				networkCharacterController.transform.rotation = Quaternion.Euler(direction);
+				networkCharacterController.transform.rotation = Quaternion.Euler(point);
 			}
 		}
 	}
@@ -258,4 +225,10 @@ public class PlayerCharacter : NetworkBehaviour, IDamageable
 		}
 	}
 	#endregion
+
+	private void OnDrawGizmos()
+	{
+		Gizmos.color = Color.green;
+		Gizmos.DrawRay(abilityController.CurrentAbility.FirePoint.position,abilityController.CurrentAbility.FirePoint.forward * 100);
+	}
 }

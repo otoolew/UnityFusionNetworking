@@ -7,13 +7,11 @@ using UnityEngine;
 [OrderAfter(typeof(HitboxManager))]
 public class Projectile : Actor
 {
-
-	
-		/*public interface ITargetVisuals
-		{
-			void InitializeTargetMarker(Vector3 launchPos, Vector3 bulletVelocity, Bullet.BulletSettings bulletSettings);
-			void Destroy();
-		}*/
+	/*public interface ITargetVisuals
+	{
+		void InitializeTargetMarker(Vector3 launchPos, Vector3 bulletVelocity, Bullet.BulletSettings bulletSettings);
+		void Destroy();
+	}*/
 		
 		[SerializeField] private LayerMask hitMask;
 		public LayerMask HitMask { get => hitMask; set => hitMask = value; }
@@ -86,18 +84,24 @@ public class Projectile : Actor
 		{
 			_targetVisuals = GetComponent<ITargetVisuals>();
 		}*/
-
 		/// <summary>
 		/// PreSpawn is invoked directly when Spawn() is called, before any network state is shared, so this is where we initialize networked properties.
 		/// </summary>
 		/// <param name="ownervelocity"></param>
-		public override void InitNetworkState(Vector3 ownervelocity)
+		public override void InitNetworkState()
 		{
 			lifeTimer = TickTimer.CreateFromSeconds(Runner, projectileData.timeToLive + projectileData.timeToFade);
 			fadeTimer = TickTimer.CreateFromSeconds(Runner, projectileData.timeToFade);
 
 			destroyed = false;
-
+		}
+		/// <summary>
+		/// PreSpawn is invoked directly when Spawn() is called, before any network state is shared, so this is where we initialize networked properties.
+		/// </summary>
+		/// <param name="ownervelocity"></param>
+		public void InitNetworkState(Vector3 ownervelocity)
+		{
+			InitNetworkState();
 			Vector3 fwd = transform.forward.normalized;
 			Vector3 vel = ownervelocity.normalized;
 			vel.y = 0;

@@ -305,7 +305,7 @@ MonoBehaviour:
   jumpImpulse: 0
   acceleration: 20
   braking: 10
-  maxSpeed: 3
+  maxSpeed: 1
   rotationSpeed: 10
   _IsGrounded: 0
   _Velocity: {x: 0, y: 0, z: 0}
@@ -350,6 +350,8 @@ MonoBehaviour:
   _MoveDirection: {x: 0, y: 0, z: 0}
   _LookDirection: {x: 0, y: 0, z: 0}
   _networkedVelocity: {x: 0, y: 0, z: 0}
+  _networkedDestroyed:
+    _value: 0
 --- !u!1 &967860112490530361
 GameObject:
   m_ObjectHideFlags: 0

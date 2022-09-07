@@ -5,11 +5,8 @@ using System.Threading.Tasks;
 using Fusion;
 using Fusion.Sockets;
 using GameUI;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
-using Object = UnityEngine.Object;
 
 public class GameManager : MonoBehaviour, INetworkRunnerCallbacks
 {

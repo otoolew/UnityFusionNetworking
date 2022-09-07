@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Ability : NetworkBehaviour
 {
-		[SerializeField] private Transform[] _gunExits;
-		[SerializeField] private Projectile _projectilePrefab; // Networked projectile
+	[SerializeField] private Projectile projectilePrefab; // Networked projectile
 		[SerializeField] private float _rateOfFire;
 		//[SerializeField] private byte _ammo;
 		//[SerializeField] private bool _infiniteAmmo;
@@ -16,10 +16,13 @@ public class Ability : NetworkBehaviour
 		//[SerializeField] private ParticleSystem _muzzleFlashPrefab;
 		//[SerializeField] private ParticleSystem _muzzleFlashPrefab;
 
+		[SerializeField] private Transform firePoint;
+		public Transform FirePoint { get => firePoint; set => firePoint = value; }
+		
 		[Networked(OnChanged = nameof(OnFireTickChanged))]
 		private int fireTick { get; set; }
 
-		private int _gunExit;
+		//private int _gunExit;
 		private float _visible;
 		private bool _active;
 		private List<ParticleSystem> _muzzleFlashList = new List<ParticleSystem>();
@@ -76,9 +79,7 @@ public class Ability : NetworkBehaviour
 		/// <param name="ownerVelocity"></param>
 		public void Fire(NetworkRunner runner, PlayerRef owner, Vector3 ownerVelocity)
 		{
-			
-			Transform exit = GetExitPoint();
-			SpawnNetworkShot(runner, owner, exit, ownerVelocity);
+			SpawnNetworkShot(runner, owner, FirePoint, ownerVelocity);
 			fireTick = Runner.Simulation.Tick;
 		}
 
@@ -113,16 +114,16 @@ public class Ability : NetworkBehaviour
 			// Create a key that is unique to this shot on this client so that when we receive the actual NetworkObject
 			// Fusion can match it against the predicted local bullet.
 			var key = new NetworkObjectPredictionKey {Byte0 = (byte) owner.RawEncoded, Byte1 = (byte) runner.Simulation.Tick};
-			runner.Spawn(_projectilePrefab, exit.position, exit.rotation, owner, (runner, obj) =>
+			runner.Spawn(projectilePrefab, exit.position, exit.rotation, owner, (runner, obj) =>
 			{
 				obj.GetComponent<Projectile>().InitNetworkState(ownerVelocity);
 			}, key );
 		}
 
-		private Transform GetExitPoint()
+		/*private Transform GetExitPoint()
 		{
-			_gunExit = (_gunExit + 1) % _gunExits.Length;
-			Transform exit = _gunExits[_gunExit];
-			return exit;
-		}
+			/*_gunExit = (_gunExit + 1) % _gunExits.Length;
+			Transform exit = _gunExits[_gunExit];#1#
+			return firePoint;
+		}*/
 }

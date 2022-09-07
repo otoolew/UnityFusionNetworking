@@ -9,7 +9,8 @@ public abstract class Actor : NetworkBehaviour, IPredictedSpawnBehaviour
     private Vector3 interpolateTo;
     private NetworkTransform networkTransform;
     // Start is called before the first frame update
-    public abstract void InitNetworkState(Vector3 ownerVelocity);
+    public abstract void InitNetworkState();
+    //public abstract void InitNetworkState(Vector3 ownerVelocity);
 
     public void PredictedSpawnSpawned()
     {

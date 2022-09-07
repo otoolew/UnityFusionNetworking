@@ -3,7 +3,9 @@ using UnityEngine;
 
 public class AbilityController : NetworkBehaviour
 {
-    [SerializeField] private Ability currentWeapon;
+    [SerializeField] private Ability currentAbility;
+    public Ability CurrentAbility { get => currentAbility; set => currentAbility = value; }
+
     [SerializeField] private PlayerCharacter playerCharacter;
     [Networked] public TickTimer primaryFireDelay { get; set; }
     
@@ -17,8 +19,8 @@ public class AbilityController : NetworkBehaviour
         TickTimer tickTimer = primaryFireDelay;
         if (tickTimer.ExpiredOrNotRunning(Runner))
         {
-            currentWeapon.Fire(Runner, Object.InputAuthority, playerCharacter.Velocity);
-            primaryFireDelay = TickTimer.CreateFromSeconds(Runner, currentWeapon.delay);
+            currentAbility.Fire(Runner, Object.InputAuthority, playerCharacter.Velocity);
+            primaryFireDelay = TickTimer.CreateFromSeconds(Runner, currentAbility.delay);
         }
     }
 }

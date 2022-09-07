@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Bullet
   m_EditorClassIdentifier: 
   damage: 1
-  speed: 100
-  radius: 0.05
+  speed: 20
+  radius: 0.125
   gravity: 0
   timeToLive: 1.5
   timeToFade: 0.5
